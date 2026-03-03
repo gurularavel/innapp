@@ -19,7 +19,6 @@ class SmsService
 
     public function send(string $phone, string $message, ?int $doctorId = null, string $type = 'custom', ?int $appointmentId = null): bool
     {
-        // Check subscription SMS limit
         if ($doctorId) {
             $subscription = DoctorSubscription::where('doctor_id', $doctorId)
                 ->where('is_active', true)
@@ -28,18 +27,18 @@ class SmsService
 
             if ($subscription && $subscription->smsLimitReached()) {
                 Log::warning("SMS limit reached for doctor #{$doctorId}");
-                $this->logSms($phone, $message, $type, 'failed', $doctorId, $appointmentId);
+                $this->logSms($phone, $message, $type, 'failed', $doctorId, $appointmentId, null);
                 return false;
             }
         }
 
-        $success = match($this->driver) {
-            'http' => $this->sendViaHttp($phone, $message),
-            default => $this->sendViaLog($phone, $message),
+        ['success' => $success, 'receiver_id' => $receiverId, 'response_body' => $responseBody] = match ($this->driver) {
+            'poctgoyercini' => $this->sendViaPostaGuvercini($phone, $message),
+            default          => $this->sendViaLog($phone, $message),
         };
 
         $status = $success ? 'sent' : 'failed';
-        $this->logSms($phone, $message, $type, $status, $doctorId, $appointmentId);
+        $this->logSms($phone, $message, $type, $status, $doctorId, $appointmentId, $receiverId, $responseBody);
 
         if ($success && $doctorId) {
             DoctorSubscription::where('doctor_id', $doctorId)
@@ -53,7 +52,7 @@ class SmsService
 
     public function sendAppointmentSms(Appointment $appointment): bool
     {
-        $patient = $appointment->patient;
+        $patient     = $appointment->patient;
         $scheduledAt = $appointment->scheduled_at;
 
         $message = "Hörmətli {$patient->name}, "
@@ -72,7 +71,7 @@ class SmsService
 
     public function sendReminderSms(Appointment $appointment): bool
     {
-        $patient = $appointment->patient;
+        $patient     = $appointment->patient;
         $scheduledAt = $appointment->scheduled_at;
 
         $message = "Xatırlatma: {$patient->name}, "
@@ -89,50 +88,149 @@ class SmsService
         );
     }
 
-    private function sendViaLog(string $phone, string $message): bool
-    {
-        Log::channel('single')->info('[SMS LOG DRIVER]', [
-            'phone' => $phone,
-            'message' => $message,
-            'sent_at' => now()->toDateTimeString(),
-        ]);
+    // -------------------------------------------------------------------------
+    // Drivers
+    // -------------------------------------------------------------------------
 
-        return true;
-    }
-
-    private function sendViaHttp(string $phone, string $message): bool
+    /**
+     * Send via Posta Güvercini SMS API (v1.0.4).
+     *
+     * @return array{success: bool, receiver_id: string|null, response_body: array|null}
+     */
+    private function sendViaPostaGuvercini(string $phone, string $message): array
     {
+        $apiUrl     = rtrim(config('services.sms.api_url'), '/');
+        $publicKey  = config('services.sms.public_key');
+        $privateKey = config('services.sms.private_key');
+        $originator = config('services.sms.originator');
+
+        $phone = $this->normalizePhone($phone);
+
         try {
-            $response = Http::post(config('services.sms.url'), [
-                'username' => config('services.sms.username'),
-                'password' => config('services.sms.password'),
-                'phone' => $phone,
-                'message' => $message,
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $privateKey,
+                'Content-Type'  => 'application/json',
+            ])->post("{$apiUrl}/gateway/api/sms/v1/message/send?publicKey={$publicKey}", [
+                'Text'    => $message,
+                'Purpose' => 'INF',
+                'Options' => [
+                    'Originator' => $originator,
+                    'Encoding'   => 'LATIN',
+                ],
+                'Receivers' => [
+                    ['Receiver' => $phone],
+                ],
             ]);
 
-            return $response->successful();
+            $body = $response->json();
+
+            if ((int) ($body['Status'] ?? 0) === 200) {
+                $accepted   = $body['Result']['ReceiversAccepted'] ?? [];
+                $receiverId = $accepted[0]['id'] ?? null;
+
+                if (!empty($accepted)) {
+                    return ['success' => true, 'receiver_id' => (string) $receiverId, 'response_body' => $body];
+                }
+
+                $rejected = $body['Result']['ReceiversRejected'][0] ?? [];
+                Log::warning('Posta Güvercini receiver rejected', [
+                    'phone'         => $phone,
+                    'error_code'    => $rejected['ErrorCode'] ?? null,
+                    'error_message' => $rejected['ErrorMessage'] ?? null,
+                ]);
+            } else {
+                Log::error('Posta Güvercini API error', [
+                    'status'      => $body['Status'] ?? null,
+                    'description' => $body['Description'] ?? null,
+                ]);
+            }
+
+            return ['success' => false, 'receiver_id' => null, 'response_body' => $body];
         } catch (\Exception $e) {
-            Log::error('SMS HTTP send failed: ' . $e->getMessage());
-            return false;
+            Log::error('Posta Güvercini SMS exception: ' . $e->getMessage());
         }
+
+        return ['success' => false, 'receiver_id' => null, 'response_body' => null];
+    }
+
+    /**
+     * Log-only driver (development / testing).
+     *
+     * @return array{success: bool, receiver_id: null, response_body: array}
+     */
+    private function sendViaLog(string $phone, string $message): array
+    {
+        $body = [
+            'driver'  => 'log',
+            'phone'   => $phone,
+            'message' => $message,
+            'sent_at' => now()->toDateTimeString(),
+        ];
+
+        Log::channel('single')->info('[SMS LOG DRIVER]', $body);
+
+        return ['success' => true, 'receiver_id' => null, 'response_body' => $body];
+    }
+
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+
+    /**
+     * Normalize an Azerbaijani phone number to international MSISDN format.
+     * Examples:
+     *   055 123 45 67  →  994551234567
+     *   +994551234567  →  994551234567
+     *   994551234567   →  994551234567
+     */
+    private function normalizePhone(string $phone): string
+    {
+        // Strip everything except digits
+        $phone = preg_replace('/\D/', '', $phone);
+
+        // +994... → 994...  (already stripped + above)
+        // 0... → 994...
+        if (str_starts_with($phone, '0')) {
+            $phone = '994' . substr($phone, 1);
+        }
+
+        // Bare 9-digit number (e.g. 551234567) → 994...
+        if (strlen($phone) === 9) {
+            $phone = '994' . $phone;
+        }
+
+        return $phone;
     }
 
     private function logSms(
-        string $phone,
-        string $message,
-        string $type,
-        string $status,
-        ?int $doctorId,
-        ?int $appointmentId
+        string  $phone,
+        string  $message,
+        string  $type,
+        string  $status,
+        ?int    $doctorId,
+        ?int    $appointmentId,
+        ?string $receiverId,
+        ?array  $responseBody = null
     ): void {
         SmsLog::create([
             'appointment_id' => $appointmentId,
-            'doctor_id' => $doctorId,
-            'phone' => $phone,
-            'message' => $message,
-            'type' => $type,
-            'status' => $status,
-            'sent_at' => $status === 'sent' ? now() : null,
+            'doctor_id'      => $doctorId,
+            'phone'          => $phone,
+            'message'        => $message,
+            'type'           => $type,
+            'status'         => $status,
+            'sent_at'        => $status === 'sent' ? now() : null,
+            'receiver_id'    => $receiverId,
+            'response_body'  => $responseBody,
+        ]);
+
+        Log::channel('sms')->info('SMS ' . strtoupper($status), [
+            'phone'         => $phone,
+            'type'          => $type,
+            'doctor_id'     => $doctorId,
+            'appointment_id'=> $appointmentId,
+            'receiver_id'   => $receiverId,
+            'response_body' => $responseBody,
         ]);
     }
 }

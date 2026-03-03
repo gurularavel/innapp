@@ -14,10 +14,13 @@ class SmsLog extends Model
         'type',
         'status',
         'sent_at',
+        'receiver_id',
+        'response_body',
     ];
 
     protected $casts = [
-        'sent_at' => 'datetime',
+        'sent_at'       => 'datetime',
+        'response_body' => 'array',
     ];
 
     public function appointment()

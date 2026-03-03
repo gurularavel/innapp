@@ -36,10 +36,11 @@ return [
     ],
 
     'sms' => [
-        'driver' => env('SMS_DRIVER', 'log'),
-        'url' => env('SMS_HTTP_URL'),
-        'username' => env('SMS_HTTP_USERNAME'),
-        'password' => env('SMS_HTTP_PASSWORD'),
+        'driver'     => env('SMS_DRIVER', 'log'),
+        'api_url'    => env('SMS_API_URL'),
+        'public_key' => env('SMS_PUBLIC_KEY'),
+        'private_key'=> env('SMS_PRIVATE_KEY'),
+        'originator' => env('SMS_ORIGINATOR'),
     ],
 
 ];
