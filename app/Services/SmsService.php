@@ -94,9 +94,14 @@ class SmsService
         $service     = $appointment->treatmentType?->name ?? '';
         $muessise    = $user?->muessise_adi ?: Setting::get('default_muessise_adi', '');
 
+        $xerite = '';
+        if ($user?->muessise_xerite_code && $user?->muessise_xerite) {
+            $xerite = rtrim(config('app.url'), '/') . '/map/' . $user->muessise_xerite_code;
+        }
+
         return str_replace(
-            ['{ad_soyad}', '{xidmet}', '{tarix}', '{saat}', '{muessise}'],
-            [$patient->name, $service, $scheduledAt->format('d.m.Y'), $scheduledAt->format('H:i'), $muessise],
+            ['{ad_soyad}', '{xidmet}', '{tarix}', '{saat}', '{muessise}', '{xerite}'],
+            [$patient->name, $service, $scheduledAt->format('d.m.Y'), $scheduledAt->format('H:i'), $muessise, $xerite],
             $template
         );
     }

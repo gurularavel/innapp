@@ -46,7 +46,7 @@
                         @enderror
                     </div>
 
-                    <div class="mb-4">
+                    <div class="mb-3">
                         <label for="muessise_adi" class="form-label fw-medium">Müəssisə adı</label>
                         <input type="text" class="form-control @error('muessise_adi') is-invalid @enderror"
                                id="muessise_adi" name="muessise_adi"
@@ -57,6 +57,41 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                         <div class="form-text">SMS şablonundakı <code>{muessise}</code> bu adla əvəzlənəcək.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="muessise_unvani" class="form-label fw-medium">Müəssisə ünvanı</label>
+                        <input type="text" class="form-control @error('muessise_unvani') is-invalid @enderror"
+                               id="muessise_unvani" name="muessise_unvani"
+                               value="{{ old('muessise_unvani', auth()->user()->muessise_unvani) }}"
+                               maxlength="255"
+                               placeholder="Bakı, Nərimanov r., Tbilisi pr. 123">
+                        @error('muessise_unvani')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="muessise_xerite" class="form-label fw-medium">
+                            <i class="bi bi-geo-alt me-1 text-danger"></i>Google Maps linki
+                        </label>
+                        <input type="url" class="form-control @error('muessise_xerite') is-invalid @enderror"
+                               id="muessise_xerite" name="muessise_xerite"
+                               value="{{ old('muessise_xerite', auth()->user()->muessise_xerite) }}"
+                               placeholder="https://maps.google.com/...">
+                        @error('muessise_xerite')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        @if(auth()->user()->muessise_xerite_code && auth()->user()->muessise_xerite)
+                            <div class="form-text">
+                                <i class="bi bi-link-45deg text-success"></i>
+                                Qısa link:
+                                <code>{{ rtrim(config('app.url'), '/') }}/map/{{ auth()->user()->muessise_xerite_code }}</code>
+                                — SMS şablonundakı <code>{xerite}</code> ilə istifadə edin.
+                            </div>
+                        @else
+                            <div class="form-text">Link saxlandıqdan sonra <code>{xerite}</code> üçün qısa URL yaradılacaq.</div>
+                        @endif
                     </div>
 
                     <div class="mb-3 p-3 bg-light rounded">
@@ -151,7 +186,7 @@
                     <i class="bi bi-calendar-check me-1 text-primary"></i>Randevu Təsdiq SMS
                 </label>
                 <div class="mb-2 d-flex flex-wrap gap-1">
-                    @foreach(['{ad_soyad}', '{xidmet}', '{tarix}', '{saat}', '{muessise}'] as $ph)
+                    @foreach(['{ad_soyad}', '{xidmet}', '{tarix}', '{saat}', '{muessise}', '{xerite}'] as $ph)
                         <button type="button" class="btn btn-outline-secondary btn-sm placeholder-btn"
                                 data-target="sms_appointment_template" data-placeholder="{{ $ph }}">{{ $ph }}</button>
                     @endforeach
@@ -215,6 +250,7 @@
                         <tr><td><code>{tarix}</code></td><td>Randevu tarixi</td><td class="text-muted">26.03.2026</td></tr>
                         <tr><td><code>{saat}</code></td><td>Randevu saatı</td><td class="text-muted">14:00</td></tr>
                         <tr><td><code>{muessise}</code></td><td>Müəssisə adı (profildən)</td><td class="text-muted">DentCare</td></tr>
+                        <tr><td><code>{xerite}</code></td><td>Müəssisənin xəritə linki (qısa URL)</td><td class="text-muted">{{ rtrim(config('app.url'), '/') }}/map/abc1234</td></tr>
                     </tbody>
                 </table>
             </div>

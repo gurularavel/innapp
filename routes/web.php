@@ -4,6 +4,15 @@ use App\Http\Controllers\Admin;
 use App\Http\Controllers\Doctor;
 use Illuminate\Support\Facades\Route;
 
+// Short map URL redirect (public, no auth)
+Route::get('/map/{code}', function (string $code) {
+    $user = \App\Models\User::where('muessise_xerite_code', $code)->first();
+    if ($user && $user->muessise_xerite) {
+        return redirect($user->muessise_xerite);
+    }
+    abort(404);
+})->name('map.redirect');
+
 // Root redirect
 Route::get('/', function () {
     if (auth()->check()) {

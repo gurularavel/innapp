@@ -8,6 +8,7 @@ use App\Models\DoctorWorkingHours;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 
 class ProfileController extends Controller
@@ -36,11 +37,24 @@ class ProfileController extends Controller
         $user = Auth::user();
 
         $validated = $request->validate([
-            'name'         => 'required|string|max:255',
-            'surname'      => 'required|string|max:255',
-            'phone'        => 'nullable|string|max:20',
-            'muessise_adi' => 'nullable|string|max:100',
+            'name'             => 'required|string|max:255',
+            'surname'          => 'required|string|max:255',
+            'phone'            => 'nullable|string|max:20',
+            'muessise_adi'     => 'nullable|string|max:100',
+            'muessise_unvani'  => 'nullable|string|max:255',
+            'muessise_xerite'  => 'nullable|url|max:2000',
         ]);
+
+        // Generate short code when a map URL is provided
+        if (!empty($validated['muessise_xerite']) && empty($user->muessise_xerite_code)) {
+            $validated['muessise_xerite_code'] = $this->generateUniqueCode();
+        }
+
+        // Clear the code if map URL is removed
+        if (empty($validated['muessise_xerite'])) {
+            $validated['muessise_xerite_code'] = null;
+            $validated['muessise_xerite'] = null;
+        }
 
         $user->update($validated);
 
@@ -98,6 +112,15 @@ class ProfileController extends Controller
         }
 
         return view('doctor.profile.edit', compact('user', 'workingHours', 'existingBreaks'));
+    }
+
+    private function generateUniqueCode(): string
+    {
+        do {
+            $code = Str::lower(Str::random(7));
+        } while (\App\Models\User::where('muessise_xerite_code', $code)->exists());
+
+        return $code;
     }
 
     public function saveWorkingHours(Request $request)
