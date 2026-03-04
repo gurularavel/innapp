@@ -113,6 +113,24 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/imask@7.6.1/dist/imask.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('input[name="phone"]').forEach(function (el) {
+        // Normalize existing value to 994XXXXXXXXX before applying mask
+        var digits = el.value.replace(/\D/g, '');
+        if (digits.startsWith('0') && digits.length === 10) digits = '994' + digits.slice(1);
+        else if (digits.length === 9) digits = '994' + digits;
+        el.value = digits ? '+' + digits : '';
+
+        IMask(el, {
+            mask: '+{994} 00 000 00 00',
+            lazy: false,
+            placeholderChar: '_'
+        });
+    });
+});
+</script>
 @stack('scripts')
 </body>
 </html>

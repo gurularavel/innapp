@@ -18,6 +18,7 @@ class User extends Authenticatable
         'sms_appointment_template',
         'sms_reminder_template',
         'muessise_adi',
+        'sms_copy_to_self',
         'password',
         'role',
         'specialty_id',
@@ -35,6 +36,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'sms_copy_to_self' => 'boolean',
         ];
     }
 

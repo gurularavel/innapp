@@ -40,7 +40,7 @@
                         <label for="phone" class="form-label fw-medium">Telefon</label>
                         <input type="text" class="form-control @error('phone') is-invalid @enderror"
                                id="phone" name="phone" value="{{ old('phone', auth()->user()->phone) }}"
-                               placeholder="+994XX XXX XX XX">
+                               >
                         @error('phone')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -219,6 +219,36 @@
                 </table>
             </div>
 
+            {{-- SMS Kopyası --}}
+            <div class="mb-4 p-3 border rounded-3 bg-light">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="form-check form-check-inline mb-0">
+                        <input class="form-check-input" type="checkbox"
+                               id="sms_copy_to_self"
+                               name="sms_copy_to_self"
+                               value="1"
+                               {{ auth()->user()->sms_copy_to_self ? 'checked' : '' }}
+                               style="width:1.2em;height:1.2em;cursor:pointer;">
+                        <label class="form-check-label fw-medium ms-1" for="sms_copy_to_self" style="cursor:pointer;">
+                            Xatırlatma SMS-nin kopyasını mənə də göndər
+                        </label>
+                    </div>
+                    <button type="button"
+                            class="btn btn-sm btn-outline-secondary rounded-circle p-0 d-flex align-items-center justify-content-center"
+                            style="width:1.6rem;height:1.6rem;flex-shrink:0;"
+                            data-bs-toggle="popover"
+                            data-bs-placement="top"
+                            data-bs-trigger="hover focus"
+                            data-bs-content="Bu seçimi aktivləşdirdikdə, xəstəyə göndərilən hər xatırlatma SMS-i sizin telefon nömrənizə də göndəriləcək. Bu, paketinizdəki SMS limitinizə əlavə olaraq sayılacaq.">
+                        <i class="bi bi-info-circle text-secondary" style="font-size:.9rem;"></i>
+                    </button>
+                </div>
+                <div class="text-muted mt-1" style="font-size:.78rem;padding-left:1.85rem;">
+                    <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>
+                    Bu seçim aktivləşdirilərsə, göndərilən hər xatırlatma SMS-i paketinizdəki SMS limitinizə də təsir edəcək.
+                </div>
+            </div>
+
             <button type="submit" class="btn btn-info text-white">
                 <i class="bi bi-check-lg me-1"></i>SMS Şablonlarını Yadda Saxla
             </button>
@@ -345,6 +375,11 @@
 
 @push('scripts')
 <script>
+// Init Bootstrap popovers
+document.querySelectorAll('[data-bs-toggle="popover"]').forEach(function (el) {
+    new bootstrap.Popover(el);
+});
+
 // SMS template char counters + placeholder insert
 (function () {
     function updateCount(textarea, countEl) {

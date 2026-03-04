@@ -68,11 +68,13 @@ class ProfileController extends Controller
         $request->validate([
             'sms_appointment_template' => ['nullable', 'string', 'max:160'],
             'sms_reminder_template'    => ['nullable', 'string', 'max:160'],
+            'sms_copy_to_self'         => ['boolean'],
         ]);
 
         Auth::user()->update([
             'sms_appointment_template' => $request->sms_appointment_template ?: null,
             'sms_reminder_template'    => $request->sms_reminder_template ?: null,
+            'sms_copy_to_self'         => $request->boolean('sms_copy_to_self'),
         ]);
 
         return redirect()->route('panel.profile.edit')

@@ -39,7 +39,7 @@
                         <div class="col-md-6">
                             <label for="phone" class="form-label fw-medium">Telefon</label>
                             <input type="text" class="form-control @error('phone') is-invalid @enderror"
-                                   id="phone" name="phone" value="{{ old('phone') }}" placeholder="+994XX XXX XX XX">
+                                   id="phone" name="phone" value="{{ old('phone') }}" >
                             @error('phone')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
