@@ -81,7 +81,7 @@
                 <h6 class="mb-0 fw-semibold">
                     <i class="bi bi-calendar-day me-2 text-info"></i>Bu Günkü Randevular
                 </h6>
-                <a href="{{ route('doctor.appointments.index') }}?date={{ now()->format('Y-m-d') }}"
+                <a href="{{ route('panel.appointments.index') }}?date={{ now()->format('Y-m-d') }}"
                    class="btn btn-sm btn-outline-info">Hamısı</a>
             </div>
             <div class="card-body p-0">
@@ -99,7 +99,7 @@
                             @forelse($todayAppointments as $apt)
                             <tr>
                                 <td>
-                                    <a href="{{ route('doctor.patients.show', $apt->patient) }}" class="text-decoration-none fw-medium">
+                                    <a href="{{ route('panel.patients.show', $apt->patient) }}" class="text-decoration-none fw-medium">
                                         {{ $apt->patient->full_name }}
                                     </a>
                                 </td>
@@ -179,11 +179,11 @@
                 <h6 class="mb-0 fw-semibold">
                     <i class="bi bi-calendar-week me-2 text-primary"></i>Yaxınlaşan Randevular
                 </h6>
-                <a href="{{ route('doctor.appointments.index') }}" class="btn btn-sm btn-outline-primary">Hamısı</a>
+                <a href="{{ route('panel.appointments.index') }}" class="btn btn-sm btn-outline-primary">Hamısı</a>
             </div>
             <div class="card-body p-0">
                 @forelse($upcomingAppointments as $apt)
-                <a href="{{ route('doctor.appointments.show', $apt) }}"
+                <a href="{{ route('panel.appointments.show', $apt) }}"
                    class="d-block px-3 py-2 border-bottom text-decoration-none text-dark hover-bg">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>

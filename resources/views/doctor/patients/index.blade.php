@@ -7,7 +7,7 @@
 {{-- Search + Create --}}
 <div class="card border-0 shadow-sm mb-4">
     <div class="card-body">
-        <form method="GET" action="{{ route('doctor.patients.index') }}" class="row g-2 align-items-end">
+        <form method="GET" action="{{ route('panel.patients.index') }}" class="row g-2 align-items-end">
             <div class="col-md-8">
                 <label for="search" class="form-label fw-medium small">Axtarış</label>
                 <div class="input-group">
@@ -19,9 +19,9 @@
             <div class="col-md-4 d-flex gap-2">
                 <button type="submit" class="btn btn-primary">Axtar</button>
                 @if(request('search'))
-                    <a href="{{ route('doctor.patients.index') }}" class="btn btn-outline-secondary">Sıfırla</a>
+                    <a href="{{ route('panel.patients.index') }}" class="btn btn-outline-secondary">Sıfırla</a>
                 @endif
-                <a href="{{ route('doctor.patients.create') }}" class="btn btn-success ms-auto">
+                <a href="{{ route('panel.patients.create') }}" class="btn btn-success ms-auto">
                     <i class="bi bi-person-plus me-1"></i>Yeni Müştəri
                 </a>
             </div>
@@ -55,7 +55,7 @@
                     <tr>
                         <td class="text-muted small">{{ $patients->firstItem() + $loop->index }}</td>
                         <td>
-                            <a href="{{ route('doctor.patients.show', $patient) }}" class="text-decoration-none fw-medium">
+                            <a href="{{ route('panel.patients.show', $patient) }}" class="text-decoration-none fw-medium">
                                 {{ $patient->full_name }}
                             </a>
                         </td>
@@ -77,13 +77,13 @@
                         </td>
                         <td class="text-end">
                             <div class="d-flex justify-content-end gap-1">
-                                <a href="{{ route('doctor.patients.show', $patient) }}" class="btn btn-sm btn-outline-info" title="Bax">
+                                <a href="{{ route('panel.patients.show', $patient) }}" class="btn btn-sm btn-outline-info" title="Bax">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                                <a href="{{ route('doctor.patients.edit', $patient) }}" class="btn btn-sm btn-outline-primary" title="Düzəlt">
+                                <a href="{{ route('panel.patients.edit', $patient) }}" class="btn btn-sm btn-outline-primary" title="Düzəlt">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <form method="POST" action="{{ route('doctor.patients.destroy', $patient) }}" class="d-inline">
+                                <form method="POST" action="{{ route('panel.patients.destroy', $patient) }}" class="d-inline">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Silmək istədiyinizdən əminsiniz?')">

@@ -86,7 +86,7 @@ class SubscriptionController extends Controller
             ]);
         }
 
-        return redirect()->route('doctor.subscription.success')
+        return redirect()->route('panel.subscription.success')
             ->with('sub_package', $package->name)
             ->with('sub_period',  $isAnnual ? 'İllik' : 'Aylıq')
             ->with('sub_price',   $price)
@@ -97,7 +97,7 @@ class SubscriptionController extends Controller
     public function success()
     {
         if (!session()->has('sub_package')) {
-            return redirect()->route('doctor.subscription.index');
+            return redirect()->route('panel.subscription.index');
         }
 
         return view('doctor.subscription.success');

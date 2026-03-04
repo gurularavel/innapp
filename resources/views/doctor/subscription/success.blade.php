@@ -78,10 +78,10 @@
                     </div>
 
                     <div class="d-grid gap-2">
-                        <a href="{{ route('doctor.subscription.index') }}" class="btn btn-primary">
+                        <a href="{{ route('panel.subscription.index') }}" class="btn btn-primary">
                             <i class="bi bi-shield-check me-2"></i>Abunəliyimə Bax
                         </a>
-                        <a href="{{ route('doctor.dashboard') }}" class="btn btn-outline-secondary">
+                        <a href="{{ route('panel.dashboard') }}" class="btn btn-outline-secondary">
                             <i class="bi bi-speedometer2 me-2"></i>Dashboard-a Keç
                         </a>
                     </div>

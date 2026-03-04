@@ -200,11 +200,11 @@
 
             {{-- CTAs --}}
             <div class="d-grid gap-2">
-                <a href="{{ route('doctor.subscription.checkout', ['package' => $pkg->id, 'period' => 'monthly']) }}"
+                <a href="{{ route('panel.subscription.checkout', ['package' => $pkg->id, 'period' => 'monthly']) }}"
                    class="btn {{ $isCurrent ? 'btn-outline-primary' : 'btn-primary' }} btn-sm">
                     <i class="bi bi-calendar-month me-1"></i>Aylıq — {{ number_format($pkg->price, 2) }} ₼
                 </a>
-                <a href="{{ route('doctor.subscription.checkout', ['package' => $pkg->id, 'period' => 'annual']) }}"
+                <a href="{{ route('panel.subscription.checkout', ['package' => $pkg->id, 'period' => 'annual']) }}"
                    class="btn {{ $isCurrent ? 'btn-outline-success' : 'btn-success' }} btn-sm">
                     <i class="bi bi-calendar-year me-1"></i>İllik — {{ number_format($annualPrice, 2) }} ₼
                     <span class="badge bg-warning text-dark ms-1" style="font-size:.65rem">-15%</span>

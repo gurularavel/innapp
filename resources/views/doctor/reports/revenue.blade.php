@@ -83,7 +83,7 @@
                 <h6 class="mb-0 fw-semibold"><i class="bi bi-bar-chart-line me-2 text-primary"></i>Gəlir Dinamikası</h6>
                 <div class="d-flex align-items-center gap-2">
                     {{-- Year picker (shown only in monthly tab) --}}
-                    <form method="GET" action="{{ route('doctor.reports.revenue') }}" id="year-form" class="d-none">
+                    <form method="GET" action="{{ route('panel.reports.revenue') }}" id="year-form" class="d-none">
                         <select name="year" class="form-select form-select-sm" onchange="this.form.submit()" style="width:90px">
                             @foreach($availableYears as $yr)
                                 <option value="{{ $yr }}" {{ $yr == $monthlyYear ? 'selected' : '' }}>{{ $yr }}</option>

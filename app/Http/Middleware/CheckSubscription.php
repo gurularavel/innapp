@@ -19,7 +19,7 @@ class CheckSubscription
         $subscription = $user->activeSubscription;
 
         if (!$subscription) {
-            return redirect()->route('doctor.dashboard')
+            return redirect()->route('panel.dashboard')
                 ->with('warning', 'Aktiv abunəliyiniz yoxdur. Zəhmət olmasa Super Admin ilə əlaqə saxlayın.');
         }
 

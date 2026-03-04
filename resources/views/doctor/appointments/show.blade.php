@@ -7,10 +7,10 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div></div>
     <div class="d-flex gap-2">
-        <a href="{{ route('doctor.appointments.edit', $appointment) }}" class="btn btn-outline-primary btn-sm">
+        <a href="{{ route('panel.appointments.edit', $appointment) }}" class="btn btn-outline-primary btn-sm">
             <i class="bi bi-pencil me-1"></i>Düzəlt
         </a>
-        <a href="{{ route('doctor.appointments.index') }}" class="btn btn-outline-secondary btn-sm">
+        <a href="{{ route('panel.appointments.index') }}" class="btn btn-outline-secondary btn-sm">
             <i class="bi bi-arrow-left me-1"></i>Geri
         </a>
     </div>
@@ -74,7 +74,7 @@
                     <div class="d-flex flex-wrap gap-2">
                         @foreach(['pending' => 'warning', 'confirmed' => 'info', 'completed' => 'success', 'cancelled' => 'danger'] as $status => $color)
                             @if($appointment->status !== $status)
-                                <form method="POST" action="{{ route('doctor.appointments.update', $appointment) }}">
+                                <form method="POST" action="{{ route('panel.appointments.update', $appointment) }}">
                                     @csrf
                                     @method('PATCH')
                                     <input type="hidden" name="status" value="{{ $status }}">
@@ -104,7 +104,7 @@
                     $genderLabels = ['male' => 'Kişi', 'female' => 'Qadın', 'other' => 'Digər'];
                 @endphp
                 <div class="mb-2">
-                    <a href="{{ route('doctor.patients.show', $appointment->patient) }}" class="fw-semibold text-decoration-none fs-5">
+                    <a href="{{ route('panel.patients.show', $appointment->patient) }}" class="fw-semibold text-decoration-none fs-5">
                         {{ $appointment->patient->full_name }}
                     </a>
                 </div>

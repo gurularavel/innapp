@@ -7,7 +7,7 @@
 {{-- Filters --}}
 <div class="card border-0 shadow-sm mb-4">
     <div class="card-body">
-        <form method="GET" action="{{ route('doctor.appointments.index') }}" class="row g-3 align-items-end">
+        <form method="GET" action="{{ route('panel.appointments.index') }}" class="row g-3 align-items-end">
             <div class="col-md-3">
                 <label for="status" class="form-label fw-medium small">Status</label>
                 <select class="form-select form-select-sm" id="status" name="status">
@@ -38,10 +38,10 @@
                 <button type="submit" class="btn btn-primary btn-sm">
                     <i class="bi bi-search me-1"></i>Filtrele
                 </button>
-                <a href="{{ route('doctor.appointments.index') }}" class="btn btn-outline-secondary btn-sm" title="Sıfırla">
+                <a href="{{ route('panel.appointments.index') }}" class="btn btn-outline-secondary btn-sm" title="Sıfırla">
                     <i class="bi bi-x-lg"></i>
                 </a>
-                <a href="{{ route('doctor.appointments.create') }}" class="btn btn-success btn-sm ms-auto">
+                <a href="{{ route('panel.appointments.create') }}" class="btn btn-success btn-sm ms-auto">
                     <i class="bi bi-plus-lg me-1"></i>Yeni
                 </a>
             </div>
@@ -74,7 +74,7 @@
                     <tr>
                         <td class="text-muted small">{{ $appointments->firstItem() + $loop->index }}</td>
                         <td>
-                            <a href="{{ route('doctor.patients.show', $apt->patient) }}" class="text-decoration-none fw-medium">
+                            <a href="{{ route('panel.patients.show', $apt->patient) }}" class="text-decoration-none fw-medium">
                                 {{ $apt->patient->full_name }}
                             </a>
                         </td>
@@ -105,13 +105,13 @@
                         </td>
                         <td class="text-end">
                             <div class="d-flex justify-content-end gap-1">
-                                <a href="{{ route('doctor.appointments.show', $apt) }}" class="btn btn-sm btn-outline-info" title="Bax">
+                                <a href="{{ route('panel.appointments.show', $apt) }}" class="btn btn-sm btn-outline-info" title="Bax">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                                <a href="{{ route('doctor.appointments.edit', $apt) }}" class="btn btn-sm btn-outline-primary" title="Düzəlt">
+                                <a href="{{ route('panel.appointments.edit', $apt) }}" class="btn btn-sm btn-outline-primary" title="Düzəlt">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <form method="POST" action="{{ route('doctor.appointments.destroy', $apt) }}" class="d-inline">
+                                <form method="POST" action="{{ route('panel.appointments.destroy', $apt) }}" class="d-inline">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Silmək istədiyinizdən əminsiniz?')">

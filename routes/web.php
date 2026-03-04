@@ -9,7 +9,7 @@ Route::get('/', function () {
     if (auth()->check()) {
         return auth()->user()->isAdmin()
             ? redirect()->route('admin.dashboard')
-            : redirect()->route('doctor.dashboard');
+            : redirect()->route('panel.dashboard');
     }
     return redirect()->route('login');
 });
@@ -34,10 +34,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin'])
     Route::delete('subscriptions/{subscription}', [Admin\SubscriptionController::class, 'destroy'])->name('subscriptions.destroy');
 
     Route::get('sms-logs', [Admin\SmsLogController::class, 'index'])->name('sms-logs.index');
+
+    Route::get('settings/sms-templates', [Admin\SettingController::class, 'smsTemplates'])->name('settings.sms-templates');
+    Route::put('settings/sms-templates', [Admin\SettingController::class, 'saveSmsTemplates'])->name('settings.sms-templates.save');
 });
 
 // Doctor routes
-Route::prefix('doctor')->name('doctor.')->middleware(['auth', 'role:doctor'])->group(function () {
+Route::prefix('panel')->name('panel.')->middleware(['auth', 'role:doctor'])->group(function () {
     Route::get('/dashboard', [Doctor\DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('patients/search', [Doctor\PatientController::class, 'search'])->name('patients.search');
@@ -64,4 +67,5 @@ Route::prefix('doctor')->name('doctor.')->middleware(['auth', 'role:doctor'])->g
     Route::put('/profile/password', [Doctor\ProfileController::class, 'updatePassword'])->name('profile.password');
     Route::get('profile/working-hours', [Doctor\ProfileController::class, 'workingHours'])->name('profile.working-hours');
     Route::put('profile/working-hours', [Doctor\ProfileController::class, 'saveWorkingHours'])->name('profile.working-hours.save');
+    Route::put('profile/sms-templates', [Doctor\ProfileController::class, 'saveSmsTemplates'])->name('profile.sms-templates.save');
 });

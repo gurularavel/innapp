@@ -33,7 +33,7 @@ class TreatmentTypeController extends Controller
 
         TreatmentType::create($validated);
 
-        return redirect()->route('doctor.treatment-types.index')
+        return redirect()->route('panel.treatment-types.index')
             ->with('success', 'Müalicə növü yaradıldı.');
     }
 
@@ -56,7 +56,7 @@ class TreatmentTypeController extends Controller
 
         $treatmentType->update($validated);
 
-        return redirect()->route('doctor.treatment-types.index')
+        return redirect()->route('panel.treatment-types.index')
             ->with('success', 'Müalicə növü yeniləndi.');
     }
 
@@ -65,7 +65,7 @@ class TreatmentTypeController extends Controller
         $this->authorize($treatmentType);
         $treatmentType->delete();
 
-        return redirect()->route('doctor.treatment-types.index')
+        return redirect()->route('panel.treatment-types.index')
             ->with('success', 'Müalicə növü silindi.');
     }
 

@@ -19,7 +19,7 @@
 <div class="row justify-content-center">
     <div class="col-lg-8 col-xl-7">
 
-        <a href="{{ route('doctor.subscription.index') }}"
+        <a href="{{ route('panel.subscription.index') }}"
            class="text-decoration-none text-muted small d-inline-flex align-items-center mb-3">
             <i class="bi bi-arrow-left me-1"></i>Abunəliyə qayıt
         </a>
@@ -36,7 +36,7 @@
                     </div>
                     <div class="card-body d-flex flex-column">
 
-                        <form method="POST" action="{{ route('doctor.subscription.pay', $package) }}" id="checkout-form">
+                        <form method="POST" action="{{ route('panel.subscription.pay', $package) }}" id="checkout-form">
                             @csrf
                             <input type="hidden" name="period" id="period-input"
                                    value="{{ request('period', 'monthly') }}">

@@ -48,7 +48,7 @@ class CalendarController extends Controller
                     'patient_name' => $appointment->patient->full_name,
                     'treatment_type' => $appointment->treatmentType?->name ?? 'Xidmət növü yoxdur',
                     'notes' => $appointment->notes,
-                    'appointment_url' => route('doctor.appointments.show', $appointment->id),
+                    'appointment_url' => route('panel.appointments.show', $appointment->id),
                 ],
             ];
         });

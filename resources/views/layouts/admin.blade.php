@@ -60,6 +60,11 @@
                     <i class="bi bi-chat-dots me-2"></i>SMS Loqlar
                 </a>
             </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.settings.sms-templates') }}" class="nav-link {{ request()->routeIs('admin.settings*') ? 'active' : '' }}">
+                    <i class="bi bi-pencil-square me-2"></i>Defolt SMS Şablonları
+                </a>
+            </li>
         </ul>
         <div class="p-3 border-top border-secondary">
             <div class="text-secondary small mb-2">{{ auth()->user()->name }} {{ auth()->user()->surname }}</div>

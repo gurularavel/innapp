@@ -9,12 +9,12 @@
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
                 <h6 class="mb-0 fw-semibold">{{ $treatmentType->name }} — Düzəliş</h6>
-                <a href="{{ route('doctor.treatment-types.index') }}" class="btn btn-sm btn-outline-secondary">
+                <a href="{{ route('panel.treatment-types.index') }}" class="btn btn-sm btn-outline-secondary">
                     <i class="bi bi-arrow-left me-1"></i>Geri
                 </a>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ route('doctor.treatment-types.update', $treatmentType) }}">
+                <form method="POST" action="{{ route('panel.treatment-types.update', $treatmentType) }}">
                     @csrf
                     @method('PATCH')
 
@@ -68,7 +68,7 @@
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-check-lg me-1"></i>Yadda Saxla
                         </button>
-                        <a href="{{ route('doctor.treatment-types.index') }}" class="btn btn-outline-secondary">Ləğv et</a>
+                        <a href="{{ route('panel.treatment-types.index') }}" class="btn btn-outline-secondary">Ləğv et</a>
                     </div>
                 </form>
             </div>

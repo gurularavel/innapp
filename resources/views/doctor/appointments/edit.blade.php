@@ -9,12 +9,12 @@
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
                 <h6 class="mb-0 fw-semibold">Randevunu Düzəlt</h6>
-                <a href="{{ route('doctor.appointments.show', $appointment) }}" class="btn btn-sm btn-outline-secondary">
+                <a href="{{ route('panel.appointments.show', $appointment) }}" class="btn btn-sm btn-outline-secondary">
                     <i class="bi bi-arrow-left me-1"></i>Geri
                 </a>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ route('doctor.appointments.update', $appointment) }}">
+                <form method="POST" action="{{ route('panel.appointments.update', $appointment) }}">
                     @csrf
                     @method('PATCH')
 
@@ -117,7 +117,7 @@
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-check-lg me-1"></i>Yadda Saxla
                         </button>
-                        <a href="{{ route('doctor.appointments.show', $appointment) }}" class="btn btn-outline-secondary">Ləğv et</a>
+                        <a href="{{ route('panel.appointments.show', $appointment) }}" class="btn btn-outline-secondary">Ləğv et</a>
                     </div>
                 </form>
             </div>
@@ -134,7 +134,7 @@
     const hiddenInput  = document.getElementById('patient_id');
     const dropdown     = document.getElementById('patient_dropdown');
     const infoBox      = document.getElementById('patient_info');
-    const searchUrl    = '{{ route('doctor.patients.search') }}';
+    const searchUrl    = '{{ route('panel.patients.search') }}';
     let acTimer = null;
 
     searchInput.addEventListener('keyup', function () {
@@ -198,7 +198,7 @@
 })();
 
 // ── Slot Picker ───────────────────────────────────────────────────────────────
-const slotsUrl           = '{{ route('doctor.appointments.available-slots') }}';
+const slotsUrl           = '{{ route('panel.appointments.available-slots') }}';
 const excludeId          = '{{ $appointment->id }}';
 const scheduledAtInput   = document.getElementById('scheduled_at');
 const scheduledDateInput = document.getElementById('scheduled_date');

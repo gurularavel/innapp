@@ -36,14 +36,15 @@ class ProfileController extends Controller
         $user = Auth::user();
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'surname' => 'required|string|max:255',
-            'phone' => 'nullable|string|max:20',
+            'name'         => 'required|string|max:255',
+            'surname'      => 'required|string|max:255',
+            'phone'        => 'nullable|string|max:20',
+            'muessise_adi' => 'nullable|string|max:100',
         ]);
 
         $user->update($validated);
 
-        return redirect()->route('doctor.profile.edit')
+        return redirect()->route('panel.profile.edit')
             ->with('success', 'Profil yeniləndi.');
     }
 
@@ -58,8 +59,24 @@ class ProfileController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        return redirect()->route('doctor.profile.edit')
+        return redirect()->route('panel.profile.edit')
             ->with('success', 'Şifrə uğurla dəyişdirildi.');
+    }
+
+    public function saveSmsTemplates(Request $request)
+    {
+        $request->validate([
+            'sms_appointment_template' => ['nullable', 'string', 'max:160'],
+            'sms_reminder_template'    => ['nullable', 'string', 'max:160'],
+        ]);
+
+        Auth::user()->update([
+            'sms_appointment_template' => $request->sms_appointment_template ?: null,
+            'sms_reminder_template'    => $request->sms_reminder_template ?: null,
+        ]);
+
+        return redirect()->route('panel.profile.edit')
+            ->with('success', 'SMS şablonları yadda saxlandı.');
     }
 
     public function workingHours()
@@ -121,7 +138,7 @@ class ProfileController extends Controller
             }
         }
 
-        return redirect()->route('doctor.profile.working-hours')
+        return redirect()->route('panel.profile.working-hours')
             ->with('success', 'İş saatları yadda saxlandı.');
     }
 }

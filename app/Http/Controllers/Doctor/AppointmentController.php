@@ -85,7 +85,7 @@ class AppointmentController extends Controller
             $this->smsService->sendAppointmentSms($appointment);
         }
 
-        return redirect()->route('doctor.appointments.index')
+        return redirect()->route('panel.appointments.index')
             ->with('success', 'Randevu uğurla yaradıldı.');
     }
 
@@ -134,7 +134,7 @@ class AppointmentController extends Controller
 
         $appointment->update($validated);
 
-        return redirect()->route('doctor.appointments.index')
+        return redirect()->route('panel.appointments.index')
             ->with('success', 'Randevu yeniləndi.');
     }
 
@@ -143,7 +143,7 @@ class AppointmentController extends Controller
         $this->authorizeAppointment($appointment);
         $appointment->delete();
 
-        return redirect()->route('doctor.appointments.index')
+        return redirect()->route('panel.appointments.index')
             ->with('success', 'Randevu silindi.');
     }
 

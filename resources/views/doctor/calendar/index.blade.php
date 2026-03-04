@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function () {
         },
         businessHours: businessHours,
         events: function (fetchInfo, successCallback, failureCallback) {
-            fetch('{{ route('doctor.calendar.events') }}?start=' + fetchInfo.startStr + '&end=' + fetchInfo.endStr)
+            fetch('{{ route('panel.calendar.events') }}?start=' + fetchInfo.startStr + '&end=' + fetchInfo.endStr)
                 .then(r => r.json())
                 .then(data => {
                     // Update businessHours dynamically

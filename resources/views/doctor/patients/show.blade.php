@@ -7,14 +7,14 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div></div>
     <div class="d-flex gap-2">
-        <a href="{{ route('doctor.appointments.create') }}?patient_id={{ $patient->id }}"
+        <a href="{{ route('panel.appointments.create') }}?patient_id={{ $patient->id }}"
            class="btn btn-success btn-sm">
             <i class="bi bi-calendar-plus me-1"></i>Randevu Əlavə Et
         </a>
-        <a href="{{ route('doctor.patients.edit', $patient) }}" class="btn btn-outline-primary btn-sm">
+        <a href="{{ route('panel.patients.edit', $patient) }}" class="btn btn-outline-primary btn-sm">
             <i class="bi bi-pencil me-1"></i>Düzəlt
         </a>
-        <a href="{{ route('doctor.patients.index') }}" class="btn btn-outline-secondary btn-sm">
+        <a href="{{ route('panel.patients.index') }}" class="btn btn-outline-secondary btn-sm">
             <i class="bi bi-arrow-left me-1"></i>Geri
         </a>
     </div>
@@ -116,7 +116,7 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <a href="{{ route('doctor.appointments.show', $apt) }}" class="btn btn-sm btn-outline-info">
+                                    <a href="{{ route('panel.appointments.show', $apt) }}" class="btn btn-sm btn-outline-info">
                                         <i class="bi bi-eye"></i>
                                     </a>
                                 </td>

@@ -14,7 +14,7 @@
                 </h6>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ route('doctor.profile.update') }}">
+                <form method="POST" action="{{ route('panel.profile.update') }}">
                     @csrf
                     @method('PATCH')
 
@@ -36,7 +36,7 @@
                         @enderror
                     </div>
 
-                    <div class="mb-4">
+                    <div class="mb-3">
                         <label for="phone" class="form-label fw-medium">Telefon</label>
                         <input type="text" class="form-control @error('phone') is-invalid @enderror"
                                id="phone" name="phone" value="{{ old('phone', auth()->user()->phone) }}"
@@ -44,6 +44,19 @@
                         @error('phone')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="muessise_adi" class="form-label fw-medium">Müəssisə adı</label>
+                        <input type="text" class="form-control @error('muessise_adi') is-invalid @enderror"
+                               id="muessise_adi" name="muessise_adi"
+                               value="{{ old('muessise_adi', auth()->user()->muessise_adi) }}"
+                               maxlength="100"
+                               placeholder="Şirkət, mərkəz, salon...">
+                        @error('muessise_adi')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <div class="form-text">SMS şablonundakı <code>{muessise}</code> bu adla əvəzlənəcək.</div>
                     </div>
 
                     <div class="mb-3 p-3 bg-light rounded">
@@ -75,7 +88,7 @@
                 </h6>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ route('doctor.profile.password') }}">
+                <form method="POST" action="{{ route('panel.profile.password') }}">
                     @csrf
                     @method('PATCH')
 
@@ -117,6 +130,102 @@
     </div>
 </div>
 
+{{-- SMS Şablonları --}}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white border-bottom">
+        <h6 class="mb-0 fw-semibold">
+            <i class="bi bi-chat-dots me-2 text-info"></i>SMS Şablonları
+        </h6>
+    </div>
+    <div class="card-body">
+        <p class="text-muted small mb-3">
+            Boş buraxsanız sistem tərəfindən müəyyən edilmiş defolt şablon istifadə olunacaq.
+        </p>
+        <form method="POST" action="{{ route('panel.profile.sms-templates.save') }}">
+            @csrf
+            @method('PUT')
+
+            {{-- Appointment template --}}
+            <div class="mb-4">
+                <label class="form-label fw-medium">
+                    <i class="bi bi-calendar-check me-1 text-primary"></i>Randevu Təsdiq SMS
+                </label>
+                <div class="mb-2 d-flex flex-wrap gap-1">
+                    @foreach(['{ad_soyad}', '{xidmet}', '{tarix}', '{saat}', '{muessise}'] as $ph)
+                        <button type="button" class="btn btn-outline-secondary btn-sm placeholder-btn"
+                                data-target="sms_appointment_template" data-placeholder="{{ $ph }}">{{ $ph }}</button>
+                    @endforeach
+                </div>
+                <textarea id="sms_appointment_template"
+                          name="sms_appointment_template"
+                          class="form-control font-monospace @error('sms_appointment_template') is-invalid @enderror"
+                          rows="3"
+                          maxlength="160"
+                          placeholder="Boş buraxın — defolt şablon istifadə olunacaq">{{ old('sms_appointment_template', auth()->user()->sms_appointment_template) }}</textarea>
+                <div class="d-flex justify-content-between mt-1">
+                    @error('sms_appointment_template')
+                        <div class="text-danger small">{{ $message }}</div>
+                    @else
+                        <div></div>
+                    @enderror
+                    <small class="text-muted"><span id="appt-count">0</span>/160</small>
+                </div>
+            </div>
+
+            {{-- Reminder template --}}
+            <div class="mb-4">
+                <label class="form-label fw-medium">
+                    <i class="bi bi-bell me-1 text-warning"></i>Xatırlatma SMS
+                </label>
+                <div class="mb-2 d-flex flex-wrap gap-1">
+                    @foreach(['{ad_soyad}', '{xidmet}', '{tarix}', '{saat}', '{muessise}'] as $ph)
+                        <button type="button" class="btn btn-outline-secondary btn-sm placeholder-btn"
+                                data-target="sms_reminder_template" data-placeholder="{{ $ph }}">{{ $ph }}</button>
+                    @endforeach
+                </div>
+                <textarea id="sms_reminder_template"
+                          name="sms_reminder_template"
+                          class="form-control font-monospace @error('sms_reminder_template') is-invalid @enderror"
+                          rows="3"
+                          maxlength="160"
+                          placeholder="Boş buraxın — defolt şablon istifadə olunacaq">{{ old('sms_reminder_template', auth()->user()->sms_reminder_template) }}</textarea>
+                <div class="d-flex justify-content-between mt-1">
+                    @error('sms_reminder_template')
+                        <div class="text-danger small">{{ $message }}</div>
+                    @else
+                        <div></div>
+                    @enderror
+                    <small class="text-muted"><span id="rem-count">0</span>/160</small>
+                </div>
+            </div>
+
+            {{-- Placeholder docs --}}
+            <div class="table-responsive mb-4">
+                <table class="table table-sm table-bordered align-middle mb-0 small">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Yer tutucu</th>
+                            <th>Nəyi əvəz edir</th>
+                            <th>Nümunə</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>{ad_soyad}</code></td><td>Xəstənin tam adı</td><td class="text-muted">Əli Əliyev</td></tr>
+                        <tr><td><code>{xidmet}</code></td><td>Müalicə / xidmət növü</td><td class="text-muted">Diş müalicəsi</td></tr>
+                        <tr><td><code>{tarix}</code></td><td>Randevu tarixi</td><td class="text-muted">26.03.2026</td></tr>
+                        <tr><td><code>{saat}</code></td><td>Randevu saatı</td><td class="text-muted">14:00</td></tr>
+                        <tr><td><code>{muessise}</code></td><td>Müəssisə adı (profildən)</td><td class="text-muted">DentCare</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <button type="submit" class="btn btn-info text-white">
+                <i class="bi bi-check-lg me-1"></i>SMS Şablonlarını Yadda Saxla
+            </button>
+        </form>
+    </div>
+</div>
+
 {{-- İş Saatları Kartı --}}
 <div class="card border-0 shadow-sm">
     <div class="card-header bg-white border-bottom">
@@ -125,7 +234,7 @@
         </h6>
     </div>
     <div class="card-body">
-        <form method="POST" action="{{ route('doctor.profile.working-hours.save') }}">
+        <form method="POST" action="{{ route('panel.profile.working-hours.save') }}">
             @csrf
             @method('PUT')
 
@@ -236,6 +345,40 @@
 
 @push('scripts')
 <script>
+// SMS template char counters + placeholder insert
+(function () {
+    function updateCount(textarea, countEl) {
+        countEl.textContent = textarea.value.length;
+        countEl.classList.toggle('text-danger', textarea.value.length > 140);
+    }
+    const apptArea  = document.getElementById('sms_appointment_template');
+    const remArea   = document.getElementById('sms_reminder_template');
+    const apptCount = document.getElementById('appt-count');
+    const remCount  = document.getElementById('rem-count');
+
+    if (apptArea) {
+        updateCount(apptArea, apptCount);
+        apptArea.addEventListener('input', () => updateCount(apptArea, apptCount));
+    }
+    if (remArea) {
+        updateCount(remArea, remCount);
+        remArea.addEventListener('input', () => updateCount(remArea, remCount));
+    }
+
+    document.querySelectorAll('.placeholder-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const ta = document.getElementById(btn.dataset.target);
+            const ph = btn.dataset.placeholder;
+            const s  = ta.selectionStart;
+            ta.value = ta.value.substring(0, s) + ph + ta.value.substring(ta.selectionEnd);
+            ta.selectionStart = ta.selectionEnd = s + ph.length;
+            ta.focus();
+            ta.dispatchEvent(new Event('input'));
+        });
+    });
+})();
+
+// Working hours / breaks logic
 (function () {
     // 24h time mask: "0900" → "09:00", onBlur format
     function applyTimeMask(inp) {

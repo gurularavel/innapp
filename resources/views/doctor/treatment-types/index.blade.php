@@ -7,7 +7,7 @@
 <div class="card border-0 shadow-sm">
     <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
         <h6 class="mb-0 fw-semibold">Xidmət Növləri</h6>
-        <a href="{{ route('doctor.treatment-types.create') }}" class="btn btn-primary btn-sm">
+        <a href="{{ route('panel.treatment-types.create') }}" class="btn btn-primary btn-sm">
             <i class="bi bi-plus-lg me-1"></i>Yeni Növ
         </a>
     </div>
@@ -38,10 +38,10 @@
                         <td>{{ $type->duration_minutes ?? 30 }} dəq</td>
                         <td class="text-end">
                             <div class="d-flex justify-content-end gap-1">
-                                <a href="{{ route('doctor.treatment-types.edit', $type) }}" class="btn btn-sm btn-outline-primary" title="Düzəlt">
+                                <a href="{{ route('panel.treatment-types.edit', $type) }}" class="btn btn-sm btn-outline-primary" title="Düzəlt">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <form method="POST" action="{{ route('doctor.treatment-types.destroy', $type) }}" class="d-inline">
+                                <form method="POST" action="{{ route('panel.treatment-types.destroy', $type) }}" class="d-inline">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Silmək istədiyinizdən əminsiniz?')">

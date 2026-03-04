@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Appointment;
 use App\Models\DoctorSubscription;
+use App\Models\Setting;
 use App\Models\SmsLog;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -52,16 +53,10 @@ class SmsService
 
     public function sendAppointmentSms(Appointment $appointment): bool
     {
-        $patient     = $appointment->patient;
-        $scheduledAt = $appointment->scheduled_at;
-
-        $message = "Hörmətli {$patient->name}, "
-            . $scheduledAt->format('d.m.Y') . ' '
-            . $scheduledAt->format('H:i')
-            . ' randevunuz təsdiqləndi.';
+        $message = $this->buildMessage('sms_appointment_template', $appointment);
 
         return $this->send(
-            $patient->phone,
+            $appointment->patient->phone,
             $message,
             $appointment->doctor_id,
             'appointment',
@@ -71,20 +66,38 @@ class SmsService
 
     public function sendReminderSms(Appointment $appointment): bool
     {
-        $patient     = $appointment->patient;
-        $scheduledAt = $appointment->scheduled_at;
-
-        $message = "Xatırlatma: {$patient->name}, "
-            . $scheduledAt->format('d.m.Y') . ' '
-            . $scheduledAt->format('H:i')
-            . ' randevunuz var.';
+        $message = $this->buildMessage('sms_reminder_template', $appointment);
 
         return $this->send(
-            $patient->phone,
+            $appointment->patient->phone,
             $message,
             $appointment->doctor_id,
             'reminder',
             $appointment->id
+        );
+    }
+
+    private function buildMessage(string $templateKey, Appointment $appointment): string
+    {
+        $globalDefaults = [
+            'sms_appointment_template' => 'Hörmətli {ad_soyad}, {tarix} {saat} randevunuz təsdiqləndi.',
+            'sms_reminder_template'    => 'Xatırlatma: {ad_soyad}, {tarix} {saat} randevunuz var.',
+        ];
+
+        // User's own template takes priority; fall back to global admin default
+        $user     = $appointment->doctor;
+        $template = ($user?->{$templateKey} ?? null)
+            ?: Setting::get($templateKey, $globalDefaults[$templateKey] ?? '');
+
+        $patient     = $appointment->patient;
+        $scheduledAt = $appointment->scheduled_at;
+        $service     = $appointment->treatmentType?->name ?? '';
+        $muessise    = $user?->muessise_adi ?: Setting::get('default_muessise_adi', '');
+
+        return str_replace(
+            ['{ad_soyad}', '{xidmet}', '{tarix}', '{saat}', '{muessise}'],
+            [$patient->name, $service, $scheduledAt->format('d.m.Y'), $scheduledAt->format('H:i'), $muessise],
+            $template
         );
     }
 

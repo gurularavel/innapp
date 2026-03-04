@@ -81,7 +81,7 @@
     <!-- Sidebar -->
     <nav class="sidebar d-flex flex-column" id="sidebar">
         <div class="sidebar-brand d-flex align-items-center gap-2">
-            <a href="{{ route('doctor.dashboard') }}" class="text-white text-decoration-none fw-bold fs-5 d-flex align-items-center gap-2">
+            <a href="{{ route('panel.dashboard') }}" class="text-white text-decoration-none fw-bold fs-5 d-flex align-items-center gap-2">
                 <i class="bi bi-grid-fill flex-shrink-0"></i>
                 <span class="brand-text">InnApp</span>
             </a>
@@ -92,42 +92,42 @@
 
         <ul class="nav flex-column mt-3 flex-grow-1">
             <li class="nav-item">
-                <a href="{{ route('doctor.dashboard') }}" class="nav-link {{ request()->routeIs('doctor.dashboard') ? 'active' : '' }}" title="Dashboard">
+                <a href="{{ route('panel.dashboard') }}" class="nav-link {{ request()->routeIs('doctor.dashboard') ? 'active' : '' }}" title="Dashboard">
                     <i class="bi bi-speedometer2 me-2"></i><span>Dashboard</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{{ route('doctor.patients.index') }}" class="nav-link {{ request()->routeIs('doctor.patients*') ? 'active' : '' }}" title="Müştərilər">
+                <a href="{{ route('panel.patients.index') }}" class="nav-link {{ request()->routeIs('doctor.patients*') ? 'active' : '' }}" title="Müştərilər">
                     <i class="bi bi-people me-2"></i><span>Müştərilər</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{{ route('doctor.appointments.index') }}" class="nav-link {{ request()->routeIs('doctor.appointments*') ? 'active' : '' }}" title="Randevular">
+                <a href="{{ route('panel.appointments.index') }}" class="nav-link {{ request()->routeIs('doctor.appointments*') ? 'active' : '' }}" title="Randevular">
                     <i class="bi bi-calendar-check me-2"></i><span>Randevular</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{{ route('doctor.calendar.index') }}" class="nav-link {{ request()->routeIs('doctor.calendar*') ? 'active' : '' }}" title="Təqvim">
+                <a href="{{ route('panel.calendar.index') }}" class="nav-link {{ request()->routeIs('doctor.calendar*') ? 'active' : '' }}" title="Təqvim">
                     <i class="bi bi-calendar3 me-2"></i><span>Təqvim</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{{ route('doctor.treatment-types.index') }}" class="nav-link {{ request()->routeIs('doctor.treatment-types*') ? 'active' : '' }}" title="Xidmət Növləri">
+                <a href="{{ route('panel.treatment-types.index') }}" class="nav-link {{ request()->routeIs('doctor.treatment-types*') ? 'active' : '' }}" title="Xidmət Növləri">
                     <i class="bi bi-list-check me-2"></i><span>Xidmət Növləri</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{{ route('doctor.subscription.index') }}" class="nav-link {{ request()->routeIs('doctor.subscription*') ? 'active' : '' }}" title="Abunəlik">
+                <a href="{{ route('panel.subscription.index') }}" class="nav-link {{ request()->routeIs('doctor.subscription*') ? 'active' : '' }}" title="Abunəlik">
                     <i class="bi bi-shield-check me-2"></i><span>Abunəlik</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{{ route('doctor.reports.revenue') }}" class="nav-link {{ request()->routeIs('doctor.reports*') ? 'active' : '' }}" title="Hesabat">
+                <a href="{{ route('panel.reports.revenue') }}" class="nav-link {{ request()->routeIs('doctor.reports*') ? 'active' : '' }}" title="Hesabat">
                     <i class="bi bi-bar-chart-line me-2"></i><span>Hesabat</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{{ route('doctor.profile.edit') }}" class="nav-link {{ request()->routeIs('doctor.profile*') ? 'active' : '' }}" title="Profil">
+                <a href="{{ route('panel.profile.edit') }}" class="nav-link {{ request()->routeIs('doctor.profile*') ? 'active' : '' }}" title="Profil">
                     <i class="bi bi-person-circle me-2"></i><span>Profil</span>
                 </a>
             </li>

@@ -52,7 +52,7 @@ class PatientController extends Controller
         $subscription = $doctor->activeSubscription()->with('package')->first();
 
         if ($subscription && $subscription->patientLimitReached()) {
-            return redirect()->route('doctor.patients.index')
+            return redirect()->route('panel.patients.index')
                 ->with('error', 'Müştəri limitinə çatdınız. Paketi yeniləyin.');
         }
 
@@ -65,7 +65,7 @@ class PatientController extends Controller
         $subscription = $doctor->activeSubscription()->with('package')->first();
 
         if ($subscription && $subscription->patientLimitReached()) {
-            return redirect()->route('doctor.patients.index')
+            return redirect()->route('panel.patients.index')
                 ->with('error', 'Müştəri limitinə çatdınız. Paketi yeniləyin.');
         }
 
@@ -89,7 +89,7 @@ class PatientController extends Controller
             $subscription->increment('patients_used');
         }
 
-        return redirect()->route('doctor.patients.index')
+        return redirect()->route('panel.patients.index')
             ->with('success', 'Müştəri uğurla qeydə alındı.');
     }
 
@@ -124,7 +124,7 @@ class PatientController extends Controller
 
         $patient->update($validated);
 
-        return redirect()->route('doctor.patients.index')
+        return redirect()->route('panel.patients.index')
             ->with('success', 'Müştəri məlumatları yeniləndi.');
     }
 
@@ -133,7 +133,7 @@ class PatientController extends Controller
         $this->authorizePatient($patient);
         $patient->delete();
 
-        return redirect()->route('doctor.patients.index')
+        return redirect()->route('panel.patients.index')
             ->with('success', 'Müştəri silindi.');
     }
 
