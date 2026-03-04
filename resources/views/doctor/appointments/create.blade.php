@@ -58,7 +58,7 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label for="scheduled_at" class="form-label fw-medium">Tarix və Saat <span class="text-danger">*</span></label>
+                            <label for="scheduled_date" class="form-label fw-medium">Tarix və Saat <span class="text-danger">*</span></label>
                             @php
                                 $oldScheduled = old('scheduled_at');
                                 $oldTs = $oldScheduled ? strtotime($oldScheduled) : null;
@@ -66,25 +66,11 @@
                                 $oldTime = $oldTs ? date('H:i', $oldTs) : '';
                             @endphp
                             <input type="hidden" id="scheduled_at" name="scheduled_at" value="{{ old('scheduled_at') }}">
-                            <div class="row g-2">
-                                <div class="col-7">
-                                    <input type="date" class="form-control @error('scheduled_at') is-invalid @enderror"
-                                           id="scheduled_date" value="{{ $oldDate }}" required>
-                                </div>
-                                <div class="col-5">
-                                    <input type="text" class="form-control @error('scheduled_at') is-invalid @enderror"
-                                           id="scheduled_time" value="{{ $oldTime }}"
-                                           placeholder="14:30" maxlength="5" pattern="([01][0-9]|2[0-3]):[0-5][0-9]" required>
-                                </div>
-                            </div>
-                            <div class="form-text">24-saat formatı istifadə edin (məs: 09:00, 14:30).</div>
+                            <input type="date" class="form-control @error('scheduled_at') is-invalid @enderror"
+                                   id="scheduled_date" value="{{ $oldDate }}" required>
                             @error('scheduled_at')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                            <div id="conflict-warning" class="alert alert-danger mt-2 py-2 small" style="display:none">
-                                <i class="bi bi-exclamation-triangle me-1"></i>Bu vaxtda toqquşma var:
-                                <ul id="conflict-list" class="mb-0 mt-1"></ul>
-                            </div>
                             <div id="slots-container" class="mt-2" style="display:none">
                                 <div class="text-muted small mb-1">Boş vaxtlar:</div>
                                 <div id="slots-list" class="d-flex flex-wrap gap-1"></div>
@@ -178,14 +164,12 @@
         }, 300);
     });
 
-    // Select patient from dropdown
     document.addEventListener('click', function (e) {
         const item = e.target.closest('.patient-item');
         if (item) {
-            hiddenInput.value    = item.dataset.id;
-            searchInput.value    = item.dataset.name;
+            hiddenInput.value      = item.dataset.id;
+            searchInput.value      = item.dataset.name;
             dropdown.style.display = 'none';
-
             const phone = item.dataset.phone;
             const birth = item.dataset.birth;
             let parts = [];
@@ -195,18 +179,16 @@
                 parts.push('Doğum: ' + birth + ' (' + age + ' yaş)');
             }
             if (parts.length) {
-                infoBox.textContent  = parts.join(' · ');
+                infoBox.textContent   = parts.join(' · ');
                 infoBox.style.display = 'block';
             }
             return;
         }
-        // Close dropdown if click outside
         if (!e.target.closest('#patient_search') && !e.target.closest('#patient_dropdown')) {
             dropdown.style.display = 'none';
         }
     });
 
-    // Clear selection if user edits text
     searchInput.addEventListener('input', function () {
         if (!this.value.trim()) {
             hiddenInput.value = '';
@@ -215,124 +197,87 @@
     });
 })();
 
-    // Auto-fill duration when treatment type is selected
-    document.getElementById('treatment_type_id').addEventListener('change', function () {
-        const selected = this.options[this.selectedIndex];
-        const duration = selected.getAttribute('data-duration');
-        if (duration) {
-            document.getElementById('duration_minutes').value = duration;
-            fetchSlots();
-        }
-    });
+// ── Slot Picker ───────────────────────────────────────────────────────────────
+const slotsUrl         = '{{ route('doctor.appointments.available-slots') }}';
+const scheduledAtInput = document.getElementById('scheduled_at');
+const scheduledDateInput = document.getElementById('scheduled_date');
+const slotsContainer   = document.getElementById('slots-container');
+const slotsList        = document.getElementById('slots-list');
+let selectedTime = '{{ $oldTime }}';
+let slotTimer = null;
 
-    // Available slots & conflict check
-    let slotTimer = null;
-    const slotsUrl = '{{ route('doctor.appointments.available-slots') }}';
-    const scheduledAtInput = document.getElementById('scheduled_at');
-    const scheduledDateInput = document.getElementById('scheduled_date');
-    const scheduledTimeInput = document.getElementById('scheduled_time');
+function clearSelection() {
+    selectedTime = '';
+    scheduledAtInput.value = '';
+}
 
-    function normalizeTimeInput(raw) {
-        const input = String(raw || '').trim();
-        const digitsOnly = input.replace(/\D/g, '');
-
-        if (!input.includes(':')) {
-            if (digitsOnly.length === 4) return digitsOnly.slice(0, 2) + ':' + digitsOnly.slice(2);
-            if (digitsOnly.length === 3) return '0' + digitsOnly.slice(0, 1) + ':' + digitsOnly.slice(1);
-            return input.slice(0, 5);
-        }
-
-        const parts = input.split(':');
-        const h = (parts[0] || '').replace(/\D/g, '');
-        const m = (parts[1] || '').replace(/\D/g, '').slice(0, 2);
-
-        if (!h.length) return m.length ? ':' + m : '';
-        const hh = h.length === 1 ? ('0' + h) : h.slice(0, 2);
-        return m.length ? (hh + ':' + m) : hh;
+function renderSlots(slots, date) {
+    if (!slots.length) {
+        slotsList.innerHTML = '<span class="text-muted small">Bu gün boş vaxt yoxdur</span>';
+        slotsContainer.style.display = 'block';
+        return;
     }
+    slotsList.innerHTML = slots.map(s => {
+        const active = s === selectedTime;
+        return `<button type="button" class="btn btn-sm ${active ? 'btn-primary' : 'btn-outline-primary'} slot-btn" data-time="${s}" data-date="${date}">${s}</button>`;
+    }).join('');
+    slotsContainer.style.display = 'block';
+}
 
-    function updateScheduledAtFromParts() {
-        const date = scheduledDateInput.value;
-        const time = normalizeTimeInput(scheduledTimeInput.value);
-        scheduledTimeInput.value = time;
-        if (/^([01]\d|2[0-3]):[0-5]\d$/.test(time) && date) {
-            scheduledAtInput.value = `${date}T${time}`;
-        } else {
-            scheduledAtInput.value = '';
-        }
-    }
+function fetchSlots() {
+    const date     = scheduledDateInput.value;
+    const duration = document.getElementById('duration_minutes').value;
+    if (!date) { slotsContainer.style.display = 'none'; return; }
+    clearTimeout(slotTimer);
+    slotTimer = setTimeout(function () {
+        fetch(`${slotsUrl}?date=${date}&duration=${duration}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.working === false) {
+                    slotsList.innerHTML = '<span class="text-muted small"><i class="bi bi-calendar-x me-1"></i>Bu gün iş günü deyil</span>';
+                    slotsContainer.style.display = 'block';
+                    return;
+                }
+                renderSlots(data.available_slots || [], date);
+            })
+            .catch(() => {});
+    }, 400);
+}
 
-    function fetchSlots() {
-        updateScheduledAtFromParts();
-        const scheduledAt = scheduledAtInput.value;
-        const duration    = document.getElementById('duration_minutes').value;
-        if (!scheduledAt || !duration) return;
-
-        const date = scheduledAt.split('T')[0];
-
-        clearTimeout(slotTimer);
-        slotTimer = setTimeout(function () {
-            fetch(`${slotsUrl}?date=${date}&duration=${duration}&scheduled_at=${encodeURIComponent(scheduledAt)}`)
-                .then(r => r.json())
-                .then(data => {
-                    const warning   = document.getElementById('conflict-warning');
-                    const list      = document.getElementById('conflict-list');
-                    const container = document.getElementById('slots-container');
-                    const slotsList = document.getElementById('slots-list');
-
-                    // Conflicts
-                    if (data.conflicts && data.conflicts.length) {
-                        list.innerHTML = data.conflicts.map(c =>
-                            `<li>${c.patient_name} — ${c.start}–${c.end}</li>`
-                        ).join('');
-                        warning.style.display = 'block';
-                    } else {
-                        warning.style.display = 'none';
-                        list.innerHTML = '';
-                    }
-
-                    // Available slots
-                    if (data.available_slots && data.available_slots.length) {
-                        slotsList.innerHTML = data.available_slots.map(s =>
-                            `<button type="button" class="btn btn-sm btn-outline-primary slot-btn" data-time="${s}" data-date="${date}">${s}</button>`
-                        ).join('');
-                        container.style.display = 'block';
-                    } else {
-                        container.style.display = 'none';
-                        slotsList.innerHTML = '';
-                    }
-                })
-                .catch(() => {});
-        }, 400);
-    }
-
-    scheduledDateInput.addEventListener('change', fetchSlots);
-    scheduledTimeInput.addEventListener('input', function () {
-        this.value = normalizeTimeInput(this.value);
-        fetchSlots();
-    });
-    scheduledTimeInput.addEventListener('blur', function () {
-        this.value = normalizeTimeInput(this.value);
-        fetchSlots();
-    });
-    document.getElementById('duration_minutes').addEventListener('input', fetchSlots);
-
-    // Click slot button → fill scheduled_at
-    document.addEventListener('click', function (e) {
-        if (e.target.closest('.slot-btn')) {
-            const btn  = e.target.closest('.slot-btn');
-            const date = btn.dataset.date;
-            const time = btn.dataset.time;
-            scheduledDateInput.value = date;
-            scheduledTimeInput.value = time;
-            updateScheduledAtFromParts();
-            fetchSlots();
-        }
-    });
-
-    updateScheduledAtFromParts();
-    if (scheduledAtInput.value) {
+document.getElementById('treatment_type_id').addEventListener('change', function () {
+    const duration = this.options[this.selectedIndex].getAttribute('data-duration');
+    if (duration) {
+        document.getElementById('duration_minutes').value = duration;
+        clearSelection();
         fetchSlots();
     }
+});
+
+scheduledDateInput.addEventListener('change', function () {
+    clearSelection();
+    fetchSlots();
+});
+
+document.getElementById('duration_minutes').addEventListener('input', function () {
+    clearSelection();
+    fetchSlots();
+});
+
+document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.slot-btn');
+    if (!btn) return;
+    selectedTime = btn.dataset.time;
+    scheduledAtInput.value = `${btn.dataset.date}T${selectedTime}`;
+    document.querySelectorAll('.slot-btn').forEach(b => {
+        b.classList.remove('btn-primary');
+        b.classList.add('btn-outline-primary');
+    });
+    btn.classList.remove('btn-outline-primary');
+    btn.classList.add('btn-primary');
+});
+
+if (scheduledDateInput.value) {
+    fetchSlots();
+}
 </script>
 @endpush
