@@ -142,15 +142,13 @@
                         </select>
                     </div>
 
-                    {{-- Date + Time --}}
-                    <div class="row g-2 mb-3">
-                        <div class="col-7">
-                            <label for="qa-date" class="form-label fw-medium">Tarix <span class="text-danger">*</span></label>
-                            <input type="date" class="form-control" id="qa-date" required>
-                        </div>
-                        <div class="col-5">
-                            <label for="qa-time" class="form-label fw-medium">Saat <span class="text-danger">*</span></label>
-                            <input type="time" class="form-control" id="qa-time" required>
+                    {{-- Date + Slots --}}
+                    <div class="mb-3">
+                        <label for="qa-date" class="form-label fw-medium">Tarix <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="qa-date" required>
+                        <div id="qa-slots-container" class="mt-2" style="display:none">
+                            <div class="text-muted small mb-1">Boş vaxtlar:</div>
+                            <div id="qa-slots-list" class="d-flex flex-wrap gap-1"></div>
                         </div>
                     </div>
 
@@ -241,9 +239,14 @@ document.addEventListener('DOMContentLoaded', function () {
     // ── Quick-add helpers ─────────────────────────────────────────────────────
     const storeUrl  = '{{ route('panel.appointments.store') }}';
     const searchUrl = '{{ route('panel.patients.search') }}';
+    const slotsUrl  = '{{ route('panel.appointments.available-slots') }}';
     const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
     function pad(n) { return String(n).padStart(2, '0'); }
+
+    let qaSelectedTime = '';
+    let qaPendingTime  = '';
+    let qaSlotTimer    = null;
 
     function openQuickAdd(date, timeStr) {
         const y = date.getFullYear();
@@ -251,35 +254,105 @@ document.addEventListener('DOMContentLoaded', function () {
         const d = pad(date.getDate());
         const dateStr = y + '-' + m + '-' + d;
 
-        document.getElementById('qa-date').value       = dateStr;
-        document.getElementById('qa-time').value       = timeStr || '09:00';
-        document.getElementById('qa-patient-id').value = '';
+        document.getElementById('qa-date').value           = dateStr;
+        document.getElementById('qa-patient-id').value     = '';
         document.getElementById('qa-patient-search').value = '';
         document.getElementById('qa-patient-dropdown').classList.add('d-none');
         document.getElementById('qa-patient-info').classList.add('d-none');
         document.getElementById('qa-error').classList.add('d-none');
-        document.getElementById('qa-treatment').value  = '';
-        document.getElementById('qa-duration').value   = '30';
-        syncScheduledAt();
+        document.getElementById('qa-treatment').value      = '';
+        document.getElementById('qa-duration').value       = '30';
+        document.getElementById('qa-scheduled-at').value   = '';
+        document.getElementById('qa-slots-container').style.display = 'none';
+        document.getElementById('qa-slots-list').innerHTML = '';
+        qaSelectedTime = '';
+        qaPendingTime  = timeStr || '';
+        fetchQaSlots();
 
         eventModal._element && bootstrap.Modal.getInstance(document.getElementById('eventModal'))?.hide();
         quickAddModal.show();
     }
 
-    function syncScheduledAt() {
-        const d = document.getElementById('qa-date').value;
-        const t = document.getElementById('qa-time').value;
-        document.getElementById('qa-scheduled-at').value = d && t ? d + 'T' + t : '';
+    function fetchQaSlots() {
+        const date     = document.getElementById('qa-date').value;
+        const duration = document.getElementById('qa-duration').value;
+        if (!date) { document.getElementById('qa-slots-container').style.display = 'none'; return; }
+        clearTimeout(qaSlotTimer);
+        qaSlotTimer = setTimeout(() => {
+            fetch(`${slotsUrl}?date=${date}&duration=${duration}`)
+                .then(r => r.json())
+                .then(data => {
+                    const container = document.getElementById('qa-slots-container');
+                    const list      = document.getElementById('qa-slots-list');
+                    if (data.working === false) {
+                        list.innerHTML = '<span class="text-muted small"><i class="bi bi-calendar-x me-1"></i>Bu gün iş günü deyil</span>';
+                        container.style.display = 'block';
+                        return;
+                    }
+                    const slots = data.available_slots || [];
+                    if (!slots.length) {
+                        list.innerHTML = '<span class="text-muted small">Bu gün boş vaxt yoxdur</span>';
+                        container.style.display = 'block';
+                        return;
+                    }
+                    // pre-select pending time if it matches an available slot
+                    if (qaPendingTime && slots.includes(qaPendingTime)) {
+                        qaSelectedTime = qaPendingTime;
+                        document.getElementById('qa-scheduled-at').value = date + 'T' + qaSelectedTime;
+                    } else {
+                        qaSelectedTime = '';
+                        document.getElementById('qa-scheduled-at').value = '';
+                    }
+                    qaPendingTime = '';
+                    list.innerHTML = slots.map(s => {
+                        const active = s === qaSelectedTime;
+                        return `<button type="button" class="btn btn-sm ${active ? 'btn-primary' : 'btn-outline-primary'} qa-slot-btn" data-time="${s}" data-date="${date}">${s}</button>`;
+                    }).join('');
+                    container.style.display = 'block';
+                })
+                .catch(() => {});
+        }, 400);
     }
 
-    document.getElementById('qa-date').addEventListener('change', syncScheduledAt);
-    document.getElementById('qa-time').addEventListener('change', syncScheduledAt);
+    document.getElementById('qa-date').addEventListener('change', function () {
+        qaSelectedTime = '';
+        qaPendingTime  = '';
+        document.getElementById('qa-scheduled-at').value = '';
+        fetchQaSlots();
+    });
 
-    // Treatment type → auto-fill duration
+    document.getElementById('qa-duration').addEventListener('input', function () {
+        qaSelectedTime = '';
+        qaPendingTime  = '';
+        document.getElementById('qa-scheduled-at').value = '';
+        fetchQaSlots();
+    });
+
+    // Slot click handler
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('.qa-slot-btn');
+        if (!btn) return;
+        qaSelectedTime = btn.dataset.time;
+        document.getElementById('qa-scheduled-at').value = `${btn.dataset.date}T${qaSelectedTime}`;
+        document.querySelectorAll('.qa-slot-btn').forEach(b => {
+            b.classList.remove('btn-primary');
+            b.classList.add('btn-outline-primary');
+        });
+        btn.classList.remove('btn-outline-primary');
+        btn.classList.add('btn-primary');
+    });
+
+    // Treatment type → auto-fill duration + refetch slots
     document.getElementById('qa-treatment').addEventListener('change', function () {
         const opt = this.options[this.selectedIndex];
         const dur = opt.getAttribute('data-duration');
-        if (dur) document.getElementById('qa-duration').value = dur;
+        if (dur) {
+            document.getElementById('qa-duration').value = dur;
+            qaSelectedTime = '';
+            qaPendingTime  = '';
+            document.getElementById('qa-scheduled-at').value = '';
+            fetchQaSlots();
+        }
     });
 
     // ── Patient autocomplete in modal ─────────────────────────────────────────
@@ -349,7 +422,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
         if (!scheduledAt) {
-            showQaError('Tarix və saat doldurulmalıdır.');
+            showQaError('Zəhmət olmasa tarix seçin və boş vaxt üzərinə klikləyin.');
             return;
         }
 
