@@ -77,6 +77,11 @@ class ProfileController extends Controller
             ->with('success', 'Şifrə uğurla dəyişdirildi.');
     }
 
+    public function smsTemplates()
+    {
+        return view('doctor.sms-templates.index');
+    }
+
     public function saveSmsTemplates(Request $request)
     {
         $request->validate([
@@ -91,7 +96,7 @@ class ProfileController extends Controller
             'sms_copy_to_self'         => $request->boolean('sms_copy_to_self'),
         ]);
 
-        return redirect()->route('panel.profile.edit')
+        return redirect()->route('panel.sms-templates.index')
             ->with('success', 'SMS şablonları yadda saxlandı.');
     }
 

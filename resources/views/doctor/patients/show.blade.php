@@ -4,20 +4,17 @@
 @section('page-title', 'Müştəri Profili')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div></div>
-    <div class="d-flex gap-2">
-        <a href="{{ route('panel.appointments.create') }}?patient_id={{ $patient->id }}"
-           class="btn btn-success btn-sm">
-            <i class="bi bi-calendar-plus me-1"></i>Randevu Əlavə Et
-        </a>
-        <a href="{{ route('panel.patients.edit', $patient) }}" class="btn btn-outline-primary btn-sm">
-            <i class="bi bi-pencil me-1"></i>Düzəlt
-        </a>
-        <a href="{{ route('panel.patients.index') }}" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-arrow-left me-1"></i>Geri
-        </a>
-    </div>
+<div class="d-flex justify-content-end align-items-center mb-4 gap-2 flex-wrap">
+    <a href="{{ route('panel.appointments.create') }}?patient_id={{ $patient->id }}"
+       class="btn btn-success btn-sm">
+        <i class="bi bi-calendar-plus me-1"></i><span class="d-none d-sm-inline">Randevu Əlavə Et</span><span class="d-sm-none">Randevu</span>
+    </a>
+    <a href="{{ route('panel.patients.edit', $patient) }}" class="btn btn-outline-primary btn-sm">
+        <i class="bi bi-pencil me-1"></i>Düzəlt
+    </a>
+    <a href="{{ route('panel.patients.index') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i>Geri
+    </a>
 </div>
 
 <div class="row g-4">
@@ -88,29 +85,44 @@
                 <h6 class="mb-0 fw-semibold">Randevu Tarixçəsi</h6>
                 <span class="badge bg-secondary">{{ $patient->appointments->count() }}</span>
             </div>
-            <div class="card-body p-0">
+            @php
+                $apts   = $patient->appointments()->with('treatmentType')->latest('scheduled_at')->get();
+                $badges = ['pending'=>'warning','confirmed'=>'info','completed'=>'success','cancelled'=>'danger'];
+                $labels = ['pending'=>'Gözləyir','confirmed'=>'Təsdiqləndi','completed'=>'Tamamlandı','cancelled'=>'Ləğv edildi'];
+            @endphp
+
+            {{-- Mobile --}}
+            <div class="d-md-none">
+                @forelse($apts as $apt)
+                <div class="px-3 py-2 border-bottom d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="small fw-medium">{{ $apt->scheduled_at->format('d.m.Y H:i') }}</div>
+                        <div class="text-muted" style="font-size:.78rem;">{{ $apt->treatmentType?->name ?? '—' }} · {{ $apt->duration_minutes }} dəq</div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-{{ $badges[$apt->status] ?? 'secondary' }}">{{ $labels[$apt->status] ?? $apt->status }}</span>
+                        <a href="{{ route('panel.appointments.show', $apt) }}" class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i></a>
+                    </div>
+                </div>
+                @empty
+                <div class="text-center text-muted py-4">Randevu tapılmadı</div>
+                @endforelse
+            </div>
+
+            {{-- Desktop --}}
+            <div class="card-body p-0 d-none d-md-block">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light">
-                            <tr>
-                                <th>Tarix</th>
-                                <th>Müalicə</th>
-                                <th>Müddət</th>
-                                <th>Status</th>
-                                <th></th>
-                            </tr>
+                            <tr><th>Tarix</th><th>Müalicə</th><th>Müddət</th><th>Status</th><th></th></tr>
                         </thead>
                         <tbody>
-                            @forelse($patient->appointments()->with('treatmentType')->latest('scheduled_at')->get() as $apt)
+                            @forelse($apts as $apt)
                             <tr>
                                 <td class="text-muted small">{{ $apt->scheduled_at->format('d.m.Y H:i') }}</td>
                                 <td>{{ $apt->treatmentType?->name ?? '—' }}</td>
                                 <td class="text-muted small">{{ $apt->duration_minutes }} dəq</td>
                                 <td>
-                                    @php
-                                        $badges = ['pending'=>'warning','confirmed'=>'info','completed'=>'success','cancelled'=>'danger'];
-                                        $labels = ['pending'=>'Gözləyir','confirmed'=>'Təsdiqləndi','completed'=>'Tamamlandı','cancelled'=>'Ləğv edildi'];
-                                    @endphp
                                     <span class="badge bg-{{ $badges[$apt->status] ?? 'secondary' }}">
                                         {{ $labels[$apt->status] ?? $apt->status }}
                                     </span>
@@ -122,9 +134,7 @@
                                 </td>
                             </tr>
                             @empty
-                            <tr>
-                                <td colspan="5" class="text-center text-muted py-3">Randevu tapılmadı</td>
-                            </tr>
+                            <tr><td colspan="5" class="text-center text-muted py-3">Randevu tapılmadı</td></tr>
                             @endforelse
                         </tbody>
                     </table>

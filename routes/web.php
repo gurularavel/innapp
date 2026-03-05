@@ -76,5 +76,6 @@ Route::prefix('panel')->name('panel.')->middleware(['auth', 'role:doctor'])->gro
     Route::put('/profile/password', [Doctor\ProfileController::class, 'updatePassword'])->name('profile.password');
     Route::get('profile/working-hours', [Doctor\ProfileController::class, 'workingHours'])->name('profile.working-hours');
     Route::put('profile/working-hours', [Doctor\ProfileController::class, 'saveWorkingHours'])->name('profile.working-hours.save');
-    Route::put('profile/sms-templates', [Doctor\ProfileController::class, 'saveSmsTemplates'])->name('profile.sms-templates.save');
+    Route::get('sms-templates', [Doctor\ProfileController::class, 'smsTemplates'])->name('sms-templates.index');
+    Route::put('sms-templates', [Doctor\ProfileController::class, 'saveSmsTemplates'])->name('sms-templates.save');
 });

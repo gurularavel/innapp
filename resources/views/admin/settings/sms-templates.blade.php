@@ -117,7 +117,26 @@
             <div class="card-header bg-white border-bottom">
                 <h6 class="mb-0 fw-semibold"><i class="bi bi-info-circle me-2 text-info"></i>Yer Tutucular (Placeholders)</h6>
             </div>
-            <div class="card-body p-0">
+
+            {{-- Mobile: card list --}}
+            <div class="d-md-none">
+                @foreach([
+                    ['{ad_soyad}', 'Müştərinin tam adı',                          'Əli Əliyev'],
+                    ['{xidmet}',   'Xidmət növü',                                  'Diş müalicəsi'],
+                    ['{tarix}',    'Randevu tarixi (GG.AA.İİİİ)',                   '26.03.2026'],
+                    ['{saat}',     'Randevu saatı (SS:DQ)',                         '14:00'],
+                    ['{muessise}', 'İstifadəçinin öz müəssisə adı (yoxdursa defolt)', 'ABC Mərkəzi'],
+                ] as [$ph, $desc, $example])
+                <div class="px-3 py-2 border-bottom">
+                    <code class="text-primary">{{ $ph }}</code>
+                    <div class="text-muted small mt-1">{{ $desc }}</div>
+                    <div class="text-secondary small"><i class="bi bi-arrow-right me-1"></i>{{ $example }}</div>
+                </div>
+                @endforeach
+            </div>
+
+            {{-- Desktop: table --}}
+            <div class="card-body p-0 d-none d-md-block">
                 <table class="table table-sm table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
@@ -127,34 +146,15 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td><code>{ad_soyad}</code></td>
-                            <td>Müştərinin tam adı</td>
-                            <td class="text-muted">Əli Əliyev</td>
-                        </tr>
-                        <tr>
-                            <td><code>{xidmet}</code></td>
-                            <td>Xidmət növü</td>
-                            <td class="text-muted">Diş müalicəsi</td>
-                        </tr>
-                        <tr>
-                            <td><code>{tarix}</code></td>
-                            <td>Randevu tarixi (GG.AA.İİİİ)</td>
-                            <td class="text-muted">26.03.2026</td>
-                        </tr>
-                        <tr>
-                            <td><code>{saat}</code></td>
-                            <td>Randevu saatı (SS:DQ)</td>
-                            <td class="text-muted">14:00</td>
-                        </tr>
-                        <tr>
-                            <td><code>{muessise}</code></td>
-                            <td>İstifadəçinin öz müəssisə adı (yoxdursa defolt)</td>
-                            <td class="text-muted">ABC Mərkəzi</td>
-                        </tr>
+                        <tr><td><code>{ad_soyad}</code></td><td>Müştərinin tam adı</td><td class="text-muted">Əli Əliyev</td></tr>
+                        <tr><td><code>{xidmet}</code></td><td>Xidmət növü</td><td class="text-muted">Diş müalicəsi</td></tr>
+                        <tr><td><code>{tarix}</code></td><td>Randevu tarixi (GG.AA.İİİİ)</td><td class="text-muted">26.03.2026</td></tr>
+                        <tr><td><code>{saat}</code></td><td>Randevu saatı (SS:DQ)</td><td class="text-muted">14:00</td></tr>
+                        <tr><td><code>{muessise}</code></td><td>İstifadəçinin öz müəssisə adı (yoxdursa defolt)</td><td class="text-muted">ABC Mərkəzi</td></tr>
                     </tbody>
                 </table>
             </div>
+
             <div class="card-footer bg-light border-top">
                 <p class="mb-1 small text-muted fw-medium">Nümunə şablon:</p>
                 <p class="mb-0 small font-monospace text-dark">

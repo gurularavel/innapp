@@ -4,16 +4,13 @@
 @section('page-title', 'Randevu Detalları')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div></div>
-    <div class="d-flex gap-2">
-        <a href="{{ route('panel.appointments.edit', $appointment) }}" class="btn btn-outline-primary btn-sm">
-            <i class="bi bi-pencil me-1"></i>Düzəlt
-        </a>
-        <a href="{{ route('panel.appointments.index') }}" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-arrow-left me-1"></i>Geri
-        </a>
-    </div>
+<div class="d-flex justify-content-end align-items-center mb-4 gap-2">
+    <a href="{{ route('panel.appointments.edit', $appointment) }}" class="btn btn-outline-primary btn-sm">
+        <i class="bi bi-pencil me-1"></i>Düzəlt
+    </a>
+    <a href="{{ route('panel.appointments.index') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i>Geri
+    </a>
 </div>
 
 <div class="row g-4">
@@ -137,7 +134,46 @@
                     <i class="bi bi-chat-dots me-2 text-warning"></i>SMS Tarixçəsi
                 </h6>
             </div>
-            <div class="card-body p-0">
+            @php
+                $typeLabels = [
+                    'appointment_reminder'     => ['label' => 'Xatırlatma', 'color' => 'info'],
+                    'appointment_confirmation' => ['label' => 'Təsdiq',     'color' => 'primary'],
+                    'custom'                   => ['label' => 'Fərdi',      'color' => 'secondary'],
+                ];
+            @endphp
+
+            {{-- Mobile SMS logs --}}
+            <div class="d-md-none">
+                @forelse($appointment->smsLogs ?? [] as $log)
+                @php $typeData = $typeLabels[$log->type] ?? ['label' => $log->type, 'color' => 'secondary']; @endphp
+                <div class="px-3 py-3 border-bottom">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                        <span class="text-muted small">{{ $log->phone }}</span>
+                        <div class="d-flex gap-1 ms-2">
+                            <span class="badge bg-{{ $typeData['color'] }}">{{ $typeData['label'] }}</span>
+                            @if($log->status === 'sent')
+                                <span class="badge bg-success">Göndərildi</span>
+                            @elseif($log->status === 'failed')
+                                <span class="badge bg-danger">Uğursuz</span>
+                            @else
+                                <span class="badge bg-warning text-dark">Gözləyir</span>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="small text-muted mt-1">{{ Str::limit($log->message, 80) }}</div>
+                    <div class="text-muted mt-1" style="font-size:.75rem;">
+                        {{ $log->sent_at ? $log->sent_at->format('d.m.Y H:i') : '—' }}
+                    </div>
+                </div>
+                @empty
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-chat-x fs-3 d-block mb-2"></i>SMS loq yoxdur
+                </div>
+                @endforelse
+            </div>
+
+            {{-- Desktop SMS table --}}
+            <div class="card-body p-0 d-none d-md-block">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light">
@@ -151,6 +187,7 @@
                         </thead>
                         <tbody>
                             @forelse($appointment->smsLogs ?? [] as $log)
+                            @php $typeData = $typeLabels[$log->type] ?? ['label' => $log->type, 'color' => 'secondary']; @endphp
                             <tr>
                                 <td class="text-muted small">{{ $log->phone }}</td>
                                 <td>
@@ -158,17 +195,7 @@
                                         {{ Str::limit($log->message, 50) }}
                                     </span>
                                 </td>
-                                <td>
-                                    @php
-                                        $typeLabels = [
-                                            'appointment_reminder'     => ['label' => 'Xatırlatma', 'color' => 'info'],
-                                            'appointment_confirmation' => ['label' => 'Təsdiq',     'color' => 'primary'],
-                                            'custom'                   => ['label' => 'Fərdi',      'color' => 'secondary'],
-                                        ];
-                                        $typeData = $typeLabels[$log->type] ?? ['label' => $log->type, 'color' => 'secondary'];
-                                    @endphp
-                                    <span class="badge bg-{{ $typeData['color'] }}">{{ $typeData['label'] }}</span>
-                                </td>
+                                <td><span class="badge bg-{{ $typeData['color'] }}">{{ $typeData['label'] }}</span></td>
                                 <td>
                                     @if($log->status === 'sent')
                                         <span class="badge bg-success">Göndərildi</span>
@@ -185,8 +212,7 @@
                             @empty
                             <tr>
                                 <td colspan="5" class="text-center text-muted py-4">
-                                    <i class="bi bi-chat-x fs-3 d-block mb-2"></i>
-                                    Bu randevu üçün SMS loq yoxdur
+                                    <i class="bi bi-chat-x fs-3 d-block mb-2"></i>Bu randevu üçün SMS loq yoxdur
                                 </td>
                             </tr>
                             @endforelse

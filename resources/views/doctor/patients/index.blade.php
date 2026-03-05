@@ -8,34 +8,87 @@
 <div class="card border-0 shadow-sm mb-4">
     <div class="card-body">
         <form method="GET" action="{{ route('panel.patients.index') }}" class="row g-2 align-items-end">
-            <div class="col-md-8">
+            <div class="col-12 col-md-8">
                 <label for="search" class="form-label fw-medium small">Axtarış</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
                     <input type="text" class="form-control" id="search" name="search"
-                           value="{{ request('search') }}" placeholder="Ad, soyad və ya telefon ilə axtar...">
+                           value="{{ request('search') }}" placeholder="Ad, soyad və ya telefon...">
                 </div>
             </div>
-            <div class="col-md-4 d-flex gap-2">
+            <div class="col-12 col-md-4 d-flex gap-2">
                 <button type="submit" class="btn btn-primary">Axtar</button>
                 @if(request('search'))
                     <a href="{{ route('panel.patients.index') }}" class="btn btn-outline-secondary">Sıfırla</a>
                 @endif
                 <a href="{{ route('panel.patients.create') }}" class="btn btn-success ms-auto">
-                    <i class="bi bi-person-plus me-1"></i>Yeni Müştəri
+                    <i class="bi bi-person-plus me-1"></i><span class="d-none d-sm-inline">Yeni Müştəri</span><span class="d-sm-none">Yeni</span>
                 </a>
             </div>
         </form>
     </div>
 </div>
 
-{{-- Table --}}
+{{-- List --}}
 <div class="card border-0 shadow-sm">
     <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
         <h6 class="mb-0 fw-semibold">Müştərilər Siyahısı</h6>
         <span class="badge bg-secondary">{{ $patients->total() }} nəticə</span>
     </div>
-    <div class="card-body p-0">
+
+    {{-- Mobile card view --}}
+    <div class="d-md-none">
+        @forelse($patients as $patient)
+        <div class="px-3 py-3 border-bottom">
+            <div class="d-flex justify-content-between align-items-start mb-1">
+                <a href="{{ route('panel.patients.show', $patient) }}" class="fw-semibold text-decoration-none">
+                    {{ $patient->full_name }}
+                </a>
+                @if($patient->gender)
+                @php $genderLabels = ['male'=>'Kişi','female'=>'Qadın','other'=>'Digər']; @endphp
+                <span class="badge bg-light text-secondary border ms-2 flex-shrink-0">{{ $genderLabels[$patient->gender] ?? '' }}</span>
+                @endif
+            </div>
+            <div class="text-muted small mb-1">
+                @if($patient->phone)
+                    <i class="bi bi-telephone me-1"></i>{{ $patient->phone }}
+                @endif
+                @if($patient->birth_date)
+                    @if($patient->phone) · @endif
+                    <i class="bi bi-calendar3 me-1"></i>{{ $patient->birth_date->format('d.m.Y') }}
+                    @if($patient->age) ({{ $patient->age }} yaş) @endif
+                @endif
+            </div>
+            <div class="d-flex align-items-center justify-content-between mt-2">
+                <span class="badge bg-primary bg-opacity-10 text-primary">
+                    <i class="bi bi-calendar-check me-1"></i>{{ $patient->appointments_count ?? $patient->appointments->count() }} randevu
+                </span>
+                <div class="d-flex gap-1">
+                    <a href="{{ route('panel.patients.show', $patient) }}" class="btn btn-sm btn-outline-info">
+                        <i class="bi bi-eye"></i>
+                    </a>
+                    <a href="{{ route('panel.patients.edit', $patient) }}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <form method="POST" action="{{ route('panel.patients.destroy', $patient) }}" class="d-inline">
+                        @csrf @method('DELETE')
+                        <button type="submit" class="btn btn-sm btn-danger"
+                                onclick="return confirm('Silmək istədiyinizdən əminsiniz?')">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        @empty
+        <div class="text-center text-muted py-5">
+            <i class="bi bi-person-x fs-3 d-block mb-2"></i>Müştəri tapılmadı
+        </div>
+        @endforelse
+    </div>
+
+    {{-- Desktop table --}}
+    <div class="card-body p-0 d-none d-md-block">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
@@ -65,9 +118,7 @@
                         </td>
                         <td class="text-muted small">{{ $patient->age ?? '—' }}</td>
                         <td>
-                            @php
-                                $genderLabels = ['male' => 'Kişi', 'female' => 'Qadın', 'other' => 'Digər'];
-                            @endphp
+                            @php $genderLabels = ['male'=>'Kişi','female'=>'Qadın','other'=>'Digər']; @endphp
                             {{ $genderLabels[$patient->gender] ?? '—' }}
                         </td>
                         <td>
@@ -84,9 +135,9 @@
                                     <i class="bi bi-pencil"></i>
                                 </a>
                                 <form method="POST" action="{{ route('panel.patients.destroy', $patient) }}" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Silmək istədiyinizdən əminsiniz?')">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Silmək istədiyinizdən əminsiniz?')">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
@@ -96,8 +147,7 @@
                     @empty
                     <tr>
                         <td colspan="8" class="text-center text-muted py-4">
-                            <i class="bi bi-person-x fs-3 d-block mb-2"></i>
-                            Müştəri tapılmadı
+                            <i class="bi bi-person-x fs-3 d-block mb-2"></i>Müştəri tapılmadı
                         </td>
                     </tr>
                     @endforelse
@@ -105,8 +155,9 @@
             </table>
         </div>
     </div>
+
     @if($patients->hasPages())
-    <div class="card-footer bg-white border-top d-flex justify-content-between align-items-center">
+    <div class="card-footer bg-white border-top d-flex justify-content-between align-items-center flex-wrap gap-2">
         <div class="text-muted small">
             {{ $patients->firstItem() }}–{{ $patients->lastItem() }} / {{ $patients->total() }} nəticə
         </div>

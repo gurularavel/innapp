@@ -72,6 +72,35 @@
 
         /* ── Tooltip on collapsed links ── */
         .sidebar-collapsed .sidebar .nav-link { position: relative; }
+
+        /* ── Mobile sidebar overlay ── */
+        .sidebar-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1044;
+            background: rgba(0,0,0,.45);
+        }
+        .sidebar-backdrop.show { display: block; }
+
+        @media (max-width: 767.98px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                z-index: 1045;
+                transform: translateX(-100%);
+                width: 260px !important;
+                box-shadow: 4px 0 20px rgba(0,0,0,.25);
+            }
+            .sidebar.mobile-open { transform: translateX(0); }
+            #app-wrapper { display: block !important; }
+            .main-content { width: 100%; }
+            .content-padding { padding: .75rem !important; }
+            .topbar { padding-left: .75rem !important; padding-right: .75rem !important; }
+            .topbar .text-muted.small { display: none; }
+        }
     </style>
     @stack('styles')
 </head>
@@ -127,7 +156,12 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{{ route('panel.profile.edit') }}" class="nav-link {{ request()->routeIs('doctor.profile*') ? 'active' : '' }}" title="Profil">
+                <a href="{{ route('panel.sms-templates.index') }}" class="nav-link {{ request()->routeIs('panel.sms-templates*') ? 'active' : '' }}" title="SMS Şablonları">
+                    <i class="bi bi-chat-dots me-2"></i><span>SMS Şablonları</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('panel.profile.edit') }}" class="nav-link {{ request()->routeIs('panel.profile*') ? 'active' : '' }}" title="Profil">
                     <i class="bi bi-person-circle me-2"></i><span>Profil</span>
                 </a>
             </li>
@@ -159,6 +193,9 @@
         </div>
     </nav>
 
+    <!-- Mobile sidebar backdrop -->
+    <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
     <!-- Main Content -->
     <div class="main-content">
         <div class="topbar px-4 py-3 d-flex align-items-center justify-content-between">
@@ -174,7 +211,7 @@
             </div>
         </div>
 
-        <div class="p-4">
+        <div class="p-4 content-padding">
             @if(session('success'))
                 <div class="alert alert-success alert-dismissible fade show">
                     {{ session('success') }}
@@ -220,22 +257,52 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 <script>
 (function () {
-    const wrapper = document.getElementById('app-wrapper');
-    const icon    = document.getElementById('toggle-icon');
-    const KEY     = 'sidebar_collapsed';
+    const wrapper  = document.getElementById('app-wrapper');
+    const sidebar  = document.getElementById('sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    const icon     = document.getElementById('toggle-icon');
+    const KEY      = 'sidebar_collapsed';
 
-    function apply(collapsed) {
+    function isMobile() { return window.innerWidth < 768; }
+
+    function applyDesktop(collapsed) {
         wrapper.classList.toggle('sidebar-collapsed', collapsed);
         icon.className = collapsed ? 'bi bi-layout-sidebar' : 'bi bi-list';
     }
 
-    // Restore saved state
-    apply(localStorage.getItem(KEY) === '1');
+    function openMobile() {
+        sidebar.classList.add('mobile-open');
+        backdrop.classList.add('show');
+        icon.className = 'bi bi-x-lg';
+    }
+
+    function closeMobile() {
+        sidebar.classList.remove('mobile-open');
+        backdrop.classList.remove('show');
+        icon.className = 'bi bi-list';
+    }
+
+    if (!isMobile()) {
+        applyDesktop(localStorage.getItem(KEY) === '1');
+    }
 
     document.getElementById('sidebar-toggle').addEventListener('click', function () {
-        const next = !wrapper.classList.contains('sidebar-collapsed');
-        apply(next);
-        localStorage.setItem(KEY, next ? '1' : '0');
+        if (isMobile()) {
+            sidebar.classList.contains('mobile-open') ? closeMobile() : openMobile();
+        } else {
+            const next = !wrapper.classList.contains('sidebar-collapsed');
+            applyDesktop(next);
+            localStorage.setItem(KEY, next ? '1' : '0');
+        }
+    });
+
+    backdrop.addEventListener('click', closeMobile);
+
+    window.addEventListener('resize', function () {
+        if (!isMobile()) {
+            closeMobile();
+            applyDesktop(localStorage.getItem(KEY) === '1');
+        }
     });
 })();
 </script>

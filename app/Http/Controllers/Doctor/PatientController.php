@@ -83,6 +83,20 @@ class PatientController extends Controller
 
         $validated['doctor_id'] = $doctor->id;
 
+        // Eyni nömrəli müştəri artıq varsa blokla
+        $existing = $doctor->patients()->where('phone', $validated['phone'])->first();
+        if ($existing) {
+            $appointmentUrl = route('panel.appointments.create', ['patient_id' => $existing->id]);
+            return redirect()->back()
+                ->withInput()
+                ->with('duplicate_patient', [
+                    'id'   => $existing->id,
+                    'name' => $existing->name . ' ' . $existing->surname,
+                    'phone'=> $existing->phone,
+                    'url'  => $appointmentUrl,
+                ]);
+        }
+
         Patient::create($validated);
 
         if ($subscription) {

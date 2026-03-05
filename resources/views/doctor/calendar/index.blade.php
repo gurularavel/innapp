@@ -22,12 +22,60 @@
         font-weight: 500;
         padding: 0 2px;
     }
+
+    /* ── Mobile responsive ───────────────────────────── */
+    @media (max-width: 767.98px) {
+        #calendar {
+            padding: .5rem;
+        }
+        .fc-toolbar-title {
+            font-size: .9rem !important;
+        }
+        .fc .fc-toolbar {
+            flex-wrap: wrap;
+            gap: .35rem;
+        }
+        .fc .fc-toolbar-chunk {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .25rem;
+        }
+        .fc .fc-button {
+            font-size: .75rem !important;
+            padding: .2rem .45rem !important;
+        }
+        .fc .fc-button-group .fc-button {
+            padding: .2rem .4rem !important;
+        }
+        /* List view rows — more compact */
+        .fc-list-event td {
+            padding: .35rem .5rem !important;
+            font-size: .82rem;
+        }
+        .fc-list-day-cushion {
+            font-size: .82rem !important;
+            padding: .3rem .5rem !important;
+        }
+        /* Day/week grid — shrink time gutter */
+        .fc-timegrid-slot-label {
+            font-size: .72rem !important;
+        }
+        .fc-col-header-cell-cushion {
+            font-size: .78rem !important;
+        }
+        .fc-event-title {
+            font-size: .75rem;
+        }
+        .fc-event-time {
+            font-size: .72rem;
+        }
+    }
 </style>
 @endpush
 
 @section('content')
 <div class="card border-0 shadow-sm">
-    <div class="card-body p-3">
+    <div class="card-body p-3 p-sm-3 p-0">
         <div id="calendar"></div>
     </div>
 </div>
@@ -94,20 +142,26 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     let businessHours = [];
+    const isMobile = window.innerWidth < 768;
 
     const calendar = new FullCalendar.Calendar(calendarEl, {
         locale: 'az',
-        initialView: 'timeGridWeek',
-        headerToolbar: {
+        initialView: isMobile ? 'listWeek' : 'timeGridWeek',
+        headerToolbar: isMobile ? {
+            left:   'prev,next',
+            center: 'title',
+            right:  'timeGridDay,listWeek'
+        } : {
             left:   'prev,next today',
             center: 'title',
             right:  'dayGridMonth,timeGridWeek,listWeek'
         },
         buttonText: {
-            today:        'Bu gün',
-            month:        'Ay',
-            week:         'Həftə',
-            list:         'Siyahı',
+            today:  'Bu gün',
+            month:  'Ay',
+            week:   'Həftə',
+            day:    'Gün',
+            list:   'Siyahı',
         },
         slotMinTime: '07:00:00',
         slotMaxTime: '21:00:00',
