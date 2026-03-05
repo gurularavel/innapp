@@ -19,7 +19,6 @@ class SendAppointmentReminders extends Command
 
     public function handle(): int
     {
-
         $center      = (int) Setting::get('reminder_minutes_before', 120);
         $windowStart = now()->addMinutes($center - 10);
         $windowEnd   = now()->addMinutes($center + 10);
