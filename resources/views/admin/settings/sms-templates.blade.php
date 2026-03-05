@@ -6,7 +6,6 @@
 @section('content')
 <div class="row justify-content-center">
     <div class="col-lg-8">
-
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-header bg-white border-bottom">
                 <h6 class="mb-0 fw-semibold"><i class="bi bi-building me-2 text-secondary"></i>Defolt Müəssisə Adı</h6>
