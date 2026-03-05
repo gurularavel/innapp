@@ -34,9 +34,11 @@ class AppointmentController extends Controller
         }
 
         $appointments = $query->orderBy('scheduled_at', 'desc')->paginate(15);
-        $patients = Auth::user()->patients()->get();
+        $selectedPatient = $request->filled('patient_id')
+            ? Patient::find($request->patient_id)
+            : null;
 
-        return view('doctor.appointments.index', compact('appointments', 'patients'));
+        return view('doctor.appointments.index', compact('appointments', 'selectedPatient'));
     }
 
     public function create()

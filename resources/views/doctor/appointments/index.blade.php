@@ -29,15 +29,18 @@
                        value="{{ request('date') }}">
             </div>
             <div class="col-12 col-md-3">
-                <label for="patient_id" class="form-label fw-medium small">Müştəri</label>
-                <select class="form-select form-select-sm" id="patient_id" name="patient_id">
-                    <option value="">— Hamısı —</option>
-                    @foreach($patients as $patient)
-                        <option value="{{ $patient->id }}" {{ request('patient_id') == $patient->id ? 'selected' : '' }}>
-                            {{ $patient->full_name }}
-                        </option>
-                    @endforeach
-                </select>
+                <label for="filter_patient_search" class="form-label fw-medium small">Müştəri</label>
+                <input type="hidden" name="patient_id" id="filter_patient_id" value="{{ request('patient_id') }}">
+                <div class="position-relative">
+                    <input type="text" id="filter_patient_search"
+                           class="form-control form-control-sm"
+                           placeholder="Ad, soyad və ya telefon..."
+                           autocomplete="off"
+                           value="{{ $selectedPatient?->full_name ?? '' }}">
+                    <div id="filter_patient_dropdown"
+                         class="list-group position-absolute w-100 shadow"
+                         style="z-index:1050;display:none;max-height:220px;overflow-y:auto;"></div>
+                </div>
             </div>
             <div class="col-12 col-md-3 d-flex gap-2 align-items-end">
                 <button type="submit" class="btn btn-primary btn-sm">
@@ -192,3 +195,58 @@
     @endif
 </div>
 @endsection
+
+@push('scripts')
+<script>
+(function () {
+    const searchInput = document.getElementById('filter_patient_search');
+    const hiddenInput = document.getElementById('filter_patient_id');
+    const dropdown    = document.getElementById('filter_patient_dropdown');
+    const searchUrl   = '{{ route('panel.patients.search') }}';
+    let acTimer = null;
+
+    searchInput.addEventListener('keyup', function () {
+        clearTimeout(acTimer);
+        const q = this.value.trim();
+        if (q.length < 2) { dropdown.style.display = 'none'; return; }
+
+        acTimer = setTimeout(function () {
+            fetch(`${searchUrl}?q=${encodeURIComponent(q)}`)
+                .then(r => r.json())
+                .then(patients => {
+                    if (!patients.length) { dropdown.style.display = 'none'; return; }
+                    dropdown.innerHTML = patients.map(p => {
+                        const info = p.phone ? `<small class="text-muted ms-2">${p.phone}</small>` : '';
+                        return `<button type="button"
+                                    class="list-group-item list-group-item-action py-2 px-3 filter-patient-item"
+                                    data-id="${p.id}" data-name="${p.name} ${p.surname}">
+                                    <span class="fw-medium">${p.name} ${p.surname}</span>${info}
+                                </button>`;
+                    }).join('');
+                    dropdown.style.display = 'block';
+                })
+                .catch(() => {});
+        }, 300);
+    });
+
+    document.addEventListener('click', function (e) {
+        const item = e.target.closest('.filter-patient-item');
+        if (item) {
+            hiddenInput.value     = item.dataset.id;
+            searchInput.value     = item.dataset.name;
+            dropdown.style.display = 'none';
+            return;
+        }
+        if (!e.target.closest('#filter_patient_search') && !e.target.closest('#filter_patient_dropdown')) {
+            dropdown.style.display = 'none';
+        }
+    });
+
+    searchInput.addEventListener('input', function () {
+        if (!this.value.trim()) {
+            hiddenInput.value = '';
+        }
+    });
+})();
+</script>
+@endpush
