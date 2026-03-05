@@ -71,7 +71,24 @@
                     {{-- Reminder template --}}
                     <hr class="my-4">
                     <h6 class="fw-semibold mb-1"><i class="bi bi-bell me-1 text-warning"></i>Xatırlatma SMS</h6>
-                    <p class="text-muted small mb-2">Randevudan 2 saat əvvəl avtomatik göndərilir.</p>
+                    <p class="text-muted small mb-2">Randevudan müəyyən saat əvvəl avtomatik göndərilir.</p>
+
+                    <div class="mb-3">
+                        <label for="reminder_hours_before" class="form-label fw-medium">Neçə saat əvvəl göndərilsin?</label>
+                        <div class="input-group" style="max-width:200px">
+                            <input type="number"
+                                   id="reminder_hours_before"
+                                   name="reminder_hours_before"
+                                   class="form-control @error('reminder_hours_before') is-invalid @enderror"
+                                   value="{{ old('reminder_hours_before', $reminderHoursBefore) }}"
+                                   min="1" max="48" required>
+                            <span class="input-group-text">saat</span>
+                        </div>
+                        @error('reminder_hours_before')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
+                        @enderror
+                        <div class="text-muted small mt-1">Minimum 1, maksimum 48 saat. Defolt: 2 saat.</div>
+                    </div>
 
                     <div class="mb-1">
                         <label for="sms_reminder_template" class="form-label fw-medium">Mətn şablonu</label>

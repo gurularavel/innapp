@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Appointment;
+use App\Models\Setting;
 use App\Services\SmsService;
 use Illuminate\Console\Command;
 
@@ -18,8 +19,10 @@ class SendAppointmentReminders extends Command
 
     public function handle(): int
     {
-        $windowStart = now()->addMinutes(110); // 1h50m
-        $windowEnd = now()->addMinutes(130);   // 2h10m
+        $hours       = (int) Setting::get('reminder_hours_before', 2);
+        $center      = $hours * 60;               // minutes
+        $windowStart = now()->addMinutes($center - 10);
+        $windowEnd   = now()->addMinutes($center + 10);
 
         $appointments = Appointment::with('patient', 'doctor')
             ->where('reminder_sent', false)
