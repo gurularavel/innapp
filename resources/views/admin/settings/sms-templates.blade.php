@@ -74,20 +74,20 @@
                     <p class="text-muted small mb-2">Randevudan müəyyən saat əvvəl avtomatik göndərilir.</p>
 
                     <div class="mb-3">
-                        <label for="reminder_hours_before" class="form-label fw-medium">Neçə saat əvvəl göndərilsin?</label>
-                        <div class="input-group" style="max-width:200px">
+                        <label for="reminder_minutes_before" class="form-label fw-medium">Neçə dəqiqə əvvəl göndərilsin?</label>
+                        <div class="input-group" style="max-width:220px">
                             <input type="number"
-                                   id="reminder_hours_before"
-                                   name="reminder_hours_before"
-                                   class="form-control @error('reminder_hours_before') is-invalid @enderror"
-                                   value="{{ old('reminder_hours_before', $reminderHoursBefore) }}"
-                                   min="1" max="48" required>
-                            <span class="input-group-text">saat</span>
+                                   id="reminder_minutes_before"
+                                   name="reminder_minutes_before"
+                                   class="form-control @error('reminder_minutes_before') is-invalid @enderror"
+                                   value="{{ old('reminder_minutes_before', $reminderMinutesBefore) }}"
+                                   min="5" max="2880" required>
+                            <span class="input-group-text">dəq</span>
                         </div>
-                        @error('reminder_hours_before')
+                        @error('reminder_minutes_before')
                             <div class="text-danger small mt-1">{{ $message }}</div>
                         @enderror
-                        <div class="text-muted small mt-1">Minimum 1, maksimum 48 saat. Defolt: 2 saat.</div>
+                        <div class="text-muted small mt-1">Minimum 5, maksimum 2880 dəq (48 saat). Defolt: 120 dəq (2 saat).</div>
                     </div>
 
                     <div class="mb-1">
