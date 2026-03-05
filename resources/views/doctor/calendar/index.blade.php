@@ -420,6 +420,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
         locale: 'az',
+        firstDay: 1,
         initialView: isMobile ? 'listWeek' : 'timeGridWeek',
         headerToolbar: isMobile ? {
             left:   'prev,next',
