@@ -12,7 +12,8 @@ class CalendarController extends Controller
 {
     public function index()
     {
-        return view('doctor.calendar.index');
+        $treatmentTypes = Auth::user()->treatmentTypes()->get(['id', 'name', 'duration_minutes', 'color']);
+        return view('doctor.calendar.index', compact('treatmentTypes'));
     }
 
     public function events(Request $request)

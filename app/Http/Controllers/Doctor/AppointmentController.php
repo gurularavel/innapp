@@ -73,6 +73,9 @@ class AppointmentController extends Controller
             ->count();
 
         if ($conflictCount > 0) {
+            if ($request->boolean('_ajax')) {
+                return response()->json(['error' => 'Bu vaxtda başqa randevu var. Zəhmət olmasa başqa vaxt seçin.'], 422);
+            }
             return back()->withInput()->withErrors(['scheduled_at' => 'Bu vaxtda başqa randevu var. Zəhmət olmasa başqa vaxt seçin.']);
         }
 
@@ -83,6 +86,10 @@ class AppointmentController extends Controller
         // Send appointment confirmation SMS
         if (in_array($appointment->status, ['pending', 'confirmed'])) {
             $this->smsService->sendAppointmentSms($appointment);
+        }
+
+        if ($request->boolean('_ajax')) {
+            return response()->json(['success' => true, 'message' => 'Randevu uğurla yaradıldı.']);
         }
 
         return redirect()->route('panel.appointments.index')
