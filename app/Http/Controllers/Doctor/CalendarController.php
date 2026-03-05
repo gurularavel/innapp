@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Doctor;
 
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
+use App\Models\DoctorBreak;
 use App\Models\DoctorWorkingHours;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -71,8 +72,21 @@ class CalendarController extends Controller
             ];
         })->values();
 
+        // Break periods as FullCalendar background events
+        $userBreaks = DoctorBreak::where('doctor_id', Auth::id())->get();
+        $breakEvents = $userBreaks->map(function (DoctorBreak $brk) use ($fcDayMap) {
+            return [
+                'startTime'  => substr($brk->start_time, 0, 5),
+                'endTime'    => substr($brk->end_time, 0, 5),
+                'daysOfWeek' => [$fcDayMap[$brk->day_of_week]],
+                'display'    => 'background',
+                'color'      => '#ffc107',
+                'title'      => $brk->label ?? 'Fasilə',
+            ];
+        })->values();
+
         return response()->json([
-            'events'        => $events,
+            'events'        => $events->merge($breakEvents)->values(),
             'businessHours' => $businessHours,
         ]);
     }

@@ -431,6 +431,12 @@ document.addEventListener('DOMContentLoaded', function () {
             right:  'dayGridMonth,timeGridWeek,listWeek'
         },
         buttonText: { today: 'Bu gün', month: 'Ay', week: 'Həftə', day: 'Gün', list: 'Siyahı' },
+        dayHeaderContent: function (arg) {
+            const az = ['Bazar', 'B.ertəsi', 'Çər.axş', 'Çərşənbə', 'Cüm.axş', 'Cümə', 'Şənbə'];
+            const dow = arg.date.getDay();
+            const num = arg.text.match(/\d+/);
+            return num ? az[dow] + ' ' + num[0] : az[dow];
+        },
         slotMinTime: '07:00:00',
         slotMaxTime: '21:00:00',
         allDaySlot: false,
