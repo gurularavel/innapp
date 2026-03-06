@@ -129,6 +129,13 @@ return [
             'level'  => 'debug',
         ],
 
+        'cron' => [
+            'driver' => 'daily',
+            'path'   => storage_path('logs/cron.log'),
+            'level'  => 'debug',
+            'days'   => 30,
+        ],
+
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
         ],

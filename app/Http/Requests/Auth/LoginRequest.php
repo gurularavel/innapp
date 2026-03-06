@@ -49,6 +49,16 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        // Block inactive users after successful credential check
+        if (! Auth::user()->is_active) {
+            Auth::logout();
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => 'Hesabınız deaktiv edilib. Zəhmət olmasa administratora müraciət edin.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

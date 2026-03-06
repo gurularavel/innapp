@@ -39,4 +39,45 @@ class SettingController extends Controller
 
         return back()->with('success', 'SMS şablonları yadda saxlandı.');
     }
+
+    public function smtpSettings()
+    {
+        $settings = [
+            'smtp_host'         => Setting::get('smtp_host', ''),
+            'smtp_port'         => Setting::get('smtp_port', '587'),
+            'smtp_encryption'   => Setting::get('smtp_encryption', 'tls'),
+            'smtp_username'     => Setting::get('smtp_username', ''),
+            'smtp_from_address' => Setting::get('smtp_from_address', ''),
+            'smtp_from_name'    => Setting::get('smtp_from_name', ''),
+        ];
+
+        return view('admin.settings.smtp', compact('settings'));
+    }
+
+    public function saveSmtpSettings(Request $request)
+    {
+        $request->validate([
+            'smtp_host'         => ['required', 'string', 'max:255'],
+            'smtp_port'         => ['required', 'integer', 'min:1', 'max:65535'],
+            'smtp_encryption'   => ['required', 'in:tls,ssl,none'],
+            'smtp_username'     => ['required', 'string', 'max:255'],
+            'smtp_password'     => ['nullable', 'string', 'max:255'],
+            'smtp_from_address' => ['required', 'email', 'max:255'],
+            'smtp_from_name'    => ['required', 'string', 'max:100'],
+        ]);
+
+        Setting::set('smtp_host',         $request->smtp_host);
+        Setting::set('smtp_port',         $request->smtp_port);
+        Setting::set('smtp_encryption',   $request->smtp_encryption);
+        Setting::set('smtp_username',     $request->smtp_username);
+        Setting::set('smtp_from_address', $request->smtp_from_address);
+        Setting::set('smtp_from_name',    $request->smtp_from_name);
+
+        // Only update password if provided
+        if ($request->filled('smtp_password')) {
+            Setting::set('smtp_password', encrypt($request->smtp_password));
+        }
+
+        return back()->with('success', 'SMTP ayarları yadda saxlandı.');
+    }
 }

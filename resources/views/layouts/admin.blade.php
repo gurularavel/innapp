@@ -61,8 +61,13 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{{ route('admin.settings.sms-templates') }}" class="nav-link {{ request()->routeIs('admin.settings*') ? 'active' : '' }}">
+                <a href="{{ route('admin.settings.sms-templates') }}" class="nav-link {{ request()->routeIs('admin.settings.sms*') ? 'active' : '' }}">
                     <i class="bi bi-pencil-square me-2"></i>Defolt SMS Şablonları
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.settings.smtp') }}" class="nav-link {{ request()->routeIs('admin.settings.smtp*') ? 'active' : '' }}">
+                    <i class="bi bi-envelope-at me-2"></i>SMTP / E-poçt
                 </a>
             </li>
         </ul>

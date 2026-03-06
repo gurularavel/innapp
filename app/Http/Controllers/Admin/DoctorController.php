@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Specialty;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class DoctorController extends Controller
 {
@@ -63,14 +65,16 @@ class DoctorController extends Controller
     public function update(Request $request, User $doctor)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'surname' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $doctor->id,
-            'phone' => 'nullable|string|max:20',
-            'password' => 'nullable|min:8|confirmed',
+            'name'         => 'required|string|max:255',
+            'surname'      => 'required|string|max:255',
+            'email'        => 'required|email|unique:users,email,' . $doctor->id,
+            'phone'        => 'nullable|string|max:20',
+            'password'     => 'nullable|min:8|confirmed',
             'specialty_id' => 'nullable|exists:specialties,id',
-            'is_active' => 'boolean',
+            'is_active'    => 'boolean',
         ]);
+
+        $emailChanged = $doctor->email !== $validated['email'];
 
         if (empty($validated['password'])) {
             unset($validated['password']);
@@ -80,10 +84,20 @@ class DoctorController extends Controller
 
         $validated['is_active'] = $request->boolean('is_active', false);
 
+        // If email changed, invalidate all active sessions and remember token
+        if ($emailChanged) {
+            $validated['remember_token'] = Str::random(60);
+            DB::table('sessions')->where('user_id', $doctor->id)->delete();
+        }
+
         $doctor->update($validated);
 
-        return redirect()->route('admin.doctors.index')
-            ->with('success', 'Həkim məlumatları yeniləndi.');
+        $message = 'Həkim məlumatları yeniləndi.';
+        if ($emailChanged) {
+            $message .= ' E-poçt dəyişdirildiyindən aktiv sessiyalar sonlandırıldı.';
+        }
+
+        return redirect()->route('admin.doctors.index')->with('success', $message);
     }
 
     public function destroy(User $doctor)
