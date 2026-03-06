@@ -143,13 +143,15 @@
                         <code class="small d-block mt-2 p-2 bg-light rounded text-start">* * * * * php {{ base_path() }}/artisan schedule:run >> /dev/null 2>&1</code>
                     </div>
                 @else
-                    <pre class="m-0 p-3 small" style="background:#1e1e2e; color:#cdd6f4; max-height:450px; overflow-y:auto; font-size:0.75rem; white-space:pre-wrap; word-break:break-all;">@foreach($lines as $line)@if(str_contains($line, 'FAILED') || str_contains($line, 'ERROR') || str_contains($line, 'error'))<span style="color:#f38ba8;">{{ $line }}</span>
-@elseif(str_contains($line, 'sent') || str_contains($line, 'finished') || str_contains($line, 'Sent'))
-<span style="color:#a6e3a1;">{{ $line }}</span>
-@elseif(str_contains($line, 'started') || str_contains($line, 'found'))
-<span style="color:#89b4fa;">{{ $line }}</span>
-@else{{ $line }}
-@endif@endforeach</pre>
+                    <pre class="m-0 p-3 small" style="background:#1e1e2e; color:#cdd6f4; max-height:450px; overflow-y:auto; font-size:0.75rem; white-space:pre-wrap; word-break:break-all;">
+@foreach($lines as $line)
+@if(str_contains($line, 'FAILED') || str_contains($line, 'ERROR') || str_contains($line, 'error'))<span style="color:#f38ba8;">{{ $line }}</span>
+@elseif(str_contains($line, 'sent') || str_contains($line, 'finished') || str_contains($line, 'Sent'))<span style="color:#a6e3a1;">{{ $line }}</span>
+@elseif(str_contains($line, 'started') || str_contains($line, 'found'))<span style="color:#89b4fa;">{{ $line }}</span>
+@else<span>{{ $line }}</span>
+@endif
+@endforeach
+</pre>
                 @endif
             </div>
         </div>
