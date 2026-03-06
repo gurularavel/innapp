@@ -40,6 +40,30 @@ class SettingController extends Controller
         return back()->with('success', 'SMS şablonları yadda saxlandı.');
     }
 
+    public function cronLog()
+    {
+        $logPath = storage_path('logs/cron.log');
+        $lines   = [];
+
+        if (file_exists($logPath)) {
+            $all   = file($logPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            $lines = array_slice(array_reverse($all), 0, 200); // last 200 lines, newest first
+        }
+
+        $smsDriver       = config('services.sms.driver', 'log');
+        $reminderMinutes = (int) Setting::get('reminder_minutes_before', 120);
+
+        $nextAppointments = \App\Models\Appointment::with('patient')
+            ->where('reminder_sent', false)
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->where('scheduled_at', '>', now())
+            ->orderBy('scheduled_at')
+            ->limit(10)
+            ->get();
+
+        return view('admin.cron-log', compact('lines', 'logPath', 'smsDriver', 'reminderMinutes', 'nextAppointments'));
+    }
+
     public function smtpSettings()
     {
         $settings = [

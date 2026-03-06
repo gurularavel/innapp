@@ -70,6 +70,11 @@
                     <i class="bi bi-envelope-at me-2"></i>SMTP / E-poçt
                 </a>
             </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.cron-log') }}" class="nav-link {{ request()->routeIs('admin.cron-log') ? 'active' : '' }}">
+                    <i class="bi bi-terminal me-2"></i>Cron / SMS Test
+                </a>
+            </li>
         </ul>
         <div class="p-3 border-top border-secondary">
             <div class="text-secondary small mb-2">{{ auth()->user()->name }} {{ auth()->user()->surname }}</div>

@@ -101,7 +101,7 @@ class SmsService
 
         return str_replace(
             ['{ad_soyad}', '{xidmet}', '{tarix}', '{saat}', '{muessise}', '{xerite}'],
-            [$patient->name, $service, $scheduledAt->format('d.m.Y'), $scheduledAt->format('H:i'), $muessise, $xerite],
+            [$patient->full_name, $service, $scheduledAt->format('d.m.Y'), $scheduledAt->format('H:i'), $muessise, $xerite],
             $template
         );
     }
