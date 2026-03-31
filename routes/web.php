@@ -20,6 +20,7 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Demo
 Route::get('/demo', [DemoController::class, 'start'])->name('demo.start')->middleware('guest');
+Route::post('/demo/exit', [DemoController::class, 'exit'])->name('demo.exit')->middleware('auth');
 
 // Auth routes (Breeze)
 require __DIR__.'/auth.php';

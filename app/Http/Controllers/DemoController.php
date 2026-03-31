@@ -39,6 +39,21 @@ class DemoController extends Controller
             ->with('success', 'Demo rejimə xoş gəldiniz! 2 saat ərzində bütün funksiyaları sınaya bilərsiniz.');
     }
 
+    public function exit(\Illuminate\Http\Request $request)
+    {
+        $user = auth()->user();
+
+        auth()->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        if ($user?->is_demo) {
+            self::deleteDemo($user);
+        }
+
+        return redirect()->route('register');
+    }
+
     private function seedDemoData(User $user): void
     {
         // Treatment types

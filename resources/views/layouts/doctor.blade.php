@@ -226,9 +226,12 @@
             </div>
             <div class="d-flex align-items-center gap-2">
                 <span style="color:rgba(255,255,255,.8);font-size:.8rem">Bəyəndiniz? Öz hesabınızı yaradın</span>
-                <a href="{{ route('register') }}" style="background:#fff;color:#e76f51;font-weight:700;font-size:.82rem;padding:5px 14px;border-radius:6px;text-decoration:none">
-                    <i class="bi bi-rocket-takeoff me-1"></i>Qeydiyyat
-                </a>
+                <form method="POST" action="{{ route('demo.exit') }}" style="margin:0">
+                    @csrf
+                    <button type="submit" style="background:#fff;color:#e76f51;font-weight:700;font-size:.82rem;padding:5px 14px;border-radius:6px;border:none;cursor:pointer">
+                        <i class="bi bi-rocket-takeoff me-1"></i>Qeydiyyat
+                    </button>
+                </form>
             </div>
         </div>
         @endif
