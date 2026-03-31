@@ -471,6 +471,94 @@
     }
     .testimonial-name { font-size: .88rem; font-weight: 700; color: var(--af-dark); }
     .testimonial-role { font-size: .77rem; color: var(--af-muted); }
+
+    /* ── Demo button ── */
+    .btn-demo {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: linear-gradient(135deg, #f97316, #ef4444);
+        color: #fff !important;
+        font-weight: 700;
+        font-size: 1rem;
+        padding: 13px 28px;
+        border-radius: 10px;
+        text-decoration: none;
+        border: none;
+        transition: transform .2s, box-shadow .2s;
+        box-shadow: 0 0 0 0 rgba(249,115,22,.5);
+        animation: demo-pulse 2s infinite;
+    }
+    .btn-demo:hover {
+        transform: translateY(-2px) scale(1.03);
+        box-shadow: 0 8px 28px rgba(249,115,22,.5);
+        animation: none;
+        color: #fff !important;
+    }
+    @keyframes demo-pulse {
+        0%   { box-shadow: 0 0 0 0 rgba(249,115,22,.55); }
+        60%  { box-shadow: 0 0 0 12px rgba(249,115,22,.0); }
+        100% { box-shadow: 0 0 0 0 rgba(249,115,22,.0); }
+    }
+    .btn-demo .demo-dot {
+        width: 8px; height: 8px;
+        background: #fff;
+        border-radius: 50%;
+        animation: dot-blink 1.2s ease-in-out infinite;
+        flex-shrink: 0;
+    }
+    @keyframes dot-blink {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50%       { opacity: .4; transform: scale(.7); }
+    }
+
+    /* ── Floating demo badge (top-right corner) ── */
+    .demo-float {
+        position: fixed;
+        bottom: 28px;
+        right: 28px;
+        z-index: 999;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+    }
+    .demo-float-label {
+        background: rgba(30,45,61,.85);
+        color: rgba(255,255,255,.7);
+        font-size: .72rem;
+        font-weight: 600;
+        padding: 3px 10px;
+        border-radius: 50px;
+        letter-spacing: .04em;
+        backdrop-filter: blur(6px);
+    }
+    .demo-float a {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        background: linear-gradient(135deg, #f97316, #ef4444);
+        color: #fff;
+        font-weight: 700;
+        font-size: .9rem;
+        padding: 11px 20px;
+        border-radius: 50px;
+        text-decoration: none;
+        box-shadow: 0 4px 20px rgba(249,115,22,.45);
+        animation: demo-pulse 2s infinite;
+        white-space: nowrap;
+    }
+    .demo-float a:hover {
+        animation: none;
+        transform: scale(1.04);
+        box-shadow: 0 8px 28px rgba(249,115,22,.55);
+        color: #fff;
+    }
+    @media (max-width: 575px) {
+        .demo-float { bottom: 16px; right: 16px; }
+        .demo-float a { font-size: .82rem; padding: 10px 16px; }
+    }
 </style>
 @endpush
 
@@ -500,8 +588,8 @@
                         <i class="bi bi-rocket-takeoff-fill"></i>
                         Pulsuz başla
                     </a>
-                    <a href="{{ route('demo.start') }}" class="btn-hero-secondary">
-                        <i class="bi bi-play-circle"></i>
+                    <a href="{{ route('demo.start') }}" class="btn-demo">
+                        <span class="demo-dot"></span>
                         Canlı demo
                     </a>
                 </div>
@@ -839,8 +927,8 @@
                 <i class="bi bi-rocket-takeoff-fill"></i>
                 İndi qeydiyyatdan keç
             </a>
-            <a href="{{ route('demo.start') }}" class="btn-hero-secondary">
-                <i class="bi bi-play-circle"></i>
+            <a href="{{ route('demo.start') }}" class="btn-demo">
+                <span class="demo-dot"></span>
                 Canlı demo
             </a>
         </div>
@@ -849,5 +937,14 @@
         </p>
     </div>
 </section>
+
+{{-- Floating demo widget --}}
+<div class="demo-float">
+    <div class="demo-float-label">Pulsuz sınayın</div>
+    <a href="{{ route('demo.start') }}">
+        <span class="demo-dot"></span>
+        Canlı demo
+    </a>
+</div>
 
 @endsection
