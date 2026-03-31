@@ -26,6 +26,8 @@ class User extends Authenticatable
         'role',
         'specialty_id',
         'is_active',
+        'is_demo',
+        'demo_expires_at',
     ];
 
     protected $hidden = [
@@ -40,6 +42,8 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_active' => 'boolean',
             'sms_copy_to_self' => 'boolean',
+            'is_demo' => 'boolean',
+            'demo_expires_at' => 'datetime',
         ];
     }
 

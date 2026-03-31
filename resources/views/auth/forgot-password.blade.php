@@ -7,69 +7,140 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <style>
+        :root {
+            --af-steel:    #4a6fa5;
+            --af-steel-dk: #3a5a8c;
+            --af-ice:      #d4e4f7;
+            --af-ice-lt:   #edf4fd;
+            --af-dark:     #1e2d3d;
+        }
         body {
-            background: linear-gradient(135deg, #0f4c75 0%, #1b6ca8 50%, #2196f3 100%);
+            background: linear-gradient(135deg, #1e2d3d 0%, #2d4a6e 55%, #3a5a8c 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
         }
-        .login-card {
+        .auth-card {
             border: none;
-            border-radius: 1rem;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border-radius: 16px;
+            box-shadow: 0 24px 64px rgba(0,0,0,.32);
+            background: #fff;
         }
+        .brand-name { color: #fff; font-size: 1.5rem; font-weight: 800; letter-spacing: -.5px; }
+        .brand-name span { color: var(--af-ice); }
+        .form-label { font-size: .875rem; font-weight: 600; color: var(--af-dark); margin-bottom: 6px; }
+        .form-control {
+            border-radius: 8px;
+            border: 1.5px solid #deeaf8;
+            padding: 10px 14px;
+            font-size: .9rem;
+            transition: border-color .2s, box-shadow .2s;
+            background: var(--af-ice-lt);
+        }
+        .form-control:focus {
+            border-color: var(--af-steel);
+            box-shadow: 0 0 0 3px rgba(74,111,165,.15);
+            background: #fff;
+        }
+        .input-group-text {
+            border-radius: 8px 0 0 8px;
+            border: 1.5px solid #deeaf8;
+            border-right: none;
+            background: var(--af-ice-lt);
+            color: var(--af-steel);
+        }
+        .input-group .form-control { border-radius: 0 8px 8px 0; border-left: none; }
+        .input-group:focus-within .input-group-text {
+            border-color: var(--af-steel);
+            background: #fff;
+        }
+        .btn-auth {
+            background: var(--af-steel);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 12px;
+            font-weight: 700;
+            font-size: .95rem;
+            transition: all .22s;
+        }
+        .btn-auth:hover {
+            background: var(--af-steel-dk);
+            color: #fff;
+            box-shadow: 0 6px 20px rgba(74,111,165,.35);
+            transform: translateY(-1px);
+        }
+        .auth-link { color: var(--af-steel); font-weight: 600; text-decoration: none; }
+        .auth-link:hover { color: var(--af-steel-dk); text-decoration: underline; }
+        .is-invalid { border-color: #dc3545 !important; }
     </style>
 </head>
 <body>
-<div class="container">
+<div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-md-5 col-lg-4">
+
             <div class="text-center mb-4">
-                <i class="bi bi-grid-fill text-white" style="font-size: 3rem;"></i>
-                <h3 class="text-white mt-2 fw-bold">InnApp</h3>
-                <p class="text-white-50">İdarəetmə Sistemi</p>
+                <a href="{{ route('home') }}" class="d-inline-flex align-items-center gap-2 text-decoration-none">
+                    <i class="bi bi-grid-fill" style="font-size:1.6rem;color:var(--af-ice)"></i>
+                    <div class="brand-name">Inn<span>App</span></div>
+                </a>
+                <p class="mt-1 mb-0" style="color:rgba(255,255,255,.55);font-size:.88rem">Klinika İdarəetmə Sistemi</p>
             </div>
-            <div class="card login-card">
-                <div class="card-body p-4">
-                    <h5 class="card-title mb-3 fw-semibold text-center">Şifrəni Sıfırla</h5>
-                    <p class="text-muted small mb-4">E-poçt ünvanınızı daxil edin. Şifrə sıfırlama linki göndəriləcək.</p>
+
+            <div class="auth-card">
+                <div class="card-body p-4 p-md-5">
+                    <div class="mb-4">
+                        <h5 class="fw-bold mb-1" style="color:var(--af-dark)">Şifrəni sıfırla</h5>
+                        <p class="text-muted small mb-0">E-poçt ünvanınızı daxil edin, şifrə sıfırlama linki göndəriləcək.</p>
+                    </div>
 
                     @if(session('status'))
-                        <div class="alert alert-success">
-                            <i class="bi bi-check-circle me-2"></i>{{ session('status') }}
-                        </div>
+                    <div class="alert py-2 small mb-4" style="background:var(--af-ice-lt);border:1px solid var(--af-ice);color:var(--af-steel);border-radius:8px">
+                        <i class="bi bi-check-circle-fill me-2"></i>{{ session('status') }}
+                    </div>
                     @endif
 
                     @if($errors->any())
-                        <div class="alert alert-danger">
-                            @foreach($errors->all() as $error)
-                                <div>{{ $error }}</div>
-                            @endforeach
-                        </div>
+                    <div class="alert alert-danger py-2 small mb-4">
+                        @foreach($errors->all() as $error)
+                            <div><i class="bi bi-exclamation-circle me-1"></i>{{ $error }}</div>
+                        @endforeach
+                    </div>
                     @endif
 
                     <form method="POST" action="{{ route('password.email') }}">
                         @csrf
-                        <div class="mb-3">
-                            <label class="form-label fw-medium">E-poçt</label>
+                        <div class="mb-4">
+                            <label class="form-label" for="email">E-poçt</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                                <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
-                                    value="{{ old('email') }}" placeholder="sizin@email.com" autofocus required>
+                                <input type="email" id="email" name="email"
+                                    class="form-control @error('email') is-invalid @enderror"
+                                    value="{{ old('email') }}" placeholder="email@example.com"
+                                    autofocus required autocomplete="username">
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
-                            <i class="bi bi-send me-2"></i>Sıfırlama Linki Göndər
+                        <button type="submit" class="btn btn-auth w-100">
+                            <i class="bi bi-send me-2"></i>Sıfırlama linki göndər
                         </button>
                     </form>
 
-                    <div class="text-center mt-3">
-                        <a href="{{ route('login') }}" class="text-muted small text-decoration-none">
+                    <hr class="my-4" style="border-color:#e8f0fb">
+                    <p class="text-center mb-0 small text-muted">
+                        <a href="{{ route('login') }}" class="auth-link">
                             <i class="bi bi-arrow-left me-1"></i>Girişə qayıt
                         </a>
-                    </div>
+                    </p>
                 </div>
             </div>
+
+            <p class="text-center mt-3">
+                <a href="{{ route('home') }}" style="color:rgba(255,255,255,.4);text-decoration:none;font-size:.77rem">
+                    <i class="bi bi-arrow-left me-1"></i>Ana səhifəyə qayıt
+                </a>
+            </p>
         </div>
     </div>
 </div>

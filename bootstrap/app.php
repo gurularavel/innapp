@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\CheckRole::class,
             'subscription' => \App\Http\Middleware\CheckSubscription::class,
         ]);
+        $middleware->appendToGroup('web', \App\Http\Middleware\CheckDemoExpiry::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

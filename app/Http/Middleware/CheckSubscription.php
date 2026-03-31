@@ -16,6 +16,11 @@ class CheckSubscription
             return $next($request);
         }
 
+        // Demo users bypass subscription check
+        if ($user->is_demo) {
+            return $next($request);
+        }
+
         $subscription = $user->activeSubscription;
 
         if (!$subscription) {

@@ -6,7 +6,7 @@
 @section('content')
 {{-- Subscription warning --}}
 @php $subscription = auth()->user()->activeSubscription()->with('package')->first(); @endphp
-@if(!$subscription)
+@if(!$subscription && !auth()->user()->is_demo)
 <div class="alert alert-warning d-flex align-items-center mb-4">
     <i class="bi bi-exclamation-triangle-fill fs-5 me-3"></i>
     <div>
@@ -130,7 +130,7 @@
     {{-- Right column --}}
     <div class="col-lg-5">
         {{-- Subscription info --}}
-        @if($subscription)
+        @if($subscription && !auth()->user()->is_demo)
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-header bg-white border-bottom">
                 <h6 class="mb-0 fw-semibold">

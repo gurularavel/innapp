@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\Doctor;
+use App\Http\Controllers\DemoController;
+use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 
 // Short map URL redirect (public, no auth)
@@ -13,15 +15,11 @@ Route::get('/map/{code}', function (string $code) {
     abort(404);
 })->name('map.redirect');
 
-// Root redirect
-Route::get('/', function () {
-    if (auth()->check()) {
-        return auth()->user()->isAdmin()
-            ? redirect()->route('admin.dashboard')
-            : redirect()->route('panel.dashboard');
-    }
-    return redirect()->route('login');
-});
+// Home / Landing page
+Route::get('/', [HomeController::class, 'index'])->name('home');
+
+// Demo
+Route::get('/demo', [DemoController::class, 'start'])->name('demo.start')->middleware('guest');
 
 // Auth routes (Breeze)
 require __DIR__.'/auth.php';

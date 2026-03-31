@@ -169,7 +169,7 @@
         </ul>
 
         @php $subscription = auth()->user()->activeSubscription()->with('package')->first(); @endphp
-        @if($subscription)
+        @if($subscription && !auth()->user()->is_demo)
         <div class="sub-info-block p-3 mx-2 mb-2 rounded" style="background: rgba(255,255,255,0.1)">
             <div class="sub-info text-white small fw-semibold">{{ $subscription->package->name }}</div>
             <div class="sub-info text-info small">
@@ -211,6 +211,27 @@
                 <span class="text-muted small">{{ auth()->user()->full_name }}</span>
             </div>
         </div>
+
+        @if(auth()->user()->is_demo)
+        @php $remaining = now()->diffInMinutes(auth()->user()->demo_expires_at, false); @endphp
+        <div style="background:linear-gradient(90deg,#e76f51,#f4a261);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+            <div class="d-flex align-items-center gap-2" style="color:#fff;font-size:.88rem;font-weight:600">
+                <i class="bi bi-play-circle-fill"></i>
+                Demo rejimi —
+                @if($remaining > 0)
+                    <span id="demo-timer" data-minutes="{{ $remaining }}">{{ $remaining }} dəqiqə qalıb</span>
+                @else
+                    <span>Müddət bitib</span>
+                @endif
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span style="color:rgba(255,255,255,.8);font-size:.8rem">Bəyəndiniz? Öz hesabınızı yaradın</span>
+                <a href="{{ route('register') }}" style="background:#fff;color:#e76f51;font-weight:700;font-size:.82rem;padding:5px 14px;border-radius:6px;text-decoration:none">
+                    <i class="bi bi-rocket-takeoff me-1"></i>Qeydiyyat
+                </a>
+            </div>
+        </div>
+        @endif
 
         <div class="p-4 content-padding">
             @if(session('success'))
@@ -320,5 +341,21 @@ document.addEventListener('DOMContentLoaded', function () {
 })();
 </script>
 @stack('scripts')
+@if(auth()->user()?->is_demo)
+<script>
+(function() {
+    var el = document.getElementById('demo-timer');
+    if (!el) return;
+    var secs = parseInt(el.dataset.minutes) * 60;
+    function tick() {
+        if (secs <= 0) { location.reload(); return; }
+        secs--;
+        var m = Math.floor(secs / 60), s = secs % 60;
+        el.textContent = m + ' dəq ' + (s < 10 ? '0' : '') + s + ' san qalıb';
+    }
+    setInterval(tick, 1000);
+})();
+</script>
+@endif
 </body>
 </html>
