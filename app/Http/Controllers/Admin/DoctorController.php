@@ -52,8 +52,10 @@ class DoctorController extends Controller
 
     public function show(User $doctor)
     {
-        $doctor->load('specialty', 'subscriptions.package', 'patients', 'appointments');
-        return view('admin.doctors.show', compact('doctor'));
+        $doctor->load('specialty', 'subscriptions.package');
+        $patientsCount     = $doctor->patients()->count();
+        $appointmentsCount = $doctor->appointments()->count();
+        return view('admin.doctors.show', compact('doctor', 'patientsCount', 'appointmentsCount'));
     }
 
     public function edit(User $doctor)
