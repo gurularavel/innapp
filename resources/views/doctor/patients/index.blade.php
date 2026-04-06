@@ -41,9 +41,22 @@
         @forelse($patients as $patient)
         <div class="px-3 py-3 border-bottom">
             <div class="d-flex justify-content-between align-items-start mb-1">
-                <a href="{{ route('panel.patients.show', $patient) }}" class="fw-semibold text-decoration-none">
-                    {{ $patient->full_name }}
-                </a>
+                <div class="d-flex align-items-center gap-2">
+                    @if($patient->photo_url)
+                        <img src="{{ $patient->photo_url }}" alt="{{ $patient->full_name }}"
+                             class="rounded-circle flex-shrink-0"
+                             style="width:36px;height:36px;object-fit:cover;border:1px solid #dee2e6;">
+                    @else
+                        <div class="rounded-circle bg-success bg-opacity-10 d-flex align-items-center justify-content-center flex-shrink-0"
+                             style="width:36px;height:36px;">
+                            <i class="bi bi-person text-success" style="font-size:.9rem;"></i>
+                        </div>
+                    @endif
+                    <a href="{{ route('panel.patients.show', $patient) }}" class="fw-semibold text-decoration-none">
+                        {{ $patient->full_name }}
+                    </a>
+                </div>
+                <div class="d-flex align-items-center gap-1">
                 @if($patient->gender)
                 @php $genderLabels = ['male'=>'Kişi','female'=>'Qadın','other'=>'Digər']; @endphp
                 <span class="badge bg-light text-secondary border ms-2 flex-shrink-0">{{ $genderLabels[$patient->gender] ?? '' }}</span>
@@ -108,9 +121,21 @@
                     <tr>
                         <td class="text-muted small">{{ $patients->firstItem() + $loop->index }}</td>
                         <td>
-                            <a href="{{ route('panel.patients.show', $patient) }}" class="text-decoration-none fw-medium">
-                                {{ $patient->full_name }}
-                            </a>
+                            <div class="d-flex align-items-center gap-2">
+                                @if($patient->photo_url)
+                                    <img src="{{ $patient->photo_url }}" alt="{{ $patient->full_name }}"
+                                         class="rounded-circle flex-shrink-0"
+                                         style="width:34px;height:34px;object-fit:cover;border:1px solid #dee2e6;">
+                                @else
+                                    <div class="rounded-circle bg-success bg-opacity-10 d-flex align-items-center justify-content-center flex-shrink-0"
+                                         style="width:34px;height:34px;">
+                                        <i class="bi bi-person text-success" style="font-size:.85rem;"></i>
+                                    </div>
+                                @endif
+                                <a href="{{ route('panel.patients.show', $patient) }}" class="text-decoration-none fw-medium">
+                                    {{ $patient->full_name }}
+                                </a>
+                            </div>
                         </td>
                         <td class="text-muted">{{ $patient->phone ?? '—' }}</td>
                         <td class="text-muted small">
