@@ -35,6 +35,12 @@ return [
         ],
     ],
 
+    'kapital' => [
+        'base_url' => env('KAPITAL_BASE_URL', 'https://txpgtst.kapitalbank.az/api'),
+        'username' => env('KAPITAL_USERNAME'),
+        'password' => env('KAPITAL_PASSWORD'),
+    ],
+
     'sms' => [
         'driver'     => env('SMS_DRIVER', 'log'),
         'api_url'    => env('SMS_API_URL'),

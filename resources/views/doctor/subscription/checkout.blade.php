@@ -83,12 +83,23 @@
                             </div>
 
                             <div class="mt-auto">
+                                @error('error')
+                                <div class="alert alert-danger py-2 small mb-3">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>{{ $message }}
+                                </div>
+                                @enderror
+                                @if(session('error'))
+                                <div class="alert alert-danger py-2 small mb-3">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>{{ session('error') }}
+                                </div>
+                                @endif
+
                                 <button type="submit" class="btn btn-success w-100 py-2 fw-semibold fs-6" id="pay-btn">
                                     <i class="bi bi-lock-fill me-2"></i>
                                     <span id="pay-label">Ödənişə Keç</span>
                                 </button>
                                 <div class="text-center mt-2 text-muted" style="font-size:.73rem">
-                                    <i class="bi bi-shield-lock me-1"></i>Bankla inteqrasiya tezliklə əlavə olunacaq
+                                    <i class="bi bi-shield-lock me-1"></i>Kapital Bank təhlükəsiz ödəniş
                                 </div>
                             </div>
                         </form>

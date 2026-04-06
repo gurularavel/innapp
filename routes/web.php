@@ -79,6 +79,7 @@ Route::prefix('panel')->name('panel.')->middleware(['auth', 'role:doctor'])->gro
 
     Route::get('/subscription', [Doctor\SubscriptionController::class, 'index'])->name('subscription.index');
     Route::get('/subscription/success', [Doctor\SubscriptionController::class, 'success'])->name('subscription.success');
+    Route::get('/subscription/callback', [Doctor\SubscriptionController::class, 'callback'])->name('subscription.callback');
     Route::get('/subscription/checkout/{package}', [Doctor\SubscriptionController::class, 'checkout'])->name('subscription.checkout');
     Route::post('/subscription/checkout/{package}', [Doctor\SubscriptionController::class, 'pay'])->name('subscription.pay');
 
