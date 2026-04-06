@@ -114,22 +114,45 @@
                             <i class="bi bi-plus-lg me-1"></i>Yeni Ziyarət
                         </a>
                     </div>
-                    <div class="card-body p-3">
-                        @forelse($patient->visits as $visit)
-                        <div class="visit-entry mb-4 pb-4 {{ !$loop->last ? 'border-bottom' : '' }}">
-                            {{-- Header --}}
-                            <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-2">
-                                <div>
+
+                    @if($patient->visits->isEmpty())
+                    <div class="card-body text-center text-muted py-5">
+                        <i class="bi bi-clock-history fs-1 d-block mb-2 opacity-25"></i>
+                        Tibb tarixi tapılmadı
+                        <div class="mt-2">
+                            <a href="{{ route('panel.patients.visits.create', $patient) }}" class="btn btn-sm btn-outline-info">
+                                <i class="bi bi-plus-lg me-1"></i>İlk ziyarəti əlavə et
+                            </a>
+                        </div>
+                    </div>
+                    @else
+                    <div class="accordion accordion-flush" id="visitsAccordion">
+                        @foreach($patient->visits as $visit)
+                        <div class="accordion-item border-bottom">
+                            <div class="accordion-header d-flex align-items-center pe-2">
+                                {{-- Collapsible trigger --}}
+                                <button class="accordion-button collapsed py-3 flex-grow-1"
+                                        type="button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#visit-body-{{ $visit->id }}"
+                                        aria-expanded="false">
                                     <div class="d-flex align-items-center gap-2 flex-wrap">
-                                        <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 rounded-pill px-3 py-1">
-                                            <i class="bi bi-calendar3 me-1"></i>{{ $visit->visited_at->format('d.m.Y H:i') }}
+                                        <span class="text-muted small" style="min-width:110px;">
+                                            <i class="bi bi-calendar3 me-1 text-info"></i>{{ $visit->visited_at->format('d.m.Y') }}
+                                            <span class="text-muted">{{ $visit->visited_at->format('H:i') }}</span>
                                         </span>
-                                        @if($visit->title)
-                                        <span class="fw-semibold">{{ $visit->title }}</span>
+                                        <span class="fw-semibold text-dark">
+                                            {{ $visit->title ?: '—' }}
+                                        </span>
+                                        @if($visit->files->isNotEmpty())
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary border" style="font-size:.7rem;">
+                                            <i class="bi bi-paperclip me-1"></i>{{ $visit->files->count() }}
+                                        </span>
                                         @endif
                                     </div>
-                                </div>
-                                <div class="d-flex gap-1">
+                                </button>
+                                {{-- Action buttons always visible --}}
+                                <div class="d-flex gap-1 ms-2 flex-shrink-0">
                                     <a href="{{ route('panel.patients.visits.edit', [$patient, $visit]) }}"
                                        class="btn btn-sm btn-outline-secondary">
                                         <i class="bi bi-pencil"></i>
@@ -145,45 +168,59 @@
                                 </div>
                             </div>
 
-                            {{-- Notes --}}
-                            @if($visit->notes)
-                            <div class="small text-muted bg-light rounded p-2 mb-3">{{ $visit->notes }}</div>
-                            @endif
+                            <div id="visit-body-{{ $visit->id }}" class="accordion-collapse collapse"
+                                 data-bs-parent="">
+                                <div class="accordion-body pt-2 pb-3">
+                                    {{-- Notes --}}
+                                    @if($visit->notes)
+                                    <div class="small text-muted bg-light rounded p-2 mb-3">{{ $visit->notes }}</div>
+                                    @endif
 
-                            {{-- Files --}}
-                            @if($visit->files->isNotEmpty())
-                            <div class="row g-2">
-                                @foreach($visit->files as $file)
-                                <div class="col-6 col-sm-4 col-md-3">
-                                    @if($file->is_image)
-                                    <a href="{{ $file->url }}" target="_blank" class="d-block">
-                                        <img src="{{ $file->url }}" alt="{{ $file->original_name }}"
-                                             class="img-fluid rounded border"
-                                             style="width:100%;height:90px;object-fit:cover;">
-                                    </a>
-                                    @else
-                                    <a href="{{ $file->url }}" target="_blank"
-                                       class="d-flex align-items-center gap-2 p-2 border rounded text-decoration-none text-dark bg-white">
-                                        <i class="bi bi-file-earmark-pdf text-danger fs-4"></i>
-                                        <span class="small text-truncate">{{ $file->original_name }}</span>
-                                    </a>
+                                    {{-- Files --}}
+                                    @if($visit->files->isNotEmpty())
+                                    <div class="row g-2">
+                                        @foreach($visit->files as $file)
+                                        <div class="col-6 col-sm-4 col-md-3">
+                                            @if($file->is_image)
+                                            <img src="{{ $file->url }}"
+                                                 alt="{{ $file->original_name }}"
+                                                 class="img-fluid rounded border visit-img"
+                                                 style="width:100%;height:90px;object-fit:cover;cursor:zoom-in;"
+                                                 data-src="{{ $file->url }}"
+                                                 data-name="{{ $file->original_name }}">
+                                            @else
+                                            <a href="{{ $file->url }}" target="_blank"
+                                               class="d-flex align-items-center gap-2 p-2 border rounded text-decoration-none text-dark bg-white h-100">
+                                                <i class="bi bi-file-earmark-pdf text-danger fs-4 flex-shrink-0"></i>
+                                                <span class="small text-truncate">{{ $file->original_name }}</span>
+                                            </a>
+                                            @endif
+                                        </div>
+                                        @endforeach
+                                    </div>
+                                    @elseif(!$visit->notes)
+                                    <div class="text-muted small">Məlumat yoxdur.</div>
                                     @endif
                                 </div>
-                                @endforeach
-                            </div>
-                            @endif
-                        </div>
-                        @empty
-                        <div class="text-center text-muted py-5">
-                            <i class="bi bi-clock-history fs-1 d-block mb-2 opacity-25"></i>
-                            Tibb tarixi tapılmadı
-                            <div class="mt-2">
-                                <a href="{{ route('panel.patients.visits.create', $patient) }}" class="btn btn-sm btn-outline-info">
-                                    <i class="bi bi-plus-lg me-1"></i>İlk ziyarəti əlavə et
-                                </a>
                             </div>
                         </div>
-                        @endforelse
+                        @endforeach
+                    </div>
+                    @endif
+                </div>
+            </div>
+
+            {{-- Image lightbox modal --}}
+            <div class="modal fade" id="imgModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-xl">
+                    <div class="modal-content bg-transparent border-0">
+                        <div class="modal-header border-0 pb-1 px-2">
+                            <span class="text-white small" id="imgModalName"></span>
+                            <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body text-center p-0">
+                            <img id="imgModalSrc" src="" alt="" class="img-fluid rounded" style="max-height:85vh;">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -256,3 +293,30 @@
     </div>
 </div>
 @endsection
+
+@push('styles')
+<style>
+#imgModal .modal-content { background: rgba(0,0,0,.85); }
+.visit-img:hover { opacity:.88; }
+.accordion-button:not(.collapsed) { background:#f0f8ff; color:inherit; box-shadow:none; }
+.accordion-button::after { flex-shrink:0; }
+</style>
+@endpush
+
+@push('scripts')
+<script>
+(function () {
+    const modal    = new bootstrap.Modal(document.getElementById('imgModal'));
+    const modalImg = document.getElementById('imgModalSrc');
+    const modalName = document.getElementById('imgModalName');
+
+    document.querySelectorAll('.visit-img').forEach(img => {
+        img.addEventListener('click', function () {
+            modalImg.src      = this.dataset.src;
+            modalName.textContent = this.dataset.name;
+            modal.show();
+        });
+    });
+})();
+</script>
+@endpush
