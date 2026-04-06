@@ -83,9 +83,10 @@ class KapitalBankService
 
     /**
      * Build the HPP redirect URL.
+     * hppUrl already contains the full path (e.g. https://txpgtst.birbank.az/flex)
      */
     public function buildHppUrl(string $hppUrl, int $orderId, string $orderPassword): string
     {
-        return $hppUrl . '/flex?id=' . $orderId . '&password=' . $orderPassword;
+        return $hppUrl . '?id=' . $orderId . '&password=' . $orderPassword;
     }
 }
