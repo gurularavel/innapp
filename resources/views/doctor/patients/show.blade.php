@@ -178,16 +178,20 @@
 
                                     {{-- Files --}}
                                     @if($visit->files->isNotEmpty())
+                                    @php $imgIndex = 0; @endphp
                                     <div class="row g-2">
                                         @foreach($visit->files as $file)
                                         <div class="col-6 col-sm-4 col-md-3">
                                             @if($file->is_image)
+                                            @php $imgIndex++ @endphp
                                             <img src="{{ $file->url }}"
                                                  alt="{{ $file->original_name }}"
                                                  class="img-fluid rounded border visit-img"
                                                  style="width:100%;height:90px;object-fit:cover;cursor:zoom-in;"
                                                  data-src="{{ $file->url }}"
-                                                 data-name="{{ $file->original_name }}">
+                                                 data-name="{{ $file->original_name }}"
+                                                 data-gallery="visit-{{ $visit->id }}"
+                                                 data-index="{{ $imgIndex - 1 }}">
                                             @else
                                             <a href="{{ $file->url }}" target="_blank"
                                                class="d-flex align-items-center gap-2 p-2 border rounded text-decoration-none text-dark bg-white h-100">
@@ -210,17 +214,31 @@
                 </div>
             </div>
 
-            {{-- Image lightbox modal --}}
-            <div class="modal fade" id="imgModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered modal-xl">
-                    <div class="modal-content bg-transparent border-0">
-                        <div class="modal-header border-0 pb-1 px-2">
-                            <span class="text-white small" id="imgModalName"></span>
-                            <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal"></button>
+            {{-- Gallery Lightbox --}}
+            <div id="glBox" aria-hidden="true">
+                <div id="glBackdrop"></div>
+                <div id="glWrap">
+                    {{-- Toolbar --}}
+                    <div id="glToolbar">
+                        <span id="glCounter" class="text-white small opacity-75"></span>
+                        <span id="glName" class="text-white small opacity-75 text-truncate" style="max-width:200px;"></span>
+                        <div class="d-flex gap-2 ms-auto">
+                            <button id="glZoomOut" class="gl-btn" title="Kiçilt"><i class="bi bi-zoom-out"></i></button>
+                            <button id="glZoomReset" class="gl-btn" title="Orijinal ölçü"><i class="bi bi-aspect-ratio"></i></button>
+                            <button id="glZoomIn"  class="gl-btn" title="Böyüt"><i class="bi bi-zoom-in"></i></button>
+                            <button id="glClose"   class="gl-btn" title="Bağla"><i class="bi bi-x-lg"></i></button>
                         </div>
-                        <div class="modal-body text-center p-0">
-                            <img id="imgModalSrc" src="" alt="" class="img-fluid rounded" style="max-height:85vh;">
-                        </div>
+                    </div>
+                    {{-- Prev / Next --}}
+                    <button id="glPrev" class="gl-nav gl-nav-prev"><i class="bi bi-chevron-left"></i></button>
+                    <button id="glNext" class="gl-nav gl-nav-next"><i class="bi bi-chevron-right"></i></button>
+                    {{-- Image stage --}}
+                    <div id="glStage">
+                        <img id="glImg" src="" alt="" draggable="false">
+                    </div>
+                    {{-- Thumbnails --}}
+                    <div id="glThumbBar">
+                        <div id="glThumbs"></div>
                     </div>
                 </div>
             </div>
@@ -296,25 +314,317 @@
 
 @push('styles')
 <style>
-#imgModal .modal-content { background: rgba(0,0,0,.85); }
-.visit-img:hover { opacity:.88; }
+/* Accordion */
 .accordion-button:not(.collapsed) { background:#f0f8ff; color:inherit; box-shadow:none; }
 .accordion-button::after { flex-shrink:0; }
+.visit-img:hover { opacity:.85; transition:opacity .15s; }
+
+/* ===== Gallery Lightbox ===== */
+#glBox {
+    display:none;
+    position:fixed;inset:0;z-index:9999;
+}
+#glBox.gl-open { display:flex; }
+#glBackdrop {
+    position:absolute;inset:0;
+    background:rgba(0,0,0,.92);
+}
+#glWrap {
+    position:relative;
+    display:flex;flex-direction:column;
+    width:100%;height:100%;
+}
+/* Toolbar */
+#glToolbar {
+    display:flex;align-items:center;gap:10px;
+    padding:8px 12px;
+    background:rgba(0,0,0,.4);
+    z-index:2;flex-shrink:0;
+}
+.gl-btn {
+    background:rgba(255,255,255,.12);
+    border:none;color:#fff;
+    width:34px;height:34px;border-radius:6px;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;font-size:1rem;transition:background .15s;
+}
+.gl-btn:hover { background:rgba(255,255,255,.28); }
+/* Nav arrows */
+.gl-nav {
+    position:absolute;top:50%;transform:translateY(-50%);
+    background:rgba(255,255,255,.13);
+    border:none;color:#fff;
+    width:44px;height:60px;border-radius:8px;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;font-size:1.4rem;z-index:3;
+    transition:background .15s;
+}
+.gl-nav:hover { background:rgba(255,255,255,.3); }
+.gl-nav-prev { left:10px; }
+.gl-nav-next { right:10px; }
+.gl-nav.gl-hidden { display:none; }
+/* Stage */
+#glStage {
+    flex:1;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+    position:relative;
+}
+#glImg {
+    max-width:100%;max-height:100%;
+    object-fit:contain;
+    transform-origin:center center;
+    transition:transform .12s ease;
+    will-change:transform;
+    user-select:none;
+}
+#glImg.gl-grab  { cursor:grab; }
+#glImg.gl-grabbing { cursor:grabbing; }
+/* Thumbnails */
+#glThumbBar {
+    flex-shrink:0;
+    background:rgba(0,0,0,.5);
+    padding:6px 0;
+    overflow-x:auto;
+    white-space:nowrap;
+    text-align:center;
+    scrollbar-width:thin;
+    scrollbar-color:rgba(255,255,255,.2) transparent;
+}
+#glThumbs img {
+    display:inline-block;
+    width:56px;height:42px;
+    object-fit:cover;
+    border-radius:4px;
+    margin:0 3px;
+    opacity:.5;
+    cursor:pointer;
+    border:2px solid transparent;
+    transition:opacity .15s,border-color .15s;
+    flex-shrink:0;
+}
+#glThumbs img.gl-active {
+    opacity:1;
+    border-color:#0d6efd;
+}
 </style>
 @endpush
 
 @push('scripts')
 <script>
 (function () {
-    const modal    = new bootstrap.Modal(document.getElementById('imgModal'));
-    const modalImg = document.getElementById('imgModalSrc');
-    const modalName = document.getElementById('imgModalName');
+    /* ── collect galleries ── */
+    const galleries = {};   // { 'visit-123': [{src,name}, ...] }
 
     document.querySelectorAll('.visit-img').forEach(img => {
+        const key = img.dataset.gallery;
+        if (!galleries[key]) galleries[key] = [];
+        galleries[key].push({ src: img.dataset.src, name: img.dataset.name });
+    });
+
+    /* ── elements ── */
+    const box      = document.getElementById('glBox');
+    const glImg    = document.getElementById('glImg');
+    const glName   = document.getElementById('glName');
+    const glCounter= document.getElementById('glCounter');
+    const glThumbs = document.getElementById('glThumbs');
+    const btnPrev  = document.getElementById('glPrev');
+    const btnNext  = document.getElementById('glNext');
+    const btnClose = document.getElementById('glClose');
+    const btnZoomIn  = document.getElementById('glZoomIn');
+    const btnZoomOut = document.getElementById('glZoomOut');
+    const btnReset   = document.getElementById('glZoomReset');
+    const backdrop   = document.getElementById('glBackdrop');
+
+    /* ── state ── */
+    let items  = [];
+    let index  = 0;
+    let scale  = 1;
+    let tx = 0, ty = 0;     // pan offset
+    let dragging = false, dragStartX, dragStartY, dragTx, dragTy;
+
+    /* ── open / close ── */
+    function open(galleryKey, startIndex) {
+        items = galleries[galleryKey] || [];
+        if (!items.length) return;
+        index = startIndex;
+        scale = 1; tx = 0; ty = 0;
+        buildThumbs();
+        go(index);
+        box.classList.add('gl-open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function close() {
+        box.classList.remove('gl-open');
+        document.body.style.overflow = '';
+        glImg.src = '';
+    }
+
+    function go(i) {
+        index = i;
+        const item = items[index];
+        scale = 1; tx = 0; ty = 0;
+        applyTransform();
+        glImg.src   = item.src;
+        glName.textContent = item.name;
+        glCounter.textContent = (index + 1) + ' / ' + items.length;
+        btnPrev.classList.toggle('gl-hidden', items.length <= 1);
+        btnNext.classList.toggle('gl-hidden', items.length <= 1);
+        // thumbs highlight
+        glThumbs.querySelectorAll('img').forEach((t, idx) => {
+            t.classList.toggle('gl-active', idx === index);
+        });
+        // scroll active thumb into view
+        const active = glThumbs.querySelector('img.gl-active');
+        if (active) active.scrollIntoView({ inline: 'center', behavior: 'smooth' });
+    }
+
+    function buildThumbs() {
+        glThumbs.innerHTML = '';
+        items.forEach((item, i) => {
+            const t = document.createElement('img');
+            t.src = item.src;
+            t.alt = item.name;
+            t.title = item.name;
+            t.addEventListener('click', () => go(i));
+            glThumbs.appendChild(t);
+        });
+    }
+
+    /* ── zoom ── */
+    const ZOOM_STEP = 0.25, ZOOM_MIN = 1, ZOOM_MAX = 5;
+
+    function zoom(delta, cx, cy) {
+        const newScale = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, scale + delta));
+        if (newScale === scale) return;
+
+        // zoom toward cursor/center
+        const rect = glImg.getBoundingClientRect();
+        const ox = (cx ?? rect.left + rect.width / 2)  - rect.left - rect.width  / 2;
+        const oy = (cy ?? rect.top  + rect.height / 2) - rect.top  - rect.height / 2;
+        tx += ox - ox * (newScale / scale);
+        ty += oy - oy * (newScale / scale);
+
+        scale = newScale;
+        clampPan();
+        applyTransform();
+        updateCursor();
+    }
+
+    function clampPan() {
+        if (scale <= 1) { tx = 0; ty = 0; return; }
+        const rect = glImg.getBoundingClientRect();
+        const maxX = (rect.width  * (scale - 1)) / 2;
+        const maxY = (rect.height * (scale - 1)) / 2;
+        tx = Math.max(-maxX, Math.min(maxX, tx));
+        ty = Math.max(-maxY, Math.min(maxY, ty));
+    }
+
+    function applyTransform() {
+        glImg.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+    }
+
+    function updateCursor() {
+        glImg.classList.toggle('gl-grab', scale > 1);
+    }
+
+    /* ── pan (drag) ── */
+    glImg.addEventListener('mousedown', e => {
+        if (scale <= 1) return;
+        dragging = true;
+        dragStartX = e.clientX; dragStartY = e.clientY;
+        dragTx = tx; dragTy = ty;
+        glImg.classList.add('gl-grabbing');
+        e.preventDefault();
+    });
+    document.addEventListener('mousemove', e => {
+        if (!dragging) return;
+        tx = dragTx + (e.clientX - dragStartX);
+        ty = dragTy + (e.clientY - dragStartY);
+        clampPan();
+        applyTransform();
+    });
+    document.addEventListener('mouseup', () => {
+        if (!dragging) return;
+        dragging = false;
+        glImg.classList.remove('gl-grabbing');
+    });
+
+    /* ── touch pan/pinch ── */
+    let lastPinchDist = null;
+    glImg.addEventListener('touchstart', e => {
+        if (e.touches.length === 2) {
+            lastPinchDist = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            );
+        } else if (e.touches.length === 1 && scale > 1) {
+            dragging = true;
+            dragStartX = e.touches[0].clientX;
+            dragStartY = e.touches[0].clientY;
+            dragTx = tx; dragTy = ty;
+        }
+    }, { passive: true });
+    glImg.addEventListener('touchmove', e => {
+        if (e.touches.length === 2 && lastPinchDist !== null) {
+            const dist = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            );
+            const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+            const cy = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+            zoom((dist - lastPinchDist) * 0.02, cx, cy);
+            lastPinchDist = dist;
+            e.preventDefault();
+        } else if (e.touches.length === 1 && dragging) {
+            tx = dragTx + (e.touches[0].clientX - dragStartX);
+            ty = dragTy + (e.touches[0].clientY - dragStartY);
+            clampPan();
+            applyTransform();
+            e.preventDefault();
+        }
+    }, { passive: false });
+    glImg.addEventListener('touchend', () => {
+        lastPinchDist = null;
+        dragging = false;
+    });
+
+    /* ── wheel zoom ── */
+    document.getElementById('glStage').addEventListener('wheel', e => {
+        e.preventDefault();
+        zoom(e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP, e.clientX, e.clientY);
+    }, { passive: false });
+
+    /* ── double-click toggle zoom ── */
+    glImg.addEventListener('dblclick', e => {
+        if (scale > 1) { scale = 1; tx = 0; ty = 0; applyTransform(); updateCursor(); }
+        else zoom(1, e.clientX, e.clientY);
+    });
+
+    /* ── buttons ── */
+    btnZoomIn.addEventListener('click',  () => zoom(ZOOM_STEP));
+    btnZoomOut.addEventListener('click', () => zoom(-ZOOM_STEP));
+    btnReset.addEventListener('click',   () => { scale = 1; tx = 0; ty = 0; applyTransform(); updateCursor(); });
+    btnClose.addEventListener('click', close);
+    backdrop.addEventListener('click', e => { if (e.target === backdrop) close(); });
+    btnPrev.addEventListener('click', () => go((index - 1 + items.length) % items.length));
+    btnNext.addEventListener('click', () => go((index + 1) % items.length));
+
+    /* ── keyboard ── */
+    document.addEventListener('keydown', e => {
+        if (!box.classList.contains('gl-open')) return;
+        if (e.key === 'Escape')      close();
+        if (e.key === 'ArrowLeft')   go((index - 1 + items.length) % items.length);
+        if (e.key === 'ArrowRight')  go((index + 1) % items.length);
+        if (e.key === '+')           zoom(ZOOM_STEP);
+        if (e.key === '-')           zoom(-ZOOM_STEP);
+        if (e.key === '0')           { scale=1;tx=0;ty=0;applyTransform();updateCursor(); }
+    });
+
+    /* ── trigger on thumbnail click ── */
+    document.querySelectorAll('.visit-img').forEach(img => {
         img.addEventListener('click', function () {
-            modalImg.src      = this.dataset.src;
-            modalName.textContent = this.dataset.name;
-            modal.show();
+            open(this.dataset.gallery, parseInt(this.dataset.index));
         });
     });
 })();
