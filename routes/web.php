@@ -59,6 +59,15 @@ Route::prefix('panel')->name('panel.')->middleware(['auth', 'role:doctor'])->gro
     Route::get('patients/search', [Doctor\PatientController::class, 'search'])->name('patients.search');
     Route::resource('patients', Doctor\PatientController::class)->middleware('subscription');
 
+    Route::prefix('patients/{patient}/visits')->name('patients.visits.')->group(function () {
+        Route::get('create', [Doctor\PatientVisitController::class, 'create'])->name('create');
+        Route::post('/', [Doctor\PatientVisitController::class, 'store'])->name('store');
+        Route::get('{visit}/edit', [Doctor\PatientVisitController::class, 'edit'])->name('edit');
+        Route::patch('{visit}', [Doctor\PatientVisitController::class, 'update'])->name('update');
+        Route::delete('{visit}', [Doctor\PatientVisitController::class, 'destroy'])->name('destroy');
+        Route::delete('files/{file}', [Doctor\PatientVisitController::class, 'destroyFile'])->name('files.destroy');
+    });
+
     Route::resource('treatment-types', Doctor\TreatmentTypeController::class);
 
     Route::get('appointments/available-slots', [Doctor\AppointmentController::class, 'availableSlots'])->name('appointments.available-slots');

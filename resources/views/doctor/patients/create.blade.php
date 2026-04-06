@@ -14,10 +14,34 @@
                 </a>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ route('panel.patients.store') }}">
+                <form method="POST" action="{{ route('panel.patients.store') }}" enctype="multipart/form-data">
                     @csrf
 
                     <div class="row g-3">
+                        {{-- Photo Upload --}}
+                        <div class="col-12">
+                            <label class="form-label fw-medium">Profil Şəkli</label>
+                            <div class="d-flex align-items-center gap-3">
+                                <div id="photo-preview-wrap" class="rounded-circle overflow-hidden bg-light d-flex align-items-center justify-content-center flex-shrink-0"
+                                     style="width:80px;height:80px;border:2px dashed #dee2e6;">
+                                    <i id="photo-placeholder" class="bi bi-person fs-2 text-muted"></i>
+                                    <img id="photo-preview" src="" alt="" class="d-none w-100 h-100" style="object-fit:cover;">
+                                </div>
+                                <div>
+                                    <input type="file" id="photo" name="photo" accept="image/*" class="d-none"
+                                           onchange="previewPhoto(this)">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary"
+                                            onclick="document.getElementById('photo').click()">
+                                        <i class="bi bi-camera me-1"></i>Şəkil Seç
+                                    </button>
+                                    <div class="text-muted mt-1" style="font-size:.75rem;">JPG, PNG · Maks 2MB</div>
+                                </div>
+                            </div>
+                            @error('photo')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+
                         <div class="col-md-6">
                             <label for="name" class="form-label fw-medium">Ad <span class="text-danger">*</span></label>
                             <div class="position-relative">
@@ -206,6 +230,18 @@
 
 @push('scripts')
 <script>
+function previewPhoto(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            document.getElementById('photo-preview').src = e.target.result;
+            document.getElementById('photo-preview').classList.remove('d-none');
+            document.getElementById('photo-placeholder').classList.add('d-none');
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
 (function () {
     const searchUrl      = '{{ route('panel.patients.search') }}';
     const appointmentUrl = '{{ route('panel.appointments.create') }}';

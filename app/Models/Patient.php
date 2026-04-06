@@ -18,6 +18,7 @@ class Patient extends Model
         'blood_type',
         'marital_status',
         'notes',
+        'photo',
     ];
 
     protected $casts = [
@@ -32,6 +33,19 @@ class Patient extends Model
     public function appointments()
     {
         return $this->hasMany(Appointment::class);
+    }
+
+    public function visits()
+    {
+        return $this->hasMany(PatientVisit::class)->latest('visited_at');
+    }
+
+    public function getPhotoUrlAttribute(): string
+    {
+        if ($this->photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($this->photo)) {
+            return asset('storage/' . $this->photo);
+        }
+        return '';
     }
 
     public function getFullNameAttribute(): string

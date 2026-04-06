@@ -14,11 +14,52 @@
                 </a>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ route('panel.patients.update', $patient) }}">
+                <form method="POST" action="{{ route('panel.patients.update', $patient) }}" enctype="multipart/form-data">
                     @csrf
                     @method('PATCH')
 
                     <div class="row g-3">
+                        {{-- Photo --}}
+                        <div class="col-12">
+                            <label class="form-label fw-medium">Profil Şəkli</label>
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rounded-circle overflow-hidden bg-light d-flex align-items-center justify-content-center flex-shrink-0"
+                                     style="width:80px;height:80px;border:2px dashed #dee2e6;">
+                                    @if($patient->photo_url)
+                                        <img id="photo-preview" src="{{ $patient->photo_url }}" alt=""
+                                             class="w-100 h-100" style="object-fit:cover;">
+                                        <i id="photo-placeholder" class="bi bi-person fs-2 text-muted d-none"></i>
+                                    @else
+                                        <i id="photo-placeholder" class="bi bi-person fs-2 text-muted"></i>
+                                        <img id="photo-preview" src="" alt="" class="d-none w-100 h-100" style="object-fit:cover;">
+                                    @endif
+                                </div>
+                                <div>
+                                    <input type="file" id="photo" name="photo" accept="image/*" class="d-none"
+                                           onchange="previewPhoto(this)">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary"
+                                            onclick="document.getElementById('photo').click()">
+                                        <i class="bi bi-camera me-1"></i>Şəkli Dəyiş
+                                    </button>
+                                    @if($patient->photo)
+                                    <div class="mt-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="remove_photo"
+                                                   value="1" id="remove_photo" onchange="toggleRemovePhoto(this)">
+                                            <label class="form-check-label text-danger small" for="remove_photo">
+                                                Şəkli sil
+                                            </label>
+                                        </div>
+                                    </div>
+                                    @endif
+                                    <div class="text-muted mt-1" style="font-size:.75rem;">JPG, PNG · Maks 2MB</div>
+                                </div>
+                            </div>
+                            @error('photo')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+
                         <div class="col-md-6">
                             <label for="name" class="form-label fw-medium">Ad <span class="text-danger">*</span></label>
                             <input type="text" class="form-control @error('name') is-invalid @enderror"
@@ -131,3 +172,31 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+function previewPhoto(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            document.getElementById('photo-preview').src = e.target.result;
+            document.getElementById('photo-preview').classList.remove('d-none');
+            document.getElementById('photo-placeholder').classList.add('d-none');
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+function toggleRemovePhoto(cb) {
+    if (cb.checked) {
+        document.getElementById('photo-preview').classList.add('d-none');
+        document.getElementById('photo-placeholder').classList.remove('d-none');
+    } else {
+        @if($patient->photo_url)
+        document.getElementById('photo-preview').src = '{{ $patient->photo_url }}';
+        document.getElementById('photo-preview').classList.remove('d-none');
+        document.getElementById('photo-placeholder').classList.add('d-none');
+        @endif
+    }
+}
+</script>
+@endpush

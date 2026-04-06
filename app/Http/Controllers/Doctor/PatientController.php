@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Patient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class PatientController extends Controller
 {
@@ -79,6 +80,7 @@ class PatientController extends Controller
             'blood_type'     => 'nullable|in:A+,A-,B+,B-,AB+,AB-,O+,O-',
             'marital_status' => 'nullable|in:single,married,divorced,widowed',
             'notes'          => 'nullable|string',
+            'photo'          => 'nullable|image|max:2048',
         ]);
 
         $validated['doctor_id'] = $doctor->id;
@@ -97,6 +99,10 @@ class PatientController extends Controller
                 ]);
         }
 
+        if ($request->hasFile('photo')) {
+            $validated['photo'] = $request->file('photo')->store('patients/photos', 'public');
+        }
+
         Patient::create($validated);
 
         if ($subscription) {
@@ -110,7 +116,7 @@ class PatientController extends Controller
     public function show(Patient $patient)
     {
         $this->authorizePatient($patient);
-        $patient->load('appointments.treatmentType');
+        $patient->load(['appointments.treatmentType', 'visits.files']);
         return view('doctor.patients.show', compact('patient'));
     }
 
@@ -134,7 +140,19 @@ class PatientController extends Controller
             'blood_type'     => 'nullable|in:A+,A-,B+,B-,AB+,AB-,O+,O-',
             'marital_status' => 'nullable|in:single,married,divorced,widowed',
             'notes'          => 'nullable|string',
+            'photo'          => 'nullable|image|max:2048',
+            'remove_photo'   => 'nullable|boolean',
         ]);
+
+        if ($request->hasFile('photo')) {
+            if ($patient->photo) {
+                Storage::disk('public')->delete($patient->photo);
+            }
+            $validated['photo'] = $request->file('photo')->store('patients/photos', 'public');
+        } elseif ($request->boolean('remove_photo') && $patient->photo) {
+            Storage::disk('public')->delete($patient->photo);
+            $validated['photo'] = null;
+        }
 
         $patient->update($validated);
 
