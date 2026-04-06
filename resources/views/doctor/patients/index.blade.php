@@ -40,8 +40,9 @@
     <div class="d-md-none">
         @forelse($patients as $patient)
         <div class="px-3 py-3 border-bottom">
-            <div class="d-flex justify-content-between align-items-start mb-1">
-                <div class="d-flex align-items-center gap-2">
+            {{-- Name row --}}
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <div class="d-flex align-items-center gap-2 overflow-hidden">
                     @if($patient->photo_url)
                         <img src="{{ $patient->photo_url }}" alt="{{ $patient->full_name }}"
                              class="rounded-circle flex-shrink-0"
@@ -52,16 +53,16 @@
                             <i class="bi bi-person text-success" style="font-size:.9rem;"></i>
                         </div>
                     @endif
-                    <a href="{{ route('panel.patients.show', $patient) }}" class="fw-semibold text-decoration-none">
+                    <a href="{{ route('panel.patients.show', $patient) }}" class="fw-semibold text-decoration-none text-truncate">
                         {{ $patient->full_name }}
                     </a>
                 </div>
-                <div class="d-flex align-items-center gap-1">
                 @if($patient->gender)
                 @php $genderLabels = ['male'=>'Kişi','female'=>'Qadın','other'=>'Digər']; @endphp
-                <span class="badge bg-light text-secondary border ms-2 flex-shrink-0">{{ $genderLabels[$patient->gender] ?? '' }}</span>
+                <span class="badge bg-light text-secondary border flex-shrink-0 ms-2">{{ $genderLabels[$patient->gender] ?? '' }}</span>
                 @endif
             </div>
+            {{-- Phone / birth date --}}
             <div class="text-muted small mb-1">
                 @if($patient->phone)
                     <i class="bi bi-telephone me-1"></i>{{ $patient->phone }}
@@ -72,6 +73,7 @@
                     @if($patient->age) ({{ $patient->age }} yaş) @endif
                 @endif
             </div>
+            {{-- Actions --}}
             <div class="d-flex align-items-center justify-content-between mt-2">
                 <span class="badge bg-primary bg-opacity-10 text-primary">
                     <i class="bi bi-calendar-check me-1"></i>{{ $patient->appointments_count ?? $patient->appointments->count() }} randevu
