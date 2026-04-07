@@ -41,14 +41,25 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label for="title" class="form-label fw-medium">Müalicə / Başlıq</label>
-                            <input type="text"
-                                   class="form-control @error('title') is-invalid @enderror"
-                                   id="title" name="title"
-                                   value="{{ old('title', $visit->title ?? '') }}"
-                                   placeholder="Məs: Diş çəkilməsi, Rentgen, Ağartma...">
+                            <label for="title-select" class="form-label fw-medium">Xidmət Növü</label>
+                            @php $currentTitle = old('title', $visit->title ?? ''); @endphp
+                            <select class="form-select @error('title') is-invalid @enderror"
+                                    id="title-select">
+                                <option value="">— Seçin (ixtiyari) —</option>
+                                @foreach($treatmentTypes as $type)
+                                    <option value="{{ $type->name }}"
+                                            {{ $currentTitle === $type->name ? 'selected' : '' }}>
+                                        {{ $type->name }}
+                                    </option>
+                                @endforeach
+                                <option value="__add_new__" style="color:#0d6efd;font-weight:500;">
+                                    + Yeni növ əlavə et
+                                </option>
+                            </select>
+                            {{-- hidden input that actually submits the value --}}
+                            <input type="hidden" id="title-hidden" name="title" value="{{ $currentTitle }}">
                             @error('title')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -123,10 +134,151 @@
         </div>
     </div>
 </div>
+
+{{-- Modal: Yeni xidmət növü --}}
+<div class="modal fade" id="addTreatmentTypeModal" tabindex="-1" aria-labelledby="addTreatmentTypeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title fw-semibold" id="addTreatmentTypeModalLabel">
+                    <i class="bi bi-plus-circle me-1 text-primary"></i>Yeni Xidmət Növü
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="modal-error" class="alert alert-danger d-none"></div>
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Ad <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="modal-name" placeholder="Xidmət adı">
+                </div>
+                <div class="row g-3">
+                    <div class="col-6">
+                        <label class="form-label fw-medium">Qiymət (₼)</label>
+                        <input type="number" step="0.01" min="0" class="form-control" id="modal-price" placeholder="İxtiyari">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label fw-medium">Müddət (dəq)</label>
+                        <input type="number" min="5" step="5" class="form-control" id="modal-duration" value="30">
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <label class="form-label fw-medium">Rəng</label>
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="color" class="form-control form-control-color" id="modal-color" value="#3788d8" style="width:50px;height:38px;">
+                        <span class="text-muted small">Təqvimdə göstəriləcək rəng</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Ləğv et</button>
+                <button type="button" class="btn btn-primary" id="modal-save-btn">
+                    <span id="modal-save-text"><i class="bi bi-check-lg me-1"></i>Əlavə et</span>
+                    <span id="modal-save-spinner" class="d-none">
+                        <span class="spinner-border spinner-border-sm me-1"></span>Gözləyin...
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
 <script>
+// ── Tom Select: Xidmət növü ───────────────────────────────────────────────────
+const titleTS = new TomSelect('#title-select', {
+    create: false,
+    allowEmptyOption: true,
+    onDropdownOpen: function() { const s = this; setTimeout(() => s.setTextboxValue(''), 0); },
+    render: {
+        option: function(data, escape) {
+            if (data.value === '__add_new__')
+                return `<div class="option" style="color:#0d6efd;font-weight:500;">${escape(data.text)}</div>`;
+            return `<div class="option">${escape(data.text)}</div>`;
+        }
+    },
+    onChange: function(value) {
+        if (value === '__add_new__') {
+            this.setValue(this._prev ?? '', true);
+            new bootstrap.Modal(document.getElementById('addTreatmentTypeModal')).show();
+            return;
+        }
+        this._prev = value;
+        document.getElementById('title-hidden').value = value;
+    }
+});
+titleTS._prev = titleTS.getValue();
+document.getElementById('title-hidden').value = titleTS.getValue();
+
+// ── Modal: add new treatment type via AJAX ──────────────────────────────────
+document.getElementById('modal-save-btn').addEventListener('click', function () {
+    const name     = document.getElementById('modal-name').value.trim();
+    const price    = document.getElementById('modal-price').value;
+    const duration = document.getElementById('modal-duration').value;
+    const color    = document.getElementById('modal-color').value;
+    const errorBox = document.getElementById('modal-error');
+
+    errorBox.classList.add('d-none');
+    errorBox.textContent = '';
+
+    if (!name) {
+        errorBox.textContent = 'Ad mütləq doldurulmalıdır.';
+        errorBox.classList.remove('d-none');
+        document.getElementById('modal-name').focus();
+        return;
+    }
+
+    const saveText    = document.getElementById('modal-save-text');
+    const saveSpinner = document.getElementById('modal-save-spinner');
+    saveText.classList.add('d-none');
+    saveSpinner.classList.remove('d-none');
+    this.disabled = true;
+
+    fetch('{{ route('panel.treatment-types.store') }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+        },
+        body: JSON.stringify({
+            name,
+            price: price || null,
+            duration_minutes: duration || 30,
+            color: color || '#3788d8',
+        }),
+    })
+    .then(async r => {
+        const data = await r.json();
+        if (!r.ok) {
+            const msg = data.errors?.name?.[0] || data.message || 'Xəta baş verdi.';
+            throw new Error(msg);
+        }
+        return data;
+    })
+    .then(type => {
+        titleTS.addOption({ value: type.name, text: type.name });
+        titleTS.setValue(type.name); // onChange fires → title-hidden updated
+
+        // Reset modal fields & close
+        document.getElementById('modal-name').value     = '';
+        document.getElementById('modal-price').value    = '';
+        document.getElementById('modal-duration').value = '30';
+        document.getElementById('modal-color').value    = '#3788d8';
+        bootstrap.Modal.getInstance(document.getElementById('addTreatmentTypeModal')).hide();
+    })
+    .catch(err => {
+        errorBox.textContent = err.message;
+        errorBox.classList.remove('d-none');
+    })
+    .finally(() => {
+        saveText.classList.remove('d-none');
+        saveSpinner.classList.add('d-none');
+        document.getElementById('modal-save-btn').disabled = false;
+    });
+});
+
+// ── File drag-and-drop ──────────────────────────────────────────────────────
 (function () {
     const dropArea   = document.getElementById('drop-area');
     const fileInput  = document.getElementById('files');

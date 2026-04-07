@@ -31,7 +31,17 @@ class TreatmentTypeController extends Controller
 
         $validated['doctor_id'] = Auth::id();
 
-        TreatmentType::create($validated);
+        $type = TreatmentType::create($validated);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'id'               => $type->id,
+                'name'             => $type->name,
+                'price'            => $type->price,
+                'duration_minutes' => $type->duration_minutes,
+                'color'            => $type->color,
+            ]);
+        }
 
         return redirect()->route('panel.treatment-types.index')
             ->with('success', 'Müalicə növü yaradıldı.');

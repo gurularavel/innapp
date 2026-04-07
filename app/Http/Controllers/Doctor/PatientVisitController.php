@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Patient;
 use App\Models\PatientVisit;
 use App\Models\PatientVisitFile;
+use App\Models\TreatmentType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -15,7 +16,8 @@ class PatientVisitController extends Controller
     public function create(Patient $patient)
     {
         $this->authorizePatient($patient);
-        return view('doctor.patients.visits.form', compact('patient'));
+        $treatmentTypes = TreatmentType::where('doctor_id', Auth::id())->orderBy('name')->get();
+        return view('doctor.patients.visits.form', compact('patient', 'treatmentTypes'));
     }
 
     public function store(Request $request, Patient $patient)
@@ -58,7 +60,8 @@ class PatientVisitController extends Controller
         $this->authorizePatient($patient);
         $this->authorizeVisit($patient, $visit);
         $visit->load('files');
-        return view('doctor.patients.visits.form', compact('patient', 'visit'));
+        $treatmentTypes = TreatmentType::where('doctor_id', Auth::id())->orderBy('name')->get();
+        return view('doctor.patients.visits.form', compact('patient', 'visit', 'treatmentTypes'));
     }
 
     public function update(Request $request, Patient $patient, PatientVisit $visit)

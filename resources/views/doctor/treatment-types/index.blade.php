@@ -5,11 +5,23 @@
 
 @section('content')
 <div class="card border-0 shadow-sm">
-    <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
-        <h6 class="mb-0 fw-semibold">Xidmət Növləri</h6>
-        <a href="{{ route('panel.treatment-types.create') }}" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-lg me-1"></i>Yeni Növ
-        </a>
+    <div class="card-header bg-white border-bottom">
+        <div class="d-flex justify-content-between align-items-center gap-2">
+            <h6 class="mb-0 fw-semibold flex-shrink-0">Xidmət Növləri</h6>
+            <div class="flex-grow-1">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="bi bi-search text-muted"></i>
+                    </span>
+                    <input type="search" id="treatment-search"
+                           class="form-control border-start-0 ps-0"
+                           placeholder="Axtar...">
+                </div>
+            </div>
+            <a href="{{ route('panel.treatment-types.create') }}" class="btn btn-primary btn-sm flex-shrink-0">
+                <i class="bi bi-plus-lg"></i><span class="d-none d-md-inline ms-1">Yeni Növ</span>
+            </a>
+        </div>
     </div>
 
     {{-- Mobile card view --}}
@@ -102,3 +114,24 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.getElementById('treatment-search').addEventListener('input', function () {
+    const q = this.value.toLowerCase().trim();
+
+    // Mobile cards
+    document.querySelectorAll('.d-md-none > .border-bottom').forEach(function (card) {
+        const name = card.querySelector('.fw-medium')?.textContent.toLowerCase() || '';
+        card.style.display = (!q || name.includes(q)) ? '' : 'none';
+    });
+
+    // Desktop table rows
+    document.querySelectorAll('.table tbody tr').forEach(function (row) {
+        if (row.querySelector('td[colspan]')) return; // empty state row
+        const name = row.querySelector('.fw-medium')?.textContent.toLowerCase() || '';
+        row.style.display = (!q || name.includes(q)) ? '' : 'none';
+    });
+});
+</script>
+@endpush
