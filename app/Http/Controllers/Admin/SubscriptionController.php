@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\DoctorSubscription;
 use App\Models\Package;
+use App\Models\SubscriptionPayment;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -61,5 +62,39 @@ class SubscriptionController extends Controller
         $subscription->delete();
         return redirect()->route('admin.subscriptions.index')
             ->with('success', 'Abunəlik silindi.');
+    }
+
+    public function payments(Request $request)
+    {
+        $query = SubscriptionPayment::with('doctor', 'package')->latest();
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('doctor_id')) {
+            $query->where('doctor_id', $request->doctor_id);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $payments = $query->paginate(20)->withQueryString();
+
+        $stats = [
+            'total_paid'   => SubscriptionPayment::where('status', 'paid')->sum('amount'),
+            'count_paid'   => SubscriptionPayment::where('status', 'paid')->count(),
+            'count_pending' => SubscriptionPayment::where('status', 'pending')->count(),
+            'count_failed' => SubscriptionPayment::where('status', 'failed')->count(),
+        ];
+
+        $doctors = User::where('role', 'doctor')->orderBy('name')->get();
+
+        return view('admin.payments.index', compact('payments', 'stats', 'doctors'));
     }
 }

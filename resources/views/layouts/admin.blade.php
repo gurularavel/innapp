@@ -60,6 +60,11 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a href="{{ route('admin.payments.index') }}" class="nav-link {{ request()->routeIs('admin.payments*') ? 'active' : '' }}">
+                    <i class="bi bi-receipt me-2"></i>Ödənişlər
+                </a>
+            </li>
+            <li class="nav-item">
                 <a href="{{ route('admin.sms-logs.index') }}" class="nav-link {{ request()->routeIs('admin.sms-logs*') ? 'active' : '' }}">
                     <i class="bi bi-chat-dots me-2"></i>SMS Loqlar
                 </a>

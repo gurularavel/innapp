@@ -41,6 +41,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin'])
     Route::post('subscriptions', [Admin\SubscriptionController::class, 'store'])->name('subscriptions.store');
     Route::delete('subscriptions/{subscription}', [Admin\SubscriptionController::class, 'destroy'])->name('subscriptions.destroy');
 
+    Route::get('payments', [Admin\SubscriptionController::class, 'payments'])->name('payments.index');
+
     Route::get('sms-logs', [Admin\SmsLogController::class, 'index'])->name('sms-logs.index');
 
     Route::get('settings/sms-templates', [Admin\SettingController::class, 'smsTemplates'])->name('settings.sms-templates');
