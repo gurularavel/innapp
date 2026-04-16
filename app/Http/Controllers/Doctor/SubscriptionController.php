@@ -7,6 +7,7 @@ use App\Models\DoctorSubscription;
 use App\Models\Package;
 use App\Models\SubscriptionPayment;
 use App\Services\KapitalBankService;
+use App\Services\SmsService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -121,6 +122,15 @@ class SubscriptionController extends Controller
 
         // Activate subscription
         [$startsAt, $expiresAt] = $this->activateSubscription($payment);
+
+        // Notify admin
+        try {
+            $doctor  = $payment->doctor;
+            $message = "{$doctor->name} {$doctor->surname} - {$payment->package->name} paketi aldı. Məbləğ: {$payment->amount} AZN. Ödəniş qəbul olundu.";
+            app(SmsService::class)->send('+994557038008', $message);
+        } catch (\Exception $e) {
+            Log::warning('Admin SMS notification failed: ' . $e->getMessage());
+        }
 
         return redirect()->route('panel.subscription.success')
             ->with('sub_package', $payment->package->name)
