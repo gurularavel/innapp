@@ -4,57 +4,57 @@
 @section('page-title', 'Dashboard')
 
 @section('content')
-<div class="row g-4 mb-4">
+<div class="row g-3 mb-4">
     <div class="col-sm-6 col-xl-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body d-flex align-items-center gap-3">
-                <div class="rounded-circle bg-primary bg-opacity-10 p-3">
-                    <i class="bi bi-person-badge fs-4 text-primary"></i>
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center gap-3" style="border-top:3px solid #1a85d9;border-radius:.65rem .65rem 0 0;">
+                <div class="stat-icon" style="background:#e8f4ff;color:#1a85d9;">
+                    <i class="bi bi-person-badge-fill"></i>
                 </div>
                 <div>
-                    <div class="fs-4 fw-bold">{{ $stats['total_doctors'] }}</div>
-                    <div class="text-muted small">Cəmi İstifadəçilər</div>
-                    <div class="text-success small">{{ $stats['active_doctors'] }} aktiv</div>
+                    <div class="stat-value">{{ $stats['total_doctors'] }}</div>
+                    <div class="stat-label">Cəmi İstifadəçilər</div>
+                    <div style="font-size:.75rem;color:#1db87a;margin-top:.15rem;">{{ $stats['active_doctors'] }} aktiv</div>
                 </div>
             </div>
         </div>
     </div>
     <div class="col-sm-6 col-xl-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body d-flex align-items-center gap-3">
-                <div class="rounded-circle bg-success bg-opacity-10 p-3">
-                    <i class="bi bi-people fs-4 text-success"></i>
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center gap-3" style="border-top:3px solid #1db87a;border-radius:.65rem .65rem 0 0;">
+                <div class="stat-icon" style="background:#e4f9f0;color:#1db87a;">
+                    <i class="bi bi-people-fill"></i>
                 </div>
                 <div>
-                    <div class="fs-4 fw-bold">{{ $stats['total_patients'] }}</div>
-                    <div class="text-muted small">Cəmi Müştərilər</div>
+                    <div class="stat-value">{{ $stats['total_patients'] }}</div>
+                    <div class="stat-label">Cəmi Müştərilər</div>
                 </div>
             </div>
         </div>
     </div>
     <div class="col-sm-6 col-xl-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body d-flex align-items-center gap-3">
-                <div class="rounded-circle bg-info bg-opacity-10 p-3">
-                    <i class="bi bi-calendar-check fs-4 text-info"></i>
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center gap-3" style="border-top:3px solid #00b4d8;border-radius:.65rem .65rem 0 0;">
+                <div class="stat-icon" style="background:#e0f7fd;color:#00b4d8;">
+                    <i class="bi bi-calendar-check-fill"></i>
                 </div>
                 <div>
-                    <div class="fs-4 fw-bold">{{ $stats['today_appointments'] }}</div>
-                    <div class="text-muted small">Bu günkü Randevular</div>
-                    <div class="text-info small">{{ $stats['total_appointments'] }} cəmi</div>
+                    <div class="stat-value">{{ $stats['today_appointments'] }}</div>
+                    <div class="stat-label">Bu Günkü Randevular</div>
+                    <div style="font-size:.75rem;color:#00b4d8;margin-top:.15rem;">{{ $stats['total_appointments'] }} cəmi</div>
                 </div>
             </div>
         </div>
     </div>
     <div class="col-sm-6 col-xl-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body d-flex align-items-center gap-3">
-                <div class="rounded-circle bg-warning bg-opacity-10 p-3">
-                    <i class="bi bi-chat-dots fs-4 text-warning"></i>
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center gap-3" style="border-top:3px solid #e84393;border-radius:.65rem .65rem 0 0;">
+                <div class="stat-icon" style="background:#fde8f2;color:#e84393;">
+                    <i class="bi bi-chat-dots-fill"></i>
                 </div>
                 <div>
-                    <div class="fs-4 fw-bold">{{ $stats['total_sms'] }}</div>
-                    <div class="text-muted small">Göndərilən SMS</div>
+                    <div class="stat-value">{{ $stats['total_sms'] }}</div>
+                    <div class="stat-label">Göndərilən SMS</div>
                 </div>
             </div>
         </div>

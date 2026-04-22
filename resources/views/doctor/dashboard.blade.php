@@ -18,55 +18,55 @@
 @endif
 
 {{-- Stats --}}
-<div class="row g-4 mb-4">
+<div class="row g-3 mb-4">
     <div class="col-sm-6 col-xl-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body d-flex align-items-center gap-3">
-                <div class="rounded-circle bg-primary bg-opacity-10 p-3">
-                    <i class="bi bi-people fs-4 text-primary"></i>
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center gap-3" style="border-top: 3px solid #1a85d9; border-radius: .65rem .65rem 0 0;">
+                <div class="stat-icon" style="background:#e8f4ff; color:#1a85d9;">
+                    <i class="bi bi-people-fill"></i>
                 </div>
                 <div>
-                    <div class="fs-4 fw-bold">{{ $stats['total_patients'] }}</div>
-                    <div class="text-muted small">Cəmi Müştərilər</div>
+                    <div class="stat-value">{{ $stats['total_patients'] }}</div>
+                    <div class="stat-label">Cəmi Müştərilər</div>
                 </div>
             </div>
         </div>
     </div>
     <div class="col-sm-6 col-xl-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body d-flex align-items-center gap-3">
-                <div class="rounded-circle bg-info bg-opacity-10 p-3">
-                    <i class="bi bi-calendar-day fs-4 text-info"></i>
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center gap-3" style="border-top: 3px solid #00b4d8; border-radius: .65rem .65rem 0 0;">
+                <div class="stat-icon" style="background:#e0f7fd; color:#00b4d8;">
+                    <i class="bi bi-calendar-day-fill"></i>
                 </div>
                 <div>
-                    <div class="fs-4 fw-bold">{{ $stats['today_appointments'] }}</div>
-                    <div class="text-muted small">Bu günkü Randevular</div>
+                    <div class="stat-value">{{ $stats['today_appointments'] }}</div>
+                    <div class="stat-label">Bu Günkü Randevular</div>
                 </div>
             </div>
         </div>
     </div>
     <div class="col-sm-6 col-xl-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body d-flex align-items-center gap-3">
-                <div class="rounded-circle bg-warning bg-opacity-10 p-3">
-                    <i class="bi bi-hourglass-split fs-4 text-warning"></i>
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center gap-3" style="border-top: 3px solid #f4a100; border-radius: .65rem .65rem 0 0;">
+                <div class="stat-icon" style="background:#fef6e4; color:#f4a100;">
+                    <i class="bi bi-hourglass-split"></i>
                 </div>
                 <div>
-                    <div class="fs-4 fw-bold">{{ $stats['pending_appointments'] }}</div>
-                    <div class="text-muted small">Gözləyən Randevular</div>
+                    <div class="stat-value">{{ $stats['pending_appointments'] }}</div>
+                    <div class="stat-label">Gözləyən Randevular</div>
                 </div>
             </div>
         </div>
     </div>
     <div class="col-sm-6 col-xl-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body d-flex align-items-center gap-3">
-                <div class="rounded-circle bg-success bg-opacity-10 p-3">
-                    <i class="bi bi-calendar-check fs-4 text-success"></i>
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center gap-3" style="border-top: 3px solid #1db87a; border-radius: .65rem .65rem 0 0;">
+                <div class="stat-icon" style="background:#e4f9f0; color:#1db87a;">
+                    <i class="bi bi-calendar-check-fill"></i>
                 </div>
                 <div>
-                    <div class="fs-4 fw-bold">{{ $stats['this_month_appointments'] }}</div>
-                    <div class="text-muted small">Bu Ay Randevular</div>
+                    <div class="stat-value">{{ $stats['this_month_appointments'] }}</div>
+                    <div class="stat-label">Bu Ay Randevular</div>
                 </div>
             </div>
         </div>

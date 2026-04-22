@@ -14,73 +14,257 @@
     <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
     <style>
+        :root {
+            --sb-bg: #0d2c54;
+            --sb-brand-bg: #0a2245;
+            --sb-active: #1a85d9;
+            --sb-active-bg: rgba(26,133,217,.14);
+            --sb-hover-bg: rgba(255,255,255,.06);
+            --sb-text: #8fb3d9;
+            --sb-text-active: #ffffff;
+            --sb-border: rgba(255,255,255,.07);
+            --accent: #1a85d9;
+            --accent-hover: #1570bb;
+            --body-bg: #eef2f7;
+            --topbar-bg: #ffffff;
+            --topbar-shadow: 0 1px 0 #e2e9f3, 0 2px 8px rgba(13,44,84,.05);
+            --card-shadow: 0 2px 12px rgba(13,44,84,.07);
+        }
+
         /* Tom Select: dropdown açıq olanda item-i tam gizlət */
         .ts-wrapper.single.dropdown-active .ts-control > .item { display: none !important; }
 
-        body { background-color: #f8f9fa; }
+        * { box-sizing: border-box; }
+        body { background-color: var(--body-bg); font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
 
         /* ── Sidebar ── */
         .sidebar {
             width: 260px;
             min-height: 100vh;
-            background: #0f4c75;
+            background: var(--sb-bg);
             flex-shrink: 0;
             transition: width .25s ease, transform .25s ease;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 12px rgba(0,0,0,.18);
         }
-        .sidebar .nav-link { color: #b0c4de; padding: .6rem 1.25rem; border-radius: .375rem; margin: 2px 8px; white-space: nowrap; }
-        .sidebar .nav-link:hover, .sidebar .nav-link.active { background: #1b6ca8; color: #fff; }
-        .sidebar .nav-link i { width: 20px; flex-shrink: 0; }
-        .sidebar-brand { padding: 1.25rem; border-bottom: 1px solid #1b6ca8; white-space: nowrap; }
+
+        .sidebar-brand {
+            background: var(--sb-brand-bg);
+            padding: 1.2rem 1.25rem;
+            border-bottom: 1px solid var(--sb-border);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .sidebar-brand .brand-icon {
+            width: 34px; height: 34px;
+            background: var(--accent);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            font-size: 1rem;
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(26,133,217,.4);
+        }
+        .sidebar-brand .brand-text { color: #fff; font-weight: 700; font-size: 1.05rem; letter-spacing: .01em; }
+        .sidebar-brand .brand-sub { color: var(--sb-text); font-size: .72rem; margin-top: 1px; }
+
+        /* nav items */
+        .sidebar ul.nav { padding: .75rem 0; }
+        .sidebar .nav-link {
+            color: var(--sb-text);
+            padding: .55rem 1rem;
+            margin: 1px .75rem;
+            border-radius: .45rem;
+            display: flex; align-items: center;
+            white-space: nowrap;
+            font-size: .875rem;
+            font-weight: 500;
+            transition: background .15s, color .15s, border-color .15s;
+            border-left: 2px solid transparent;
+        }
+        .sidebar .nav-link i { width: 20px; font-size: 1rem; flex-shrink: 0; color: var(--sb-text); transition: color .15s; }
+        .sidebar .nav-link:hover {
+            background: var(--sb-hover-bg);
+            color: #fff;
+        }
+        .sidebar .nav-link:hover i { color: #fff; }
+        .sidebar .nav-link.active {
+            background: var(--sb-active-bg);
+            color: var(--sb-text-active);
+            border-left-color: var(--sb-active);
+        }
+        .sidebar .nav-link.active i { color: var(--sb-active); }
+
+        /* subscription block */
+        .sub-info-block {
+            margin: 0 .75rem .75rem;
+            background: rgba(26,133,217,.1);
+            border: 1px solid rgba(26,133,217,.2);
+            border-radius: .5rem;
+            padding: .75rem 1rem;
+            flex-shrink: 0;
+        }
+        .sub-info-block .sub-pkg { color: #fff; font-size: .82rem; font-weight: 600; margin-bottom: .3rem; }
+        .sub-info-block .sub-row { color: var(--sb-text); font-size: .76rem; display: flex; justify-content: space-between; margin-top: .15rem; }
+        .sub-info-block .sub-exp { color: #f0a500; font-size: .74rem; margin-top: .3rem; }
+
+        /* bottom section */
+        .bottom-section {
+            padding: .85rem 1rem;
+            border-top: 1px solid var(--sb-border);
+            flex-shrink: 0;
+        }
+        .user-name { color: var(--sb-text); font-size: .8rem; font-weight: 500; margin-bottom: .5rem; display: flex; align-items: center; gap: .5rem; }
+        .user-name::before {
+            content: '';
+            width: 7px; height: 7px;
+            background: #2ecc71;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .logout-btn {
+            background: rgba(255,255,255,.07) !important;
+            border: 1px solid rgba(255,255,255,.12) !important;
+            color: var(--sb-text) !important;
+            font-size: .82rem !important;
+            padding: .38rem .75rem !important;
+            border-radius: .45rem !important;
+            transition: background .15s, color .15s !important;
+        }
+        .logout-btn:hover { background: rgba(255,255,255,.14) !important; color: #fff !important; }
 
         /* ── Collapsed state ── */
-        .sidebar-collapsed .sidebar {
-            width: 60px;
-        }
+        .sidebar-collapsed .sidebar { width: 60px; }
         .sidebar-collapsed .sidebar .nav-link span,
         .sidebar-collapsed .sidebar .sidebar-brand .brand-text,
         .sidebar-collapsed .sidebar .sidebar-brand .brand-sub,
         .sidebar-collapsed .sidebar .sub-info,
         .sidebar-collapsed .sidebar .user-name,
-        .sidebar-collapsed .sidebar .logout-btn span {
-            display: none;
-        }
+        .sidebar-collapsed .sidebar .logout-btn span { display: none; }
         .sidebar-collapsed .sidebar .nav-link {
-            display: flex;
             justify-content: center;
-            padding: .6rem 0;
-            margin: 2px 6px;
+            padding: .55rem 0;
+            margin: 1px 6px;
+            border-left-color: transparent !important;
         }
         .sidebar-collapsed .sidebar .nav-link i { width: auto; }
-        .sidebar-collapsed .sidebar .sidebar-brand {
-            display: flex;
-            justify-content: center;
-            padding: 1.1rem .5rem;
-        }
+        .sidebar-collapsed .sidebar .sidebar-brand { justify-content: center; padding: 1.1rem .5rem; }
         .sidebar-collapsed .sidebar .sub-info-block { display: none; }
-        .sidebar-collapsed .sidebar .logout-btn { padding: .4rem; justify-content: center; }
+        .sidebar-collapsed .sidebar .logout-btn { padding: .4rem !important; justify-content: center; }
         .sidebar-collapsed .sidebar .bottom-section { padding: .5rem; }
 
         /* ── Main content ── */
         .main-content { flex: 1; overflow-x: hidden; min-width: 0; }
-        .topbar { background: #fff; border-bottom: 1px solid #e2e8f0; }
+
+        /* ── Topbar ── */
+        .topbar {
+            background: var(--topbar-bg);
+            box-shadow: var(--topbar-shadow);
+            position: sticky; top: 0; z-index: 100;
+        }
+        .topbar .page-title { font-size: 1rem; font-weight: 600; color: #1a2e4a; }
+        .topbar .user-badge {
+            background: var(--accent);
+            color: #fff;
+            font-size: .72rem;
+            padding: .22rem .65rem;
+            border-radius: 20px;
+            font-weight: 600;
+            letter-spacing: .02em;
+        }
+        .topbar .user-label { color: #4a6080; font-size: .83rem; font-weight: 500; }
 
         /* ── Toggle button ── */
         #sidebar-toggle {
             background: none;
             border: none;
             color: #64748b;
-            padding: .3rem .4rem;
-            border-radius: .375rem;
+            padding: .35rem .45rem;
+            border-radius: .45rem;
             cursor: pointer;
             font-size: 1.2rem;
             line-height: 1;
-            transition: background .15s;
+            transition: background .15s, color .15s;
         }
-        #sidebar-toggle:hover { background: #f1f5f9; color: #0f4c75; }
+        #sidebar-toggle:hover { background: #eef2f7; color: var(--accent); }
 
-        /* ── Tooltip on collapsed links ── */
-        .sidebar-collapsed .sidebar .nav-link { position: relative; }
+        /* ── Cards & content ── */
+        .card {
+            border: none !important;
+            box-shadow: var(--card-shadow);
+            border-radius: .65rem !important;
+        }
+        .card-header {
+            background: #fff !important;
+            border-bottom: 1px solid #e8edf4 !important;
+            font-weight: 600;
+            color: #1a2e4a;
+            padding: .85rem 1.25rem;
+        }
+        .card-footer { background: #fff !important; }
+
+        /* ── Tables ── */
+        .table { font-size: .875rem; }
+        .table thead th {
+            background: #f4f7fc;
+            color: #4a6080;
+            font-weight: 600;
+            font-size: .78rem;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            border-bottom: none;
+            padding: .7rem 1rem;
+        }
+        .table tbody td { padding: .75rem 1rem; vertical-align: middle; color: #2c3e50; }
+        .table-hover tbody tr:hover { background-color: #f8fafd !important; }
+
+        /* ── Stat cards ── */
+        .stat-card { border-radius: .65rem !important; border: none !important; box-shadow: var(--card-shadow); overflow: hidden; }
+        .stat-card .stat-icon {
+            width: 48px; height: 48px;
+            border-radius: .5rem;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .stat-card .stat-value { font-size: 1.75rem; font-weight: 700; color: #1a2e4a; line-height: 1.1; }
+        .stat-card .stat-label { font-size: .8rem; color: #6b7fa3; margin-top: .2rem; }
+        .stat-card .stat-bar { height: 3px; margin-top: .75rem; border-radius: 2px; overflow: hidden; background: #e8edf4; }
+        .stat-card .stat-bar-fill { height: 100%; border-radius: 2px; }
+
+        /* ── Buttons ── */
+        .btn { border-radius: .45rem !important; font-size: .875rem; font-weight: 500; }
+        .btn-primary { background: var(--accent) !important; border-color: var(--accent) !important; }
+        .btn-primary:hover { background: var(--accent-hover) !important; border-color: var(--accent-hover) !important; }
+        .btn-sm { padding: .3rem .7rem !important; font-size: .8rem !important; }
+
+        /* ── Badges ── */
+        .badge { font-weight: 500; border-radius: .35rem; letter-spacing: .01em; }
+
+        /* ── Pagination ── */
+        .pagination .page-link { border-radius: .4rem !important; margin: 0 2px; color: var(--accent); font-size: .875rem; }
+        .pagination .page-item.active .page-link { background: var(--accent); border-color: var(--accent); }
+
+        /* ── Alerts ── */
+        .alert { border: none; border-radius: .55rem; font-size: .875rem; }
+        .alert-success { background: #e8f8f0; color: #1a6640; }
+        .alert-danger { background: #fdecea; color: #7f1d1d; }
+        .alert-warning { background: #fef9ec; color: #7c5c10; }
+
+        /* ── Form controls ── */
+        .form-control, .form-select, .input-group-text {
+            border-color: #dce3ed;
+            border-radius: .45rem !important;
+            font-size: .875rem;
+            color: #2c3e50;
+        }
+        .form-control:focus, .form-select:focus { border-color: var(--accent); box-shadow: 0 0 0 .2rem rgba(26,133,217,.12); }
+        .form-label { font-size: .85rem; font-weight: 500; color: #3d5166; }
+
+        /* ── Upcoming list hover ── */
+        .hover-bg:hover { background: #f4f7fc !important; }
 
         /* ── Mobile sidebar overlay ── */
         .sidebar-backdrop {
@@ -95,20 +279,19 @@
         @media (max-width: 767.98px) {
             .sidebar {
                 position: fixed;
-                top: 0;
-                left: 0;
+                top: 0; left: 0;
                 height: 100vh;
                 z-index: 1045;
                 transform: translateX(-100%);
                 width: 260px !important;
-                box-shadow: 4px 0 20px rgba(0,0,0,.25);
+                box-shadow: 4px 0 24px rgba(0,0,0,.3);
             }
             .sidebar.mobile-open { transform: translateX(0); }
             #app-wrapper { display: block !important; }
             .main-content { width: 100%; }
             .content-padding { padding: .75rem !important; }
             .topbar { padding-left: .75rem !important; padding-right: .75rem !important; }
-            .topbar .text-muted.small { display: none; }
+            .topbar .user-label { display: none; }
         }
     </style>
     @stack('styles')
@@ -117,15 +300,13 @@
 <div class="d-flex" id="app-wrapper">
 
     <!-- Sidebar -->
-    <nav class="sidebar d-flex flex-column" id="sidebar">
+    <nav class="sidebar" id="sidebar">
         <div class="sidebar-brand d-flex align-items-center gap-2">
-            <a href="{{ route('panel.dashboard') }}" class="text-white text-decoration-none fw-bold fs-5 d-flex align-items-center gap-2">
-                <i class="bi bi-grid-fill flex-shrink-0"></i>
+            <div class="brand-icon"><i class="bi bi-heart-pulse-fill"></i></div>
+            <a href="{{ route('panel.dashboard') }}" class="text-decoration-none d-flex flex-column">
                 <span class="brand-text">InnApp</span>
+                <span class="brand-sub">{{ auth()->user()->specialty?->name ?? 'İstifadəçi' }}</span>
             </a>
-            <div class="text-info small mt-0 brand-sub ms-1" style="font-size:.78rem">
-                {{ auth()->user()->specialty?->name ?? 'İstifadəçi' }}
-            </div>
         </div>
 
         <ul class="nav flex-column mt-3 flex-grow-1">
@@ -178,23 +359,25 @@
 
         @php $subscription = auth()->user()->activeSubscription()->with('package')->first(); @endphp
         @if($subscription && !auth()->user()->is_demo)
-        <div class="sub-info-block p-3 mx-2 mb-2 rounded" style="background: rgba(255,255,255,0.1)">
-            <div class="sub-info text-white small fw-semibold">{{ $subscription->package->name }}</div>
-            <div class="sub-info text-info small">
-                Müştəri: {{ $subscription->patients_used }}/{{ $subscription->package->patient_limit ?? '∞' }}
+        <div class="sub-info-block">
+            <div class="sub-pkg sub-info">{{ $subscription->package->name }}</div>
+            <div class="sub-row sub-info">
+                <span>Müştəri</span>
+                <span>{{ $subscription->patients_used }}/{{ $subscription->package->patient_limit ?? '∞' }}</span>
             </div>
-            <div class="sub-info text-info small">
-                SMS: {{ $subscription->sms_used }}/{{ $subscription->package->sms_limit ?? '∞' }}
+            <div class="sub-row sub-info">
+                <span>SMS</span>
+                <span>{{ $subscription->sms_used }}/{{ $subscription->package->sms_limit ?? '∞' }}</span>
             </div>
-            <div class="sub-info text-warning small">Son: {{ $subscription->expires_at->format('d.m.Y') }}</div>
+            <div class="sub-exp sub-info">Son: {{ $subscription->expires_at->format('d.m.Y') }}</div>
         </div>
         @endif
 
-        <div class="bottom-section p-3 border-top" style="border-color: #1b6ca8 !important">
-            <div class="user-name text-info small mb-2">{{ auth()->user()->full_name }}</div>
+        <div class="bottom-section">
+            <div class="user-name">{{ auth()->user()->full_name }}</div>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button type="submit" class="logout-btn btn btn-sm btn-outline-light w-100 d-flex align-items-center justify-content-center gap-1">
+                <button type="submit" class="logout-btn btn btn-sm w-100 d-flex align-items-center justify-content-center gap-1">
                     <i class="bi bi-box-arrow-right flex-shrink-0"></i>
                     <span>Çıxış</span>
                 </button>
@@ -207,16 +390,16 @@
 
     <!-- Main Content -->
     <div class="main-content">
-        <div class="topbar px-4 py-3 d-flex align-items-center justify-content-between">
+        <div class="topbar px-4 py-2 d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center gap-3">
                 <button id="sidebar-toggle" title="Menunu gizlət / göstər">
                     <i class="bi bi-list" id="toggle-icon"></i>
                 </button>
-                <h5 class="mb-0 fw-semibold">@yield('page-title', 'Dashboard')</h5>
+                <span class="page-title">@yield('page-title', 'Dashboard')</span>
             </div>
             <div class="d-flex align-items-center gap-2">
-                <span class="badge bg-primary">İstifadəçi</span>
-                <span class="text-muted small">{{ auth()->user()->full_name }}</span>
+                <span class="user-badge">İstifadəçi</span>
+                <span class="user-label">{{ auth()->user()->full_name }}</span>
             </div>
         </div>
 

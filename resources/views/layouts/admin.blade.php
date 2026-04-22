@@ -12,28 +12,121 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <style>
-        body { background-color: #f8f9fa; }
-        .sidebar { width: 260px; min-height: 100vh; background: #1e293b; }
-        .sidebar .nav-link { color: #94a3b8; padding: .6rem 1.25rem; border-radius: .375rem; margin: 2px 8px; }
-        .sidebar .nav-link:hover, .sidebar .nav-link.active { background: #334155; color: #fff; }
-        .sidebar .nav-link i { width: 20px; }
-        .sidebar-brand { padding: 1.25rem; border-bottom: 1px solid #334155; }
+        :root {
+            --sb-bg: #15202e;
+            --sb-brand-bg: #0f1820;
+            --sb-active: #e84393;
+            --sb-active-bg: rgba(232,67,147,.13);
+            --sb-hover-bg: rgba(255,255,255,.05);
+            --sb-text: #8a9bb0;
+            --sb-text-active: #ffffff;
+            --sb-border: rgba(255,255,255,.07);
+            --accent: #e84393;
+            --body-bg: #eef2f7;
+            --topbar-shadow: 0 1px 0 #e2e9f3, 0 2px 8px rgba(15,24,32,.06);
+            --card-shadow: 0 2px 12px rgba(15,24,32,.07);
+        }
+        * { box-sizing: border-box; }
+        body { background-color: var(--body-bg); font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        .sidebar {
+            width: 260px;
+            min-height: 100vh;
+            background: var(--sb-bg);
+            display: flex; flex-direction: column;
+            flex-shrink: 0;
+            box-shadow: 2px 0 12px rgba(0,0,0,.2);
+        }
+        .sidebar-brand {
+            background: var(--sb-brand-bg);
+            padding: 1.2rem 1.25rem;
+            border-bottom: 1px solid var(--sb-border);
+        }
+        .sidebar-brand .brand-icon {
+            width: 34px; height: 34px;
+            background: var(--accent);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem; color: #fff;
+            box-shadow: 0 2px 8px rgba(232,67,147,.4);
+            flex-shrink: 0;
+        }
+        .sidebar-brand .brand-text { color: #fff; font-weight: 700; font-size: 1.05rem; }
+        .sidebar-brand .brand-sub { color: var(--sb-text); font-size: .72rem; margin-top: 1px; }
+        .sidebar ul.nav { padding: .75rem 0; }
+        .sidebar .nav-link {
+            color: var(--sb-text);
+            padding: .55rem 1rem;
+            margin: 1px .75rem;
+            border-radius: .45rem;
+            display: flex; align-items: center;
+            font-size: .875rem; font-weight: 500;
+            transition: background .15s, color .15s;
+            border-left: 2px solid transparent;
+        }
+        .sidebar .nav-link i { width: 20px; font-size: 1rem; flex-shrink: 0; color: var(--sb-text); transition: color .15s; }
+        .sidebar .nav-link:hover { background: var(--sb-hover-bg); color: #fff; }
+        .sidebar .nav-link:hover i { color: #fff; }
+        .sidebar .nav-link.active { background: var(--sb-active-bg); color: var(--sb-text-active); border-left-color: var(--sb-active); }
+        .sidebar .nav-link.active i { color: var(--sb-active); }
+        .sidebar .bottom-section { padding: .85rem 1rem; border-top: 1px solid var(--sb-border); margin-top: auto; }
+        .sidebar .bottom-section .user-label { color: var(--sb-text); font-size: .8rem; font-weight: 500; margin-bottom: .5rem; display: flex; align-items: center; gap: .5rem; }
+        .sidebar .bottom-section .user-label::before { content: ''; width: 7px; height: 7px; background: #e84393; border-radius: 50%; flex-shrink: 0; }
+        .sidebar .logout-btn {
+            background: rgba(255,255,255,.07) !important;
+            border: 1px solid rgba(255,255,255,.12) !important;
+            color: var(--sb-text) !important;
+            font-size: .82rem !important;
+            padding: .38rem .75rem !important;
+            border-radius: .45rem !important;
+        }
+        .sidebar .logout-btn:hover { background: rgba(255,255,255,.13) !important; color: #fff !important; }
         .main-content { flex: 1; overflow-x: hidden; }
-        .topbar { background: #fff; border-bottom: 1px solid #e2e8f0; }
+        .topbar {
+            background: #fff;
+            box-shadow: var(--topbar-shadow);
+            position: sticky; top: 0; z-index: 100;
+        }
+        .topbar .page-title { font-size: 1rem; font-weight: 600; color: #1a2e4a; }
+        .topbar .admin-badge { background: var(--accent); color: #fff; font-size: .72rem; padding: .22rem .65rem; border-radius: 20px; font-weight: 600; }
+        .topbar .user-label { color: #4a6080; font-size: .83rem; font-weight: 500; }
+        .card { border: none !important; box-shadow: var(--card-shadow); border-radius: .65rem !important; }
+        .card-header { background: #fff !important; border-bottom: 1px solid #e8edf4 !important; font-weight: 600; color: #1a2e4a; padding: .85rem 1.25rem; }
+        .card-footer { background: #fff !important; }
+        .table { font-size: .875rem; }
+        .table thead th { background: #f4f7fc; color: #4a6080; font-weight: 600; font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; border-bottom: none; padding: .7rem 1rem; }
+        .table tbody td { padding: .75rem 1rem; vertical-align: middle; color: #2c3e50; }
+        .table-hover tbody tr:hover { background-color: #f8fafd !important; }
+        .btn { border-radius: .45rem !important; font-weight: 500; font-size: .875rem; }
+        .btn-sm { padding: .3rem .7rem !important; font-size: .8rem !important; }
+        .badge { font-weight: 500; border-radius: .35rem; }
+        .pagination .page-link { border-radius: .4rem !important; margin: 0 2px; color: var(--accent); font-size: .875rem; }
+        .pagination .page-item.active .page-link { background: var(--accent); border-color: var(--accent); }
+        .form-control, .form-select, .input-group-text { border-color: #dce3ed; border-radius: .45rem !important; font-size: .875rem; color: #2c3e50; }
+        .form-control:focus, .form-select:focus { border-color: var(--accent); box-shadow: 0 0 0 .2rem rgba(232,67,147,.12); }
+        .form-label { font-size: .85rem; font-weight: 500; color: #3d5166; }
+        .stat-card { border-radius: .65rem !important; border: none !important; box-shadow: var(--card-shadow); overflow: hidden; }
+        .stat-card .stat-icon { width: 48px; height: 48px; border-radius: .5rem; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+        .stat-card .stat-value { font-size: 1.75rem; font-weight: 700; color: #1a2e4a; line-height: 1.1; }
+        .stat-card .stat-label { font-size: .8rem; color: #6b7fa3; margin-top: .2rem; }
+        .alert { border: none; border-radius: .55rem; font-size: .875rem; }
+        .alert-success { background: #e8f8f0; color: #1a6640; }
+        .alert-danger { background: #fdecea; color: #7f1d1d; }
+        .alert-warning { background: #fef9ec; color: #7c5c10; }
     </style>
     @stack('styles')
 </head>
 <body>
 <div class="d-flex">
     <!-- Sidebar -->
-    <nav class="sidebar d-flex flex-column">
-        <div class="sidebar-brand">
-            <a href="{{ route('admin.dashboard') }}" class="text-white text-decoration-none fw-bold fs-5">
-                <i class="bi bi-grid-fill me-2"></i>InnApp
+    <nav class="sidebar">
+        <div class="sidebar-brand d-flex align-items-center gap-2">
+            <div class="brand-icon"><i class="bi bi-shield-fill"></i></div>
+            <a href="{{ route('admin.dashboard') }}" class="text-decoration-none d-flex flex-column">
+                <span class="brand-text">InnApp</span>
+                <span class="brand-sub">Super Admin Panel</span>
             </a>
-            <div class="text-secondary small mt-1">Super Admin Panel</div>
         </div>
-        <ul class="nav flex-column mt-3 flex-grow-1">
+        <ul class="nav flex-column flex-grow-1">
             <li class="nav-item">
                 <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                     <i class="bi bi-speedometer2 me-2"></i>Dashboard
@@ -85,12 +178,12 @@
                 </a>
             </li>
         </ul>
-        <div class="p-3 border-top border-secondary">
-            <div class="text-secondary small mb-2">{{ auth()->user()->name }} {{ auth()->user()->surname }}</div>
+        <div class="bottom-section">
+            <div class="user-label">{{ auth()->user()->name }} {{ auth()->user()->surname }}</div>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button type="submit" class="btn btn-sm btn-outline-secondary w-100">
-                    <i class="bi bi-box-arrow-right me-1"></i>Çıxış
+                <button type="submit" class="logout-btn btn btn-sm w-100 d-flex align-items-center justify-content-center gap-1">
+                    <i class="bi bi-box-arrow-right flex-shrink-0"></i>Çıxış
                 </button>
             </form>
         </div>
@@ -98,11 +191,11 @@
 
     <!-- Main Content -->
     <div class="main-content">
-        <div class="topbar px-4 py-3 d-flex align-items-center justify-content-between">
-            <h5 class="mb-0 fw-semibold">@yield('page-title', 'Dashboard')</h5>
+        <div class="topbar px-4 py-2 d-flex align-items-center justify-content-between">
+            <span class="page-title">@yield('page-title', 'Dashboard')</span>
             <div class="d-flex align-items-center gap-2">
-                <span class="badge bg-danger">Super Admin</span>
-                <span class="text-muted small">{{ auth()->user()->full_name }}</span>
+                <span class="admin-badge">Super Admin</span>
+                <span class="user-label">{{ auth()->user()->full_name }}</span>
             </div>
         </div>
 
