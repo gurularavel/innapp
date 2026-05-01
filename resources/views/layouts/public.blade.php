@@ -150,6 +150,185 @@
         .subscribe .form-control {
             color: #0f172a;
         }
+
+        .mobile-auth {
+            display: none;
+        }
+
+        @media (max-width: 1023px) {
+            body.menu-open {
+                overflow: hidden;
+            }
+
+            nav.navbar.validnavs {
+                padding: 18px 0;
+            }
+
+            nav.navbar.validnavs .container {
+                display: block !important;
+            }
+
+            .navbar-header {
+                width: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+            }
+
+            .navbar-brand.brand-link {
+                max-width: calc(100% - 64px);
+            }
+
+            .brand-badge {
+                width: 42px;
+                height: 42px;
+                border-radius: 12px;
+            }
+
+            .brand-copy strong {
+                font-size: 1rem;
+            }
+
+            .brand-copy span {
+                font-size: 0.62rem;
+                margin-top: 4px;
+            }
+
+            nav.navbar.validnavs .navbar-toggle {
+                display: inline-flex !important;
+                align-items: center;
+                justify-content: center;
+                width: 46px;
+                height: 46px;
+                margin: 0;
+                padding: 0;
+                border-radius: 14px;
+                background: rgba(255,255,255,.12);
+                border: 1px solid rgba(255,255,255,.14);
+            }
+
+            nav.navbar.navbar-sticky.sticked .navbar-toggle {
+                background: rgba(14,30,53,.06);
+                border-color: rgba(14,30,53,.08);
+            }
+
+            nav.navbar.validnavs .navbar-toggle i {
+                font-size: 18px;
+            }
+
+            .attr-right {
+                display: none !important;
+            }
+
+            .navbar-collapse {
+                position: fixed;
+                top: 0;
+                right: 0;
+                width: min(360px, 88vw);
+                height: 100vh !important;
+                max-height: 100vh !important;
+                background: linear-gradient(180deg, #071628 0%, #0c2440 100%);
+                padding: 22px 22px 30px;
+                overflow-y: auto;
+                transform: translateX(100%);
+                transition: transform .28s ease;
+                opacity: 1 !important;
+                visibility: visible !important;
+                display: block !important;
+                z-index: 10001;
+                box-shadow: -18px 0 40px rgba(0,0,0,.28);
+            }
+
+            .navbar-collapse.show {
+                transform: translateX(0);
+            }
+
+            .navbar-collapse > .navbar-toggle {
+                position: absolute;
+                top: 18px;
+                right: 18px;
+                background: rgba(255,255,255,.08);
+            }
+
+            .navbar-collapse .brand-link {
+                display: inline-flex !important;
+                margin-bottom: 34px !important;
+                padding-right: 56px;
+            }
+
+            .navbar-collapse ul.nav.navbar-nav {
+                width: 100%;
+                margin: 0 !important;
+                float: none !important;
+            }
+
+            .navbar-collapse ul.nav.navbar-nav > li {
+                float: none !important;
+                width: 100%;
+                margin: 0 0 8px;
+            }
+
+            .navbar-collapse ul.nav.navbar-nav > li > a {
+                display: block;
+                padding: 14px 16px !important;
+                border-radius: 14px;
+                color: #ffffff !important;
+                background: rgba(255,255,255,.05);
+                font-weight: 600;
+                line-height: 1.3;
+            }
+
+            .navbar-collapse ul.nav.navbar-nav > li > a:hover,
+            .navbar-collapse ul.nav.navbar-nav > li > a:focus {
+                background: rgba(27,200,200,.12);
+                color: #ffffff !important;
+            }
+
+            .mobile-auth {
+                display: grid;
+                gap: 12px;
+                margin-top: 24px;
+            }
+
+            .mobile-auth a {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 50px;
+                border-radius: 14px;
+                font-weight: 700;
+                text-decoration: none;
+            }
+
+            .mobile-auth .mobile-login {
+                color: #ffffff;
+                background: rgba(255,255,255,.08);
+                border: 1px solid rgba(255,255,255,.12);
+            }
+
+            .mobile-auth .mobile-register,
+            .mobile-auth .mobile-dashboard {
+                color: #ffffff;
+                background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+                box-shadow: 0 16px 26px rgba(14,134,212,.2);
+            }
+
+            .overlay-screen {
+                position: fixed;
+                inset: 0;
+                background: rgba(7,22,40,.46);
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity .25s ease, visibility .25s ease;
+                z-index: 10000;
+            }
+
+            .overlay-screen.opened {
+                opacity: 1;
+                visibility: visible;
+            }
+        }
     </style>
 
     @stack('styles')
@@ -218,6 +397,14 @@
                         <li><a class="smooth-menu" href="#pricing">Paketlər</a></li>
                         <li><a class="smooth-menu" href="#contact">Əlaqə</a></li>
                     </ul>
+                    <div class="mobile-auth">
+                        @auth
+                            <a class="mobile-dashboard" href="{{ auth()->user()->isAdmin() ? route('admin.dashboard') : route('panel.dashboard') }}">Panelə keç</a>
+                        @else
+                            <a class="mobile-login" href="{{ route('login') }}">Daxil ol</a>
+                            <a class="mobile-register" href="{{ route('register') }}">Pulsuz başla</a>
+                        @endauth
+                    </div>
                 </div>
 
                 <div class="attr-right">
@@ -353,6 +540,73 @@
     <script src="{{ asset('assets/js/count-to.js') }}"></script>
     <script src="{{ asset('assets/js/validnavs.js') }}"></script>
     <script src="{{ asset('assets/js/main.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const nav = document.querySelector('nav.navbar.validnavs');
+            const collapse = document.getElementById('navbar-menu');
+            const overlay = document.querySelector('.overlay-screen');
+            const toggles = document.querySelectorAll('nav.navbar.validnavs .navbar-toggle');
+            const menuLinks = document.querySelectorAll('#navbar-menu a');
+            const mobileQuery = window.matchMedia('(max-width: 1023px)');
+
+            if (!nav || !collapse || !overlay || !toggles.length) {
+                return;
+            }
+
+            const isMobile = () => mobileQuery.matches;
+
+            const closeMenu = () => {
+                collapse.classList.remove('show');
+                overlay.classList.remove('opened');
+                nav.classList.remove('navbar-responsive');
+                document.body.classList.remove('menu-open');
+            };
+
+            const openMenu = () => {
+                collapse.classList.add('show');
+                overlay.classList.add('opened');
+                nav.classList.add('navbar-responsive');
+                document.body.classList.add('menu-open');
+            };
+
+            toggles.forEach((toggle) => {
+                toggle.addEventListener('click', function (event) {
+                    if (!isMobile()) {
+                        return;
+                    }
+
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    if (collapse.classList.contains('show')) {
+                        closeMenu();
+                    } else {
+                        openMenu();
+                    }
+                });
+            });
+
+            overlay.addEventListener('click', function () {
+                if (isMobile()) {
+                    closeMenu();
+                }
+            });
+
+            menuLinks.forEach((link) => {
+                link.addEventListener('click', function () {
+                    if (isMobile()) {
+                        closeMenu();
+                    }
+                });
+            });
+
+            window.addEventListener('resize', function () {
+                if (!isMobile()) {
+                    closeMenu();
+                }
+            });
+        });
+    </script>
 
     @stack('scripts')
 </body>

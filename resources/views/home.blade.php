@@ -79,28 +79,6 @@
     </div>
 </div>
 
-<div class="companies-area default-padding">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-4 info">
-                <h3>Etibarlı və gündəlik istifadə üçün uyğun platforma</h3>
-                <p>
-                    Sürətli öyrənilən interfeys, real iş prosesinə uyğun modullar və klinika böyüdükcə sizinlə böyüyən çevik struktur.
-                </p>
-            </div>
-            <div class="col-lg-8 clients">
-                <div class="clients-items owl-carousel owl-theme text-center">
-                    @for($i = 1; $i <= 9; $i++)
-                        <div class="single-item">
-                            <a href="#"><img src="{{ asset('assets/img/clients/' . $i . '.png') }}" alt="Partner {{ $i }}"></a>
-                        </div>
-                    @endfor
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <div id="overview" class="choseus-area default-padding bg-theme-small">
     <div class="container">
         <div class="choseus-items">
