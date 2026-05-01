@@ -2,242 +2,358 @@
 <html lang="az">
 <head>
     <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'InnApp — Klinika İdarəetmə Sistemi')</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg">
-    <link rel="icon" type="image/png" sizes="96x96" href="/favicon/favicon-96x96.png">
-    <link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png">
-    <link rel="manifest" href="/favicon/site.webmanifest">
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-X8ZGYKVJ4V"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-X8ZGYKVJ4V');
-    </script>
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:300,400,500,600,700,800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <meta name="description" content="@yield('meta_description', 'InnApp klinika idarəetmə sistemi')">
+    <title>@yield('title', 'InnApp | Klinika idarəetmə sistemi')</title>
+
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon/favicon.svg') }}">
+    <link rel="icon" type="image/png" sizes="96x96" href="{{ asset('favicon/favicon-96x96.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('favicon/apple-touch-icon.png') }}">
+    <link rel="manifest" href="{{ asset('favicon/site.webmanifest') }}">
+
+    <link href="{{ asset('assets/css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/font-awesome.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/elegant-icons.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/flaticon-set.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/magnific-popup.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/owl.carousel.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/owl.theme.default.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/animate.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/helper.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/validnavs.css') }}" rel="stylesheet">
+    <link href="{{ asset('style.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/responsive.css') }}" rel="stylesheet">
 
     <style>
         :root {
-            --primary:      #0e86d4;
-            --primary-dk:   #0a6daf;
-            --primary-lt:   #e8f4fd;
-            --teal:         #1bc8c8;
-            --teal-lt:      #e4f9f9;
-            --dark:         #0e1e35;
-            --mid:          #2c4160;
-            --muted:        #6b7fa3;
-            --body-bg:      #ffffff;
-            --section-alt:  #f5f9ff;
+            --brand-primary: #0e86d4;
+            --brand-secondary: #1bc8c8;
+            --brand-dark: #0e1e35;
         }
 
-        *, *::before, *::after { box-sizing: border-box; }
-        html { scroll-behavior: smooth; }
-        body { font-family: 'Inter', sans-serif; color: var(--dark); background: var(--body-bg); margin: 0; }
-
-        /* ── Navbar ── */
-        .navbar-public {
-            background: rgba(255,255,255,.97);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            padding: 14px 0;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 1px 0 #e8edf4, 0 4px 16px rgba(14,134,212,.06);
-            transition: box-shadow .25s;
+        .brand-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
         }
-        .navbar-public .navbar-brand {
+
+        .brand-link:hover,
+        .brand-link:focus {
+            text-decoration: none;
+        }
+
+        .brand-badge {
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+            box-shadow: 0 16px 30px rgba(14, 134, 212, 0.22);
+            flex-shrink: 0;
+        }
+
+        .brand-badge img {
+            width: 26px;
+            height: 26px;
+            display: block;
+        }
+
+        .brand-copy {
             display: flex;
+            flex-direction: column;
+            line-height: 1;
+        }
+
+        .brand-copy strong {
+            color: #ffffff;
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+        }
+
+        .brand-copy span {
+            color: rgba(255, 255, 255, 0.68);
+            font-size: 0.68rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            margin-top: 6px;
+        }
+
+        nav.navbar .brand-copy strong {
+            color: #ffffff;
+        }
+
+        nav.navbar.sticked .brand-copy strong,
+        nav.navbar.no-background .brand-copy strong {
+            color: #ffffff;
+        }
+
+        nav.navbar.navbar-sticky.sticked .brand-copy strong {
+            color: var(--brand-dark);
+        }
+
+        nav.navbar.navbar-sticky.sticked .brand-copy span {
+            color: rgba(14, 30, 53, 0.55);
+        }
+
+        nav.navbar.navbar-sticky.sticked .brand-badge {
+            box-shadow: 0 12px 24px rgba(14, 134, 212, 0.18);
+        }
+
+        .navbar-brand img.logo {
+            max-height: 42px;
+        }
+
+        .navbar .attr-nav .button a,
+        .btn-theme.btn-md,
+        .btn-theme.effect.btn-sm,
+        .btn-theme.border.btn-md,
+        .btn-light.border.btn-md {
+            text-transform: none;
+        }
+
+        .auth-cta {
+            display: inline-flex;
             align-items: center;
             gap: 10px;
-            text-decoration: none;
         }
-        .navbar-public .brand-icon {
-            width: 36px; height: 36px;
-            background: linear-gradient(135deg, var(--primary), var(--teal));
-            border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            color: #fff;
-            font-size: 1.1rem;
-            flex-shrink: 0;
-            box-shadow: 0 3px 10px rgba(14,134,212,.3);
-        }
-        .navbar-public .brand-name {
-            font-size: 1.3rem;
-            font-weight: 800;
-            color: var(--dark);
-            letter-spacing: -.4px;
-        }
-        .navbar-public .brand-name span { color: var(--primary); }
-        .navbar-public .nav-link {
-            color: var(--mid) !important;
-            font-weight: 500;
-            font-size: .9rem;
-            padding: 6px 14px !important;
-            border-radius: 8px;
-            transition: color .2s, background .2s;
-        }
-        .navbar-public .nav-link:hover { color: var(--primary) !important; background: var(--primary-lt); }
-        .btn-nav-login {
-            border: 1.5px solid #d4dce8;
-            color: var(--mid) !important;
-            border-radius: 8px;
-            padding: 7px 18px !important;
-            font-weight: 600;
-            font-size: .88rem;
-            transition: all .2s;
-            text-decoration: none;
-        }
-        .btn-nav-login:hover { border-color: var(--primary); color: var(--primary) !important; background: var(--primary-lt); }
-        .btn-nav-register {
-            background: var(--primary);
-            color: #fff !important;
-            border-radius: 8px;
-            padding: 7px 18px !important;
-            font-weight: 700;
-            font-size: .88rem;
-            border: none;
-            transition: all .2s;
-            text-decoration: none;
-            box-shadow: 0 3px 10px rgba(14,134,212,.25);
-        }
-        .btn-nav-register:hover { background: var(--primary-dk); transform: translateY(-1px); box-shadow: 0 5px 15px rgba(14,134,212,.35); color: #fff !important; }
 
-        /* ── Footer ── */
-        .footer-public {
-            background: var(--dark);
-            color: rgba(255,255,255,.6);
-            padding: 56px 0 28px;
+        .auth-cta .secondary-link {
+            color: #ffffff;
+            font-weight: 600;
+            margin-right: 18px;
         }
-        .footer-public .brand-icon {
-            width: 38px; height: 38px;
-            background: linear-gradient(135deg, var(--primary), var(--teal));
-            border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            color: #fff; font-size: 1.1rem;
+
+        .auth-cta .secondary-link:hover {
+            color: #ffffff;
+            opacity: 0.85;
         }
-        .footer-public .brand-name { color: #fff; font-size: 1.2rem; font-weight: 800; }
-        .footer-public .brand-name span { color: var(--teal); }
-        .footer-public a { color: rgba(255,255,255,.5); text-decoration: none; transition: color .2s; }
-        .footer-public a:hover { color: var(--teal); }
-        .footer-divider { border-color: rgba(255,255,255,.1); }
-        .footer-heading { color: #fff; font-weight: 600; font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 14px; }
-        .footer-social-btn {
-            width: 34px; height: 34px;
-            border-radius: 8px;
-            background: rgba(255,255,255,.08);
-            display: flex; align-items: center; justify-content: center;
-            color: rgba(255,255,255,.5);
-            transition: all .2s;
-            text-decoration: none;
+
+        .footer-note p,
+        .footer-note a {
+            margin-bottom: 0;
         }
-        .footer-social-btn:hover { background: rgba(27,200,200,.2); color: var(--teal); }
+
+        footer .brand-copy strong {
+            color: var(--brand-dark);
+        }
+
+        footer .brand-copy span {
+            color: rgba(14, 30, 53, 0.5);
+        }
+
+        .contact-form .form-control,
+        .subscribe .form-control {
+            color: #0f172a;
+        }
     </style>
-    @yield('styles')
+
     @stack('styles')
 </head>
 <body>
 
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-public">
-    <div class="container">
-        <a class="navbar-brand" href="{{ route('home') }}">
-            <div class="brand-icon"><i class="bi bi-heart-pulse-fill"></i></div>
-            <span class="brand-name">Inn<span>App</span></span>
-        </a>
-        <button class="navbar-toggler border-0 p-1" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
-            <i class="bi bi-list fs-3" style="color:var(--mid)"></i>
-        </button>
-        <div class="collapse navbar-collapse" id="mainNav">
-            <ul class="navbar-nav mx-auto gap-1">
-                <li class="nav-item"><a class="nav-link" href="{{ route('home') }}#features">Xüsusiyyətlər</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ route('home') }}#how-it-works">Necə işləyir</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ route('home') }}#packages">Paketlər</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ route('home') }}#contact">Əlaqə</a></li>
-            </ul>
-            <div class="d-flex gap-2 mt-2 mt-lg-0 align-items-center">
-                @auth
-                    <a href="{{ auth()->user()->isAdmin() ? route('admin.dashboard') : route('panel.dashboard') }}" class="btn-nav-register">
-                        <i class="bi bi-grid me-1"></i>Panelə keç
+    <div id="preloader">
+        <div id="softing-preloader" class="softing-preloader">
+            <div class="animation-preloader">
+                <div class="spinner"></div>
+                <div class="txt-loading">
+                    @foreach(str_split('INNAPP') as $letter)
+                        <span data-text-preloader="{{ $letter }}" class="letters-loading">{{ $letter }}</span>
+                    @endforeach
+                </div>
+            </div>
+            <div class="loader">
+                <div class="row">
+                    @for($i = 0; $i < 4; $i++)
+                        <div class="col-3 loader-section {{ $i < 2 ? 'section-left' : 'section-right' }}">
+                            <div class="bg"></div>
+                        </div>
+                    @endfor
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <header id="home">
+        <nav class="navbar mobile-sidenav navbar-sticky navbar-default validnavs navbar-fixed white no-background">
+            <div class="container d-flex justify-content-between align-items-center">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-menu">
+                        <i class="fa fa-bars"></i>
+                    </button>
+                    <a class="navbar-brand brand-link" href="{{ route('home') }}">
+                        <span class="brand-badge">
+                            <img src="{{ asset('favicon/favicon.svg') }}" alt="InnApp">
+                        </span>
+                        <span class="brand-copy">
+                            <strong>InnApp</strong>
+                            <span>Klinika sistemi</span>
+                        </span>
                     </a>
-                @else
-                    <a href="{{ route('login') }}" class="btn-nav-login">Daxil ol</a>
-                    <a href="{{ route('register') }}" class="btn-nav-register">Qeydiyyat</a>
-                @endauth
-            </div>
-        </div>
-    </div>
-</nav>
-
-@yield('content')
-
-<!-- Footer -->
-<footer class="footer-public" id="contact">
-    <div class="container">
-        <div class="row g-4 mb-4">
-            <div class="col-lg-4">
-                <div class="d-flex align-items-center gap-2 mb-3">
-                    <div class="brand-icon"><i class="bi bi-heart-pulse-fill"></i></div>
-                    <span class="brand-name">Inn<span>App</span></span>
                 </div>
-                <p class="small mb-3" style="color:rgba(255,255,255,.45);line-height:1.8;">
-                    Klinika üçün hərtərəfli idarəetmə sistemi.<br>
-                    Randevular, xəstələr, SMS — hamısı bir yerdə.
-                </p>
-                <div class="d-flex gap-2">
-                    <a href="#" class="footer-social-btn"><i class="bi bi-facebook" style="font-size:.85rem"></i></a>
-                    <a href="#" class="footer-social-btn"><i class="bi bi-instagram" style="font-size:.85rem"></i></a>
-                    <a href="#" class="footer-social-btn"><i class="bi bi-linkedin" style="font-size:.85rem"></i></a>
+
+                <div class="collapse navbar-collapse" id="navbar-menu">
+                    <a class="brand-link d-flex d-lg-none mb-4" href="{{ route('home') }}">
+                        <span class="brand-badge">
+                            <img src="{{ asset('favicon/favicon.svg') }}" alt="InnApp">
+                        </span>
+                        <span class="brand-copy">
+                            <strong>InnApp</strong>
+                            <span>Klinika sistemi</span>
+                        </span>
+                    </a>
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-menu">
+                        <i class="fa fa-times"></i>
+                    </button>
+
+                    <ul class="nav navbar-nav navbar-center" data-in="fadeInDown" data-out="fadeOutUp">
+                        <li><a class="smooth-menu" href="#home">Ana səhifə</a></li>
+                        <li><a class="smooth-menu" href="#about">Haqqımızda</a></li>
+                        <li><a class="smooth-menu" href="#features">Xüsusiyyətlər</a></li>
+                        <li><a class="smooth-menu" href="#overview">Üstünlüklər</a></li>
+                        <li><a class="smooth-menu" href="#pricing">Paketlər</a></li>
+                        <li><a class="smooth-menu" href="#contact">Əlaqə</a></li>
+                    </ul>
+                </div>
+
+                <div class="attr-right">
+                    <div class="attr-nav">
+                        <ul>
+                            <li class="button dark">
+                                @auth
+                                    <a href="{{ auth()->user()->isAdmin() ? route('admin.dashboard') : route('panel.dashboard') }}">Panelə keç</a>
+                                @else
+                                    <div class="auth-cta">
+                                        <a class="secondary-link" href="{{ route('login') }}">Daxil ol</a>
+                                        <a href="{{ route('register') }}">Pulsuz başla</a>
+                                    </div>
+                                @endauth
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-            <div class="col-6 col-lg-2">
-                <div class="footer-heading">Sistem</div>
-                <ul class="list-unstyled small">
-                    <li class="mb-2"><a href="{{ route('home') }}#features">Xüsusiyyətlər</a></li>
-                    <li class="mb-2"><a href="{{ route('home') }}#how-it-works">Necə işləyir</a></li>
-                    <li class="mb-2"><a href="{{ route('home') }}#packages">Paketlər</a></li>
-                    <li><a href="{{ route('register') }}">Qeydiyyat</a></li>
-                </ul>
-            </div>
-            <div class="col-6 col-lg-2">
-                <div class="footer-heading">Hesab</div>
-                <ul class="list-unstyled small">
-                    <li class="mb-2"><a href="{{ route('login') }}">Daxil ol</a></li>
-                    <li><a href="{{ route('register') }}">Yeni hesab</a></li>
-                </ul>
-            </div>
-            <div class="col-lg-4">
-                <div class="footer-heading">Əlaqə</div>
-                <ul class="list-unstyled small" style="color:rgba(255,255,255,.5)">
-                    <li class="mb-2 d-flex align-items-center gap-2">
-                        <i class="bi bi-envelope-fill" style="color:var(--teal);font-size:.85rem"></i>
-                        info@innapp.az
-                    </li>
-                    <li class="mb-2 d-flex align-items-center gap-2">
-                        <i class="bi bi-telephone-fill" style="color:var(--teal);font-size:.85rem"></i>
-                        +994 55 703 80 08
-                    </li>
-                    <li class="d-flex align-items-center gap-2">
-                        <i class="bi bi-geo-alt-fill" style="color:var(--teal);font-size:.85rem"></i>
-                        Bakı, Azərbaycan
-                    </li>
-                </ul>
-            </div>
-        </div>
-        <hr class="footer-divider">
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
-            <small style="color:rgba(255,255,255,.3)">© {{ date('Y') }} InnApp. Bütün hüquqlar qorunur.</small>
-        </div>
-    </div>
-</footer>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-@stack('scripts')
+            <div class="overlay-screen"></div>
+        </nav>
+    </header>
+
+    @yield('content')
+
+    <footer class="default-padding">
+        <div class="container">
+            <div class="f-items">
+                <div class="row">
+                    <div class="col-lg-4 col-md-6 item">
+                        <div class="f-item">
+                            <a class="brand-link mb-3" href="{{ route('home') }}">
+                                <span class="brand-badge">
+                                    <img src="{{ asset('favicon/favicon.svg') }}" alt="InnApp">
+                                </span>
+                                <span class="brand-copy">
+                                    <strong>InnApp</strong>
+                                    <span>Klinika sistemi</span>
+                                </span>
+                            </a>
+                            <p>
+                                Stomatoloji klinikalar üçün hazırlanmış vahid idarəetmə platforması.
+                                Randevular, xəstə bazası, SMS və hesabatlar bir paneldə.
+                            </p>
+                            <a href="{{ route('register') }}" class="btn circle btn-theme effect btn-sm">İndi başla</a>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-6 item">
+                        <div class="f-item link">
+                            <h4>Səhifələr</h4>
+                            <ul>
+                                <li><a href="#home">Ana səhifə</a></li>
+                                <li><a href="#about">Haqqımızda</a></li>
+                                <li><a href="#features">Xüsusiyyətlər</a></li>
+                                <li><a href="#pricing">Paketlər</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-6 item">
+                        <div class="f-item link">
+                            <h4>Hesab</h4>
+                            <ul>
+                                <li><a href="{{ route('login') }}">Daxil ol</a></li>
+                                <li><a href="{{ route('register') }}">Qeydiyyat</a></li>
+                                <li><a href="{{ route('demo.start') }}">Demo</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6 item">
+                        <div class="f-item contact-widget">
+                            <div class="address">
+                                <ul>
+                                    <li>
+                                        <div class="icon">
+                                            <i class="fas fa-globe"></i>
+                                        </div>
+                                        <div class="info">
+                                            <h5>Veb sayt:</h5>
+                                            <span>www.innapp.az</span>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="icon">
+                                            <i class="fas fa-envelope"></i>
+                                        </div>
+                                        <div class="info">
+                                            <h5>Email:</h5>
+                                            <span>info@innapp.az</span>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="icon">
+                                            <i class="fas fa-phone"></i>
+                                        </div>
+                                        <div class="info">
+                                            <h5>Telefon:</h5>
+                                            <span>+994 55 703 80 08</span>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom footer-note">
+                <div class="col-lg-12">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <p>&copy; {{ date('Y') }} InnApp. Bütün hüquqlar qorunur.</p>
+                        </div>
+                        <div class="col-lg-6 text-end link">
+                            <ul>
+                                <li><a href="#features">Xüsusiyyətlər</a></li>
+                                <li><a href="#pricing">Qiymətlər</a></li>
+                                <li><a href="#contact">Dəstək</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ asset('assets/js/jquery-3.6.0.min.js') }}"></script>
+    <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ asset('assets/js/jquery.appear.js') }}"></script>
+    <script src="{{ asset('assets/js/jquery.easing.min.js') }}"></script>
+    <script src="{{ asset('assets/js/jquery.magnific-popup.min.js') }}"></script>
+    <script src="{{ asset('assets/js/owl.carousel.min.js') }}"></script>
+    <script src="{{ asset('assets/js/wow.min.js') }}"></script>
+    <script src="{{ asset('assets/js/count-to.js') }}"></script>
+    <script src="{{ asset('assets/js/validnavs.js') }}"></script>
+    <script src="{{ asset('assets/js/main.js') }}"></script>
+
+    @stack('scripts')
 </body>
 </html>

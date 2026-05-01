@@ -13,95 +13,129 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         :root {
-            --sb-bg: #15202e;
-            --sb-brand-bg: #0f1820;
-            --sb-active: #e84393;
-            --sb-active-bg: rgba(232,67,147,.13);
-            --sb-hover-bg: rgba(255,255,255,.05);
-            --sb-text: #8a9bb0;
+            --sb-bg: #071628;
+            --sb-brand-bg: rgba(255,255,255,.04);
+            --sb-active: #1bc8c8;
+            --sb-active-bg: rgba(27,200,200,.14);
+            --sb-hover-bg: rgba(255,255,255,.06);
+            --sb-text: rgba(255,255,255,.64);
             --sb-text-active: #ffffff;
-            --sb-border: rgba(255,255,255,.07);
-            --accent: #e84393;
-            --body-bg: #eef2f7;
-            --topbar-shadow: 0 1px 0 #e2e9f3, 0 2px 8px rgba(15,24,32,.06);
-            --card-shadow: 0 2px 12px rgba(15,24,32,.07);
+            --sb-border: rgba(255,255,255,.09);
+            --accent: #0e86d4;
+            --accent-2: #1bc8c8;
+            --accent-soft: rgba(14,134,212,.12);
+            --body-bg: #eef5fb;
+            --topbar-shadow: 0 10px 40px rgba(14,30,53,.07);
+            --card-shadow: 0 18px 40px rgba(14,30,53,.08);
+            --card-border: #e4edf6;
+            --text-dark: #0e1e35;
+            --text-mid: #4f6480;
         }
         * { box-sizing: border-box; }
-        body { background-color: var(--body-bg); font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body { background: radial-gradient(circle at top left, #f7fbff 0%, var(--body-bg) 55%); font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; color: var(--text-dark); }
         .sidebar {
             width: 260px;
             min-height: 100vh;
-            background: var(--sb-bg);
+            background: linear-gradient(180deg, #061526 0%, #0c2440 100%);
             display: flex; flex-direction: column;
             flex-shrink: 0;
-            box-shadow: 2px 0 12px rgba(0,0,0,.2);
+            box-shadow: 18px 0 42px rgba(6, 21, 38, .22);
+            position: sticky;
+            top: 0;
         }
         .sidebar-brand {
-            background: var(--sb-brand-bg);
-            padding: 1.2rem 1.25rem;
+            background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+            padding: 1.1rem 1.15rem;
             border-bottom: 1px solid var(--sb-border);
+            margin: 14px 14px 0;
+            border-radius: 18px;
         }
         .sidebar-brand .brand-icon {
-            width: 34px; height: 34px;
-            background: var(--accent);
-            border-radius: 8px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1rem; color: #fff;
-            box-shadow: 0 2px 8px rgba(232,67,147,.4);
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 16px 30px rgba(14,134,212,.26);
             flex-shrink: 0;
         }
-        .sidebar-brand .brand-text { color: #fff; font-weight: 700; font-size: 1.05rem; }
-        .sidebar-brand .brand-sub { color: var(--sb-text); font-size: .72rem; margin-top: 1px; }
-        .sidebar ul.nav { padding: .75rem 0; }
+        .sidebar-brand .brand-icon img {
+            width: 24px;
+            height: 24px;
+        }
+        .sidebar-brand .brand-text { color: #fff; font-weight: 800; font-size: 1.12rem; letter-spacing: .02em; }
+        .sidebar-brand .brand-sub { color: rgba(255,255,255,.5); font-size: .7rem; margin-top: 4px; text-transform: uppercase; letter-spacing: .14em; }
+        .sidebar ul.nav { padding: 1rem 0; }
         .sidebar .nav-link {
             color: var(--sb-text);
-            padding: .55rem 1rem;
-            margin: 1px .75rem;
-            border-radius: .45rem;
+            padding: .8rem 1rem;
+            margin: 3px .9rem;
+            border-radius: .85rem;
             display: flex; align-items: center;
-            font-size: .875rem; font-weight: 500;
-            transition: background .15s, color .15s;
-            border-left: 2px solid transparent;
+            font-size: .9rem; font-weight: 600;
+            transition: background .18s, color .18s, transform .18s;
+            border-left: 0;
         }
-        .sidebar .nav-link i { width: 20px; font-size: 1rem; flex-shrink: 0; color: var(--sb-text); transition: color .15s; }
-        .sidebar .nav-link:hover { background: var(--sb-hover-bg); color: #fff; }
+        .sidebar .nav-link i { width: 22px; font-size: 1rem; flex-shrink: 0; color: var(--sb-text); transition: color .15s; }
+        .sidebar .nav-link:hover { background: var(--sb-hover-bg); color: #fff; transform: translateX(2px); }
         .sidebar .nav-link:hover i { color: #fff; }
-        .sidebar .nav-link.active { background: var(--sb-active-bg); color: var(--sb-text-active); border-left-color: var(--sb-active); }
+        .sidebar .nav-link.active {
+            background: linear-gradient(135deg, rgba(14,134,212,.2), rgba(27,200,200,.16));
+            color: var(--sb-text-active);
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,.05);
+        }
         .sidebar .nav-link.active i { color: var(--sb-active); }
-        .sidebar .bottom-section { padding: .85rem 1rem; border-top: 1px solid var(--sb-border); margin-top: auto; }
-        .sidebar .bottom-section .user-label { color: var(--sb-text); font-size: .8rem; font-weight: 500; margin-bottom: .5rem; display: flex; align-items: center; gap: .5rem; }
-        .sidebar .bottom-section .user-label::before { content: ''; width: 7px; height: 7px; background: #e84393; border-radius: 50%; flex-shrink: 0; }
+        .sidebar .bottom-section {
+            padding: 1rem;
+            border-top: 1px solid var(--sb-border);
+            margin-top: auto;
+            background: rgba(0,0,0,.08);
+        }
+        .sidebar .bottom-section .user-label { color: var(--sb-text); font-size: .82rem; font-weight: 600; margin-bottom: .7rem; display: flex; align-items: center; gap: .5rem; }
+        .sidebar .bottom-section .user-label::before { content: ''; width: 8px; height: 8px; background: var(--accent-2); border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 0 5px rgba(27,200,200,.12); }
         .sidebar .logout-btn {
-            background: rgba(255,255,255,.07) !important;
+            background: rgba(255,255,255,.08) !important;
             border: 1px solid rgba(255,255,255,.12) !important;
-            color: var(--sb-text) !important;
-            font-size: .82rem !important;
-            padding: .38rem .75rem !important;
-            border-radius: .45rem !important;
+            color: #ffffff !important;
+            font-size: .84rem !important;
+            padding: .6rem .85rem !important;
+            border-radius: .8rem !important;
         }
         .sidebar .logout-btn:hover { background: rgba(255,255,255,.13) !important; color: #fff !important; }
         .main-content { flex: 1; overflow-x: hidden; }
         .topbar {
-            background: #fff;
+            background: rgba(255,255,255,.84);
+            backdrop-filter: blur(12px);
             box-shadow: var(--topbar-shadow);
             position: sticky; top: 0; z-index: 100;
+            border-bottom: 1px solid rgba(14,30,53,.05);
         }
-        .topbar .page-title { font-size: 1rem; font-weight: 600; color: #1a2e4a; }
-        .topbar .admin-badge { background: var(--accent); color: #fff; font-size: .72rem; padding: .22rem .65rem; border-radius: 20px; font-weight: 600; }
-        .topbar .user-label { color: #4a6080; font-size: .83rem; font-weight: 500; }
-        .card { border: none !important; box-shadow: var(--card-shadow); border-radius: .65rem !important; }
-        .card-header { background: #fff !important; border-bottom: 1px solid #e8edf4 !important; font-weight: 600; color: #1a2e4a; padding: .85rem 1.25rem; }
+        .topbar .page-title { font-size: 1.02rem; font-weight: 700; color: var(--text-dark); }
+        .topbar .admin-badge {
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            color: #fff;
+            font-size: .72rem;
+            padding: .34rem .78rem;
+            border-radius: 999px;
+            font-weight: 700;
+            box-shadow: 0 10px 20px rgba(14,134,212,.18);
+        }
+        .topbar .user-label { color: var(--text-mid); font-size: .84rem; font-weight: 600; }
+        .card { border: 1px solid var(--card-border) !important; box-shadow: var(--card-shadow); border-radius: 1.1rem !important; }
+        .card-header { background: #fff !important; border-bottom: 1px solid #e8edf4 !important; font-weight: 700; color: var(--text-dark); padding: 1rem 1.25rem; }
         .card-footer { background: #fff !important; }
         .table { font-size: .875rem; }
-        .table thead th { background: #f4f7fc; color: #4a6080; font-weight: 600; font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; border-bottom: none; padding: .7rem 1rem; }
-        .table tbody td { padding: .75rem 1rem; vertical-align: middle; color: #2c3e50; }
+        .table thead th { background: #f4f8fc; color: #4a6080; font-weight: 700; font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; border-bottom: none; padding: .82rem 1rem; }
+        .table tbody td { padding: .85rem 1rem; vertical-align: middle; color: #2c3e50; }
         .table-hover tbody tr:hover { background-color: #f8fafd !important; }
-        .btn { border-radius: .45rem !important; font-weight: 500; font-size: .875rem; }
+        .btn { border-radius: .8rem !important; font-weight: 600; font-size: .875rem; }
         .btn-sm { padding: .3rem .7rem !important; font-size: .8rem !important; }
         .badge { font-weight: 500; border-radius: .35rem; }
         .pagination .page-link { border-radius: .4rem !important; margin: 0 2px; color: var(--accent); font-size: .875rem; }
         .pagination .page-item.active .page-link { background: var(--accent); border-color: var(--accent); }
-        .form-control, .form-select, .input-group-text { border-color: #dce3ed; border-radius: .45rem !important; font-size: .875rem; color: #2c3e50; }
+        .form-control, .form-select, .input-group-text { border-color: #dce3ed; border-radius: .8rem !important; font-size: .875rem; color: #2c3e50; }
         .form-control:focus, .form-select:focus { border-color: var(--accent); box-shadow: 0 0 0 .2rem rgba(232,67,147,.12); }
         .form-label { font-size: .85rem; font-weight: 500; color: #3d5166; }
         .stat-card { border-radius: .65rem !important; border: none !important; box-shadow: var(--card-shadow); overflow: hidden; }
@@ -112,6 +146,19 @@
         .alert-success { background: #e8f8f0; color: #1a6640; }
         .alert-danger { background: #fdecea; color: #7f1d1d; }
         .alert-warning { background: #fef9ec; color: #7c5c10; }
+        .content-shell {
+            padding: 1.5rem;
+        }
+        @media (max-width: 991.98px) {
+            .sidebar {
+                width: 100%;
+                min-height: auto;
+                position: relative;
+            }
+            .d-flex {
+                flex-direction: column;
+            }
+        }
     </style>
     @stack('styles')
 </head>
@@ -120,7 +167,9 @@
     <!-- Sidebar -->
     <nav class="sidebar">
         <div class="sidebar-brand d-flex align-items-center gap-2">
-            <div class="brand-icon"><i class="bi bi-shield-fill"></i></div>
+            <div class="brand-icon">
+                <img src="{{ asset('favicon/favicon.svg') }}" alt="InnApp">
+            </div>
             <a href="{{ route('admin.dashboard') }}" class="text-decoration-none d-flex flex-column">
                 <span class="brand-text">InnApp</span>
                 <span class="brand-sub">Super Admin Panel</span>
@@ -199,7 +248,7 @@
             </div>
         </div>
 
-        <div class="p-4">
+        <div class="content-shell">
             @if(session('success'))
                 <div class="alert alert-success alert-dismissible fade show">
                     {{ session('success') }}
