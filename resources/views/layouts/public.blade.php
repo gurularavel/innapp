@@ -22,7 +22,6 @@
     <link href="{{ asset('assets/css/owl.theme.default.min.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/css/animate.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/css/helper.css') }}" rel="stylesheet">
-    <link href="{{ asset('assets/css/validnavs.css') }}" rel="stylesheet">
     <link href="{{ asset('style.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/css/responsive.css') }}" rel="stylesheet">
 
@@ -83,32 +82,6 @@
             margin-top: 6px;
         }
 
-        nav.navbar .brand-copy strong {
-            color: #ffffff;
-        }
-
-        nav.navbar.sticked .brand-copy strong,
-        nav.navbar.no-background .brand-copy strong {
-            color: #ffffff;
-        }
-
-        nav.navbar.navbar-sticky.sticked .brand-copy strong {
-            color: var(--brand-dark);
-        }
-
-        nav.navbar.navbar-sticky.sticked .brand-copy span {
-            color: rgba(14, 30, 53, 0.55);
-        }
-
-        nav.navbar.navbar-sticky.sticked .brand-badge {
-            box-shadow: 0 12px 24px rgba(14, 134, 212, 0.18);
-        }
-
-        .navbar-brand img.logo {
-            max-height: 42px;
-        }
-
-        .navbar .attr-nav .button a,
         .btn-theme.btn-md,
         .btn-theme.effect.btn-sm,
         .btn-theme.border.btn-md,
@@ -116,21 +89,234 @@
             text-transform: none;
         }
 
-        .auth-cta {
+        .site-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(7, 22, 40, 0.88);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(255,255,255,.08);
+        }
+
+        .site-header.scrolled {
+            background: rgba(255,255,255,.94);
+            border-bottom-color: rgba(14,30,53,.08);
+            box-shadow: 0 14px 34px rgba(14,30,53,.08);
+        }
+
+        .site-header.scrolled .brand-copy strong {
+            color: var(--brand-dark);
+        }
+
+        .site-header.scrolled .brand-copy span {
+            color: rgba(14, 30, 53, 0.55);
+        }
+
+        .site-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            min-height: 84px;
+        }
+
+        .site-nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .site-nav-menu a {
             display: inline-flex;
             align-items: center;
+            min-height: 44px;
+            padding: 0 16px;
+            border-radius: 999px;
+            color: #ffffff;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background .2s ease, color .2s ease, transform .2s ease;
+        }
+
+        .site-nav-menu a:hover,
+        .site-nav-menu a:focus {
+            background: rgba(255,255,255,.10);
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        .site-header.scrolled .site-nav-menu a {
+            color: var(--brand-dark);
+        }
+
+        .site-header.scrolled .site-nav-menu a:hover,
+        .site-header.scrolled .site-nav-menu a:focus {
+            background: rgba(14,134,212,.10);
+            color: var(--brand-dark);
+        }
+
+        .site-nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .site-link-login {
+            color: #ffffff;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .site-link-login:hover,
+        .site-link-login:focus {
+            color: #ffffff;
+            opacity: .82;
+        }
+
+        .site-header.scrolled .site-link-login {
+            color: var(--brand-dark);
+        }
+
+        .site-link-cta {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 46px;
+            padding: 0 22px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+            color: #ffffff;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 16px 28px rgba(14,134,212,.18);
+        }
+
+        .site-link-cta:hover,
+        .site-link-cta:focus {
+            color: #ffffff;
+        }
+
+        .site-menu-toggle {
+            display: none;
+            width: 48px;
+            height: 48px;
+            border: 1px solid rgba(255,255,255,.14);
+            border-radius: 14px;
+            background: rgba(255,255,255,.08);
+            color: #ffffff;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .site-header.scrolled .site-menu-toggle {
+            color: var(--brand-dark);
+            border-color: rgba(14,30,53,.1);
+            background: rgba(14,30,53,.04);
+        }
+
+        .site-mobile-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: min(360px, 88vw);
+            height: 100vh;
+            background: linear-gradient(180deg, #071628 0%, #0c2440 100%);
+            transform: translateX(100%);
+            transition: transform .28s ease;
+            z-index: 1002;
+            padding: 22px;
+            overflow-y: auto;
+            box-shadow: -18px 0 40px rgba(0,0,0,.28);
+        }
+
+        .site-mobile-panel.open {
+            transform: translateX(0);
+        }
+
+        .site-mobile-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .site-mobile-close {
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,.12);
+            background: rgba(255,255,255,.08);
+            color: #ffffff;
+            flex-shrink: 0;
+        }
+
+        .site-mobile-menu {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: grid;
             gap: 10px;
         }
 
-        .auth-cta .secondary-link {
+        .site-mobile-menu a {
+            display: flex;
+            align-items: center;
+            min-height: 52px;
+            padding: 0 16px;
+            border-radius: 14px;
             color: #ffffff;
             font-weight: 600;
-            margin-right: 18px;
+            text-decoration: none;
+            background: rgba(255,255,255,.05);
         }
 
-        .auth-cta .secondary-link:hover {
+        .site-mobile-auth {
+            display: grid;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .site-mobile-auth a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 50px;
+            border-radius: 14px;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .site-mobile-auth .site-mobile-login {
             color: #ffffff;
-            opacity: 0.85;
+            background: rgba(255,255,255,.08);
+            border: 1px solid rgba(255,255,255,.12);
+        }
+
+        .site-mobile-auth .site-mobile-cta {
+            color: #ffffff;
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+        }
+
+        .site-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(7,22,40,.46);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity .25s ease, visibility .25s ease;
+            z-index: 1001;
+        }
+
+        .site-overlay.open {
+            opacity: 1;
+            visibility: visible;
         }
 
         .footer-note p,
@@ -151,33 +337,9 @@
             color: #0f172a;
         }
 
-        .mobile-auth {
-            display: none;
-        }
-
         @media (max-width: 1023px) {
             body.menu-open {
                 overflow: hidden;
-            }
-
-            nav.navbar.validnavs {
-                padding: 18px 0;
-            }
-
-            nav.navbar.validnavs .container {
-                display: block !important;
-            }
-
-            .navbar-header {
-                width: 100%;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: 12px;
-            }
-
-            .navbar-brand.brand-link {
-                max-width: calc(100% - 64px);
             }
 
             .brand-badge {
@@ -195,138 +357,13 @@
                 margin-top: 4px;
             }
 
-            nav.navbar.validnavs .navbar-toggle {
-                display: inline-flex !important;
-                align-items: center;
-                justify-content: center;
-                width: 46px;
-                height: 46px;
-                margin: 0;
-                padding: 0;
-                border-radius: 14px;
-                background: rgba(255,255,255,.12);
-                border: 1px solid rgba(255,255,255,.14);
-            }
-
-            nav.navbar.navbar-sticky.sticked .navbar-toggle {
-                background: rgba(14,30,53,.06);
-                border-color: rgba(14,30,53,.08);
-            }
-
-            nav.navbar.validnavs .navbar-toggle i {
-                font-size: 18px;
-            }
-
-            .attr-right {
+            .site-nav-menu,
+            .site-nav-actions {
                 display: none !important;
             }
 
-            .navbar-collapse {
-                position: fixed;
-                top: 0;
-                right: 0;
-                width: min(360px, 88vw);
-                height: 100vh !important;
-                max-height: 100vh !important;
-                background: linear-gradient(180deg, #071628 0%, #0c2440 100%);
-                padding: 22px 22px 30px;
-                overflow-y: auto;
-                transform: translateX(100%);
-                transition: transform .28s ease;
-                opacity: 1 !important;
-                visibility: visible !important;
-                display: block !important;
-                z-index: 10001;
-                box-shadow: -18px 0 40px rgba(0,0,0,.28);
-            }
-
-            .navbar-collapse.show {
-                transform: translateX(0);
-            }
-
-            .navbar-collapse > .navbar-toggle {
-                position: absolute;
-                top: 18px;
-                right: 18px;
-                background: rgba(255,255,255,.08);
-            }
-
-            .navbar-collapse .brand-link {
-                display: inline-flex !important;
-                margin-bottom: 34px !important;
-                padding-right: 56px;
-            }
-
-            .navbar-collapse ul.nav.navbar-nav {
-                width: 100%;
-                margin: 0 !important;
-                float: none !important;
-            }
-
-            .navbar-collapse ul.nav.navbar-nav > li {
-                float: none !important;
-                width: 100%;
-                margin: 0 0 8px;
-            }
-
-            .navbar-collapse ul.nav.navbar-nav > li > a {
-                display: block;
-                padding: 14px 16px !important;
-                border-radius: 14px;
-                color: #ffffff !important;
-                background: rgba(255,255,255,.05);
-                font-weight: 600;
-                line-height: 1.3;
-            }
-
-            .navbar-collapse ul.nav.navbar-nav > li > a:hover,
-            .navbar-collapse ul.nav.navbar-nav > li > a:focus {
-                background: rgba(27,200,200,.12);
-                color: #ffffff !important;
-            }
-
-            .mobile-auth {
-                display: grid;
-                gap: 12px;
-                margin-top: 24px;
-            }
-
-            .mobile-auth a {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                min-height: 50px;
-                border-radius: 14px;
-                font-weight: 700;
-                text-decoration: none;
-            }
-
-            .mobile-auth .mobile-login {
-                color: #ffffff;
-                background: rgba(255,255,255,.08);
-                border: 1px solid rgba(255,255,255,.12);
-            }
-
-            .mobile-auth .mobile-register,
-            .mobile-auth .mobile-dashboard {
-                color: #ffffff;
-                background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
-                box-shadow: 0 16px 26px rgba(14,134,212,.2);
-            }
-
-            .overlay-screen {
-                position: fixed;
-                inset: 0;
-                background: rgba(7,22,40,.46);
-                opacity: 0;
-                visibility: hidden;
-                transition: opacity .25s ease, visibility .25s ease;
-                z-index: 10000;
-            }
-
-            .overlay-screen.opened {
-                opacity: 1;
-                visibility: visible;
+            .site-menu-toggle {
+                display: inline-flex;
             }
         }
     </style>
@@ -357,77 +394,80 @@
         </div>
     </div>
 
-    <header id="home">
-        <nav class="navbar mobile-sidenav navbar-sticky navbar-default validnavs navbar-fixed white no-background">
-            <div class="container d-flex justify-content-between align-items-center">
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-menu">
-                        <i class="fa fa-bars"></i>
-                    </button>
-                    <a class="navbar-brand brand-link" href="{{ route('home') }}">
-                        <span class="brand-badge">
-                            <img src="{{ asset('favicon/favicon.svg') }}" alt="InnApp">
-                        </span>
-                        <span class="brand-copy">
-                            <strong>InnApp</strong>
-                            <span>Klinika sistemi</span>
-                        </span>
-                    </a>
+    <header id="home" class="site-header">
+        <div class="container">
+            <div class="site-nav">
+                <a class="brand-link" href="{{ route('home') }}">
+                    <span class="brand-badge">
+                        <img src="{{ asset('favicon/favicon.svg') }}" alt="InnApp">
+                    </span>
+                    <span class="brand-copy">
+                        <strong>InnApp</strong>
+                        <span>Klinika sistemi</span>
+                    </span>
+                </a>
+
+                <ul class="site-nav-menu">
+                    <li><a href="#home">Ana səhifə</a></li>
+                    <li><a href="#about">Haqqımızda</a></li>
+                    <li><a href="#features">Xüsusiyyətlər</a></li>
+                    <li><a href="#overview">Üstünlüklər</a></li>
+                    <li><a href="#pricing">Paketlər</a></li>
+                    <li><a href="#contact">Əlaqə</a></li>
+                </ul>
+
+                <div class="site-nav-actions">
+                    @auth
+                        <a class="site-link-cta" href="{{ auth()->user()->isAdmin() ? route('admin.dashboard') : route('panel.dashboard') }}">Panelə keç</a>
+                    @else
+                        <a class="site-link-login" href="{{ route('login') }}">Daxil ol</a>
+                        <a class="site-link-cta" href="{{ route('register') }}">Pulsuz başla</a>
+                    @endauth
                 </div>
 
-                <div class="collapse navbar-collapse" id="navbar-menu">
-                    <a class="brand-link d-flex d-lg-none mb-4" href="{{ route('home') }}">
-                        <span class="brand-badge">
-                            <img src="{{ asset('favicon/favicon.svg') }}" alt="InnApp">
-                        </span>
-                        <span class="brand-copy">
-                            <strong>InnApp</strong>
-                            <span>Klinika sistemi</span>
-                        </span>
-                    </a>
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-menu">
-                        <i class="fa fa-times"></i>
-                    </button>
-
-                    <ul class="nav navbar-nav navbar-center" data-in="fadeInDown" data-out="fadeOutUp">
-                        <li><a class="smooth-menu" href="#home">Ana səhifə</a></li>
-                        <li><a class="smooth-menu" href="#about">Haqqımızda</a></li>
-                        <li><a class="smooth-menu" href="#features">Xüsusiyyətlər</a></li>
-                        <li><a class="smooth-menu" href="#overview">Üstünlüklər</a></li>
-                        <li><a class="smooth-menu" href="#pricing">Paketlər</a></li>
-                        <li><a class="smooth-menu" href="#contact">Əlaqə</a></li>
-                    </ul>
-                    <div class="mobile-auth">
-                        @auth
-                            <a class="mobile-dashboard" href="{{ auth()->user()->isAdmin() ? route('admin.dashboard') : route('panel.dashboard') }}">Panelə keç</a>
-                        @else
-                            <a class="mobile-login" href="{{ route('login') }}">Daxil ol</a>
-                            <a class="mobile-register" href="{{ route('register') }}">Pulsuz başla</a>
-                        @endauth
-                    </div>
-                </div>
-
-                <div class="attr-right">
-                    <div class="attr-nav">
-                        <ul>
-                            <li class="button dark">
-                                @auth
-                                    <a href="{{ auth()->user()->isAdmin() ? route('admin.dashboard') : route('panel.dashboard') }}">Panelə keç</a>
-                                @else
-                                    <div class="auth-cta">
-                                        <a class="secondary-link" href="{{ route('login') }}">Daxil ol</a>
-                                        <a href="{{ route('register') }}">Pulsuz başla</a>
-                                    </div>
-                                @endauth
-                            </li>
-                        </ul>
-                    </div>
-                </div>
+                <button type="button" class="site-menu-toggle" aria-label="Menyunu aç">
+                    <i class="fa fa-bars"></i>
+                </button>
             </div>
-
-            <div class="overlay-screen"></div>
-        </nav>
+        </div>
     </header>
+
+    <aside class="site-mobile-panel" id="mobile-menu" aria-hidden="true">
+        <div class="site-mobile-head">
+            <a class="brand-link" href="{{ route('home') }}">
+                <span class="brand-badge">
+                    <img src="{{ asset('favicon/favicon.svg') }}" alt="InnApp">
+                </span>
+                <span class="brand-copy">
+                    <strong>InnApp</strong>
+                    <span>Klinika sistemi</span>
+                </span>
+            </a>
+            <button type="button" class="site-mobile-close" aria-label="Menyunu bağla">
+                <i class="fa fa-times"></i>
+            </button>
+        </div>
+
+        <ul class="site-mobile-menu">
+            <li><a href="#home">Ana səhifə</a></li>
+            <li><a href="#about">Haqqımızda</a></li>
+            <li><a href="#features">Xüsusiyyətlər</a></li>
+            <li><a href="#overview">Üstünlüklər</a></li>
+            <li><a href="#pricing">Paketlər</a></li>
+            <li><a href="#contact">Əlaqə</a></li>
+        </ul>
+
+        <div class="site-mobile-auth">
+            @auth
+                <a class="site-mobile-cta" href="{{ auth()->user()->isAdmin() ? route('admin.dashboard') : route('panel.dashboard') }}">Panelə keç</a>
+            @else
+                <a class="site-mobile-login" href="{{ route('login') }}">Daxil ol</a>
+                <a class="site-mobile-cta" href="{{ route('register') }}">Pulsuz başla</a>
+            @endauth
+        </div>
+    </aside>
+
+    <div class="site-overlay"></div>
 
     @yield('content')
 
@@ -538,73 +578,97 @@
     <script src="{{ asset('assets/js/owl.carousel.min.js') }}"></script>
     <script src="{{ asset('assets/js/wow.min.js') }}"></script>
     <script src="{{ asset('assets/js/count-to.js') }}"></script>
-    <script src="{{ asset('assets/js/validnavs.js') }}"></script>
     <script src="{{ asset('assets/js/main.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const nav = document.querySelector('nav.navbar.validnavs');
-            const collapse = document.getElementById('navbar-menu');
-            const overlay = document.querySelector('.overlay-screen');
-            const toggles = document.querySelectorAll('nav.navbar.validnavs .navbar-toggle');
-            const menuLinks = document.querySelectorAll('#navbar-menu a');
-            const mobileQuery = window.matchMedia('(max-width: 1023px)');
+            const header = document.querySelector('.site-header');
+            const toggle = document.querySelector('.site-menu-toggle');
+            const panel = document.getElementById('mobile-menu');
+            const closeButton = document.querySelector('.site-mobile-close');
+            const overlay = document.querySelector('.site-overlay');
+            const mobileLinks = document.querySelectorAll('.site-mobile-menu a, .site-mobile-auth a');
+            const desktopLinks = document.querySelectorAll('.site-nav-menu a');
 
-            if (!nav || !collapse || !overlay || !toggles.length) {
+            if (!header || !toggle || !panel || !closeButton || !overlay) {
                 return;
             }
 
-            const isMobile = () => mobileQuery.matches;
-
             const closeMenu = () => {
-                collapse.classList.remove('show');
-                overlay.classList.remove('opened');
-                nav.classList.remove('navbar-responsive');
+                panel.classList.remove('open');
+                overlay.classList.remove('open');
                 document.body.classList.remove('menu-open');
+                panel.setAttribute('aria-hidden', 'true');
             };
 
             const openMenu = () => {
-                collapse.classList.add('show');
-                overlay.classList.add('opened');
-                nav.classList.add('navbar-responsive');
+                panel.classList.add('open');
+                overlay.classList.add('open');
                 document.body.classList.add('menu-open');
+                panel.setAttribute('aria-hidden', 'false');
             };
 
-            toggles.forEach((toggle) => {
-                toggle.addEventListener('click', function (event) {
-                    if (!isMobile()) {
-                        return;
-                    }
+            const smoothTo = (target) => {
+                const section = document.querySelector(target);
+                if (!section) {
+                    return;
+                }
 
-                    event.preventDefault();
-                    event.stopPropagation();
+                const headerOffset = header.offsetHeight;
+                const top = section.getBoundingClientRect().top + window.pageYOffset - headerOffset + 4;
+                window.scrollTo({ top, behavior: 'smooth' });
+            };
 
-                    if (collapse.classList.contains('show')) {
+            toggle.addEventListener('click', function () {
+                if (panel.classList.contains('open')) {
+                    closeMenu();
+                } else {
+                    openMenu();
+                }
+            });
+
+            closeButton.addEventListener('click', function () {
+                closeMenu();
+            });
+
+            overlay.addEventListener('click', function () {
+                closeMenu();
+            });
+
+            mobileLinks.forEach((link) => {
+                link.addEventListener('click', function (event) {
+                    const href = link.getAttribute('href');
+                    if (href && href.startsWith('#')) {
+                        event.preventDefault();
                         closeMenu();
-                    } else {
-                        openMenu();
+                        smoothTo(href);
                     }
                 });
             });
 
-            overlay.addEventListener('click', function () {
-                if (isMobile()) {
-                    closeMenu();
-                }
-            });
-
-            menuLinks.forEach((link) => {
-                link.addEventListener('click', function () {
-                    if (isMobile()) {
-                        closeMenu();
+            desktopLinks.forEach((link) => {
+                link.addEventListener('click', function (event) {
+                    const href = link.getAttribute('href');
+                    if (href && href.startsWith('#')) {
+                        event.preventDefault();
+                        smoothTo(href);
                     }
                 });
             });
 
             window.addEventListener('resize', function () {
-                if (!isMobile()) {
-                    closeMenu();
-                }
+                closeMenu();
             });
+
+            const syncHeaderState = () => {
+                if (window.scrollY > 20) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+            };
+
+            window.addEventListener('scroll', syncHeaderState, { passive: true });
+            syncHeaderState();
         });
     </script>
 

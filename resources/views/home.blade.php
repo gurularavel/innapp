@@ -116,12 +116,12 @@
         <div class="features-items">
             <div class="row">
                 @foreach([
-                    ['flaticon-scroll', 'Randevu idarəetməsi', 'Günlük qəbul planını rahat qurun və hər həkimin iş saatını ayrıca idarə edin.'],
-                    ['flaticon-feature', 'Tam fərdiləşmə', 'Xidmət növləri, iş qrafiki, SMS mətni və proses axınını klinikanıza uyğunlaşdırın.'],
-                    ['flaticon-intersect', 'SMS inteqrasiyası', 'Təsdiq və xatırlatma mesajlarını avtomatik göndərin.'],
-                    ['flaticon-intersection', 'Vizit tarixçəsi', 'Keçmiş prosedurlar, qeydlər və faylları xəstə kartında saxlayın.'],
-                    ['flaticon-resolution', 'Hesabatlar', 'Gəlir, aktivlik və istifadə statistikasını aylıq və həftəlik izləyin.'],
-                    ['flaticon-ux-design', 'Abunəlik nəzarəti', 'Paketlər, limitlər və ödəniş statuslarını sistem daxilindən görün.'],
+                    ['fas fa-calendar-check', 'Randevu idarəetməsi', 'Günlük qəbul planını rahat qurun və hər həkimin iş saatını ayrıca idarə edin.'],
+                    ['fas fa-sliders-h', 'Tam fərdiləşmə', 'Xidmət növləri, iş qrafiki, SMS mətni və proses axınını klinikanıza uyğunlaşdırın.'],
+                    ['fas fa-sms', 'SMS inteqrasiyası', 'Təsdiq və xatırlatma mesajlarını avtomatik göndərin.'],
+                    ['fas fa-notes-medical', 'Vizit tarixçəsi', 'Keçmiş prosedurlar, qeydlər və faylları xəstə kartında saxlayın.'],
+                    ['fas fa-chart-line', 'Hesabatlar', 'Gəlir, aktivlik və istifadə statistikasını aylıq və həftəlik izləyin.'],
+                    ['fas fa-box-open', 'Abunəlik nəzarəti', 'Paketlər, limitlər və ödəniş statuslarını sistem daxilindən görün.'],
                 ] as $feature)
                     <div class="col-lg-4 col-md-6 single-item">
                         <div class="item">
