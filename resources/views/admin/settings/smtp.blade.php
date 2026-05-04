@@ -121,7 +121,7 @@
                                    name="smtp_from_name"
                                    class="form-control @error('smtp_from_name') is-invalid @enderror"
                                    value="{{ old('smtp_from_name', $settings['smtp_from_name']) }}"
-                                   placeholder="Klinika"
+                                   placeholder="Müəssisənizin adı"
                                    required>
                             @error('smtp_from_name')
                                 <div class="invalid-feedback">{{ $message }}</div>

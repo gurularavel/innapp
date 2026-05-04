@@ -134,7 +134,7 @@
                     <tr>
                         <td class="text-muted">{{ $payments->firstItem() + $loop->index }}</td>
                         <td>
-                            <a href="{{ route('admin.doctors.show', $payment->doctor) }}" class="text-decoration-none fw-medium">
+                            <a href="{{ route('admin.users.show', $payment->doctor) }}" class="text-decoration-none fw-medium">
                                 {{ $payment->doctor->full_name }}
                             </a>
                             <div class="text-muted">{{ $payment->doctor->email }}</div>

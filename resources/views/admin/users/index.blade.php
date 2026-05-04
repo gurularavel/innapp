@@ -1,13 +1,11 @@
 @extends('layouts.admin')
-
 @section('title', 'İstifadəçilər')
 @section('page-title', 'İstifadəçilər')
-
 @section('content')
 <div class="card border-0 shadow-sm">
     <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
         <h6 class="mb-0 fw-semibold">İstifadəçilər Siyahısı</h6>
-        <a href="{{ route('admin.doctors.create') }}" class="btn btn-primary btn-sm">
+        <a href="{{ route('admin.users.create') }}" class="btn btn-primary btn-sm">
             <i class="bi bi-person-plus me-1"></i>Yeni İstifadəçi
         </a>
     </div>
@@ -31,7 +29,7 @@
                     <tr>
                         <td class="text-muted small">{{ $doctors->firstItem() + $loop->index }}</td>
                         <td>
-                            <a href="{{ route('admin.doctors.show', $doctor) }}" class="text-decoration-none fw-medium">
+                            <a href="{{ route('admin.users.show', $doctor) }}" class="text-decoration-none fw-medium">
                                 {{ $doctor->full_name }}
                             </a>
                         </td>
@@ -54,20 +52,20 @@
                         </td>
                         <td class="text-end">
                             <div class="d-flex justify-content-end gap-1">
-                                <a href="{{ route('admin.doctors.show', $doctor) }}" class="btn btn-sm btn-outline-info" title="Bax">
+                                <a href="{{ route('admin.users.show', $doctor) }}" class="btn btn-sm btn-outline-info" title="Bax">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                                <a href="{{ route('admin.doctors.edit', $doctor) }}" class="btn btn-sm btn-outline-primary" title="Düzəlt">
+                                <a href="{{ route('admin.users.edit', $doctor) }}" class="btn btn-sm btn-outline-primary" title="Düzəlt">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <form method="POST" action="{{ route('admin.doctors.toggle-status', $doctor) }}" class="d-inline">
+                                <form method="POST" action="{{ route('admin.users.toggle-status', $doctor) }}" class="d-inline">
                                     @csrf
                                     @method('PATCH')
                                     <button type="submit" class="btn btn-sm btn-outline-warning" title="{{ $doctor->is_active ? 'Deaktiv et' : 'Aktiv et' }}">
                                         <i class="bi bi-{{ $doctor->is_active ? 'toggle-on' : 'toggle-off' }}"></i>
                                     </button>
                                 </form>
-                                <form method="POST" action="{{ route('admin.doctors.destroy', $doctor) }}" class="d-inline">
+                                <form method="POST" action="{{ route('admin.users.destroy', $doctor) }}" class="d-inline">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Silmək istədiyinizdən əminsiniz?')">

@@ -182,7 +182,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{{ route('admin.doctors.index') }}" class="nav-link {{ request()->routeIs('admin.doctors*') ? 'active' : '' }}">
+                <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
                     <i class="bi bi-person-badge me-2"></i>İstifadəçilər
                 </a>
             </li>

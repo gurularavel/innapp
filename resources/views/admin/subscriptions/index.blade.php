@@ -32,7 +32,7 @@
                     <tr>
                         <td class="text-muted small">{{ $subscriptions->firstItem() + $loop->index }}</td>
                         <td>
-                            <a href="{{ route('admin.doctors.show', $subscription->doctor) }}" class="text-decoration-none fw-medium">
+                            <a href="{{ route('admin.users.show', $subscription->doctor) }}" class="text-decoration-none fw-medium">
                                 {{ $subscription->doctor->full_name }}
                             </a>
                             <div class="text-muted small">{{ $subscription->doctor->email }}</div>

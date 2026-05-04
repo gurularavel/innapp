@@ -19,47 +19,7 @@
                     @method('PATCH')
 
                     <div class="row g-3">
-                        {{-- Photo --}}
-                        <div class="col-12">
-                            <label class="form-label fw-medium">Profil Şəkli</label>
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="rounded-circle overflow-hidden bg-light d-flex align-items-center justify-content-center flex-shrink-0"
-                                     style="width:80px;height:80px;border:2px dashed #dee2e6;">
-                                    @if($patient->photo_url)
-                                        <img id="photo-preview" src="{{ $patient->photo_url }}" alt=""
-                                             class="w-100 h-100" style="object-fit:cover;">
-                                        <i id="photo-placeholder" class="bi bi-person fs-2 text-muted d-none"></i>
-                                    @else
-                                        <i id="photo-placeholder" class="bi bi-person fs-2 text-muted"></i>
-                                        <img id="photo-preview" src="" alt="" class="d-none w-100 h-100" style="object-fit:cover;">
-                                    @endif
-                                </div>
-                                <div>
-                                    <input type="file" id="photo" name="photo" accept="image/*" class="d-none"
-                                           onchange="previewPhoto(this)">
-                                    <button type="button" class="btn btn-sm btn-outline-secondary"
-                                            onclick="document.getElementById('photo').click()">
-                                        <i class="bi bi-camera me-1"></i>Şəkli Dəyiş
-                                    </button>
-                                    @if($patient->photo)
-                                    <div class="mt-2">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="remove_photo"
-                                                   value="1" id="remove_photo" onchange="toggleRemovePhoto(this)">
-                                            <label class="form-check-label text-danger small" for="remove_photo">
-                                                Şəkli sil
-                                            </label>
-                                        </div>
-                                    </div>
-                                    @endif
-                                    <div class="text-muted mt-1" style="font-size:.75rem;">JPG, PNG · Maks 2MB</div>
-                                </div>
-                            </div>
-                            @error('photo')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
-                            @enderror
-                        </div>
-
+                        {{-- Fixed: name, surname, phone --}}
                         <div class="col-md-6">
                             <label for="name" class="form-label fw-medium">Ad <span class="text-danger">*</span></label>
                             <input type="text" class="form-control @error('name') is-invalid @enderror"
@@ -79,85 +39,16 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label for="phone" class="form-label fw-medium">Telefon</label>
+                            <label for="phone" class="form-label fw-medium">Telefon <span class="text-danger">*</span></label>
                             <input type="text" class="form-control @error('phone') is-invalid @enderror"
-                                   id="phone" name="phone" value="{{ old('phone', $patient->phone) }}" >
+                                   id="phone" name="phone" value="{{ old('phone', $patient->phone) }}">
                             @error('phone')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
-                        <div class="col-md-6">
-                            <label for="birth_date" class="form-label fw-medium">Doğum Tarixi</label>
-                            <input type="date" class="form-control @error('birth_date') is-invalid @enderror"
-                                   id="birth_date" name="birth_date"
-                                   value="{{ old('birth_date', $patient->birth_date?->format('Y-m-d')) }}">
-                            @error('birth_date')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="col-md-6">
-                            <label for="gender" class="form-label fw-medium">Cins</label>
-                            <select class="form-select @error('gender') is-invalid @enderror"
-                                    id="gender" name="gender">
-                                <option value="">— Seçin —</option>
-                                <option value="male" {{ old('gender', $patient->gender) === 'male' ? 'selected' : '' }}>Kişi</option>
-                                <option value="female" {{ old('gender', $patient->gender) === 'female' ? 'selected' : '' }}>Qadın</option>
-                                <option value="other" {{ old('gender', $patient->gender) === 'other' ? 'selected' : '' }}>Digər</option>
-                            </select>
-                            @error('gender')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="col-md-4">
-                            <label for="weight" class="form-label fw-medium">Çəki (kg)</label>
-                            <input type="number" min="0" max="999" step="0.1"
-                                   class="form-control @error('weight') is-invalid @enderror"
-                                   id="weight" name="weight" value="{{ old('weight', $patient->weight) }}" placeholder="72.5">
-                            @error('weight')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="col-md-4">
-                            <label for="blood_type" class="form-label fw-medium">Qan Qrupu</label>
-                            <select class="form-select @error('blood_type') is-invalid @enderror"
-                                    id="blood_type" name="blood_type">
-                                <option value="">— Seçin —</option>
-                                @foreach(['A+','A-','B+','B-','AB+','AB-','O+','O-'] as $bt)
-                                    <option value="{{ $bt }}" {{ old('blood_type', $patient->blood_type) === $bt ? 'selected' : '' }}>{{ $bt }}</option>
-                                @endforeach
-                            </select>
-                            @error('blood_type')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="col-md-4">
-                            <label for="marital_status" class="form-label fw-medium">Ailə Vəziyyəti</label>
-                            <select class="form-select @error('marital_status') is-invalid @enderror"
-                                    id="marital_status" name="marital_status">
-                                <option value="">— Seçin —</option>
-                                <option value="single"   {{ old('marital_status', $patient->marital_status) === 'single'   ? 'selected' : '' }}>Subay</option>
-                                <option value="married"  {{ old('marital_status', $patient->marital_status) === 'married'  ? 'selected' : '' }}>Evli</option>
-                                <option value="divorced" {{ old('marital_status', $patient->marital_status) === 'divorced' ? 'selected' : '' }}>Boşanmış</option>
-                                <option value="widowed"  {{ old('marital_status', $patient->marital_status) === 'widowed'  ? 'selected' : '' }}>Dul</option>
-                            </select>
-                            @error('marital_status')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="col-12">
-                            <label for="notes" class="form-label fw-medium">Qeydlər</label>
-                            <textarea class="form-control @error('notes') is-invalid @enderror"
-                                      id="notes" name="notes" rows="4">{{ old('notes', $patient->notes) }}</textarea>
-                            @error('notes')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                        {{-- Dynamic specialty fields --}}
+                        @include('doctor.patients._form_fields', ['patient' => $patient, 'customValues' => $customValues])
                     </div>
 
                     <div class="mt-4 d-flex gap-2">
@@ -184,18 +75,6 @@ function previewPhoto(input) {
             document.getElementById('photo-placeholder').classList.add('d-none');
         };
         reader.readAsDataURL(input.files[0]);
-    }
-}
-function toggleRemovePhoto(cb) {
-    if (cb.checked) {
-        document.getElementById('photo-preview').classList.add('d-none');
-        document.getElementById('photo-placeholder').classList.remove('d-none');
-    } else {
-        @if($patient->photo_url)
-        document.getElementById('photo-preview').src = '{{ $patient->photo_url }}';
-        document.getElementById('photo-preview').classList.remove('d-none');
-        document.getElementById('photo-placeholder').classList.add('d-none');
-        @endif
     }
 }
 </script>

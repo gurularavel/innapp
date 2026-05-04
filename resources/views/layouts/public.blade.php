@@ -5,8 +5,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="description" content="@yield('meta_description', 'InnApp klinika idarəetmə sistemi')">
-    <title>@yield('title', 'InnApp | Klinika idarəetmə sistemi')</title>
+    <meta name="description" content="@yield('meta_description', 'InnApp randevu idarəetmə sistemi')">
+    <title>@yield('title', 'InnApp | Randevu idarəetmə sistemi')</title>
 
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon/favicon.svg') }}">
     <link rel="icon" type="image/png" sizes="96x96" href="{{ asset('favicon/favicon-96x96.png') }}">
@@ -403,7 +403,7 @@
                     </span>
                     <span class="brand-copy">
                         <strong>InnApp</strong>
-                        <span>Klinika sistemi</span>
+                        <span>Randevu sistemi</span>
                     </span>
                 </a>
 
@@ -440,7 +440,7 @@
                 </span>
                 <span class="brand-copy">
                     <strong>InnApp</strong>
-                    <span>Klinika sistemi</span>
+                    <span>Randevu sistemi</span>
                 </span>
             </a>
             <button type="button" class="site-mobile-close" aria-label="Menyunu bağla">
@@ -483,11 +483,11 @@
                                 </span>
                                 <span class="brand-copy">
                                     <strong>InnApp</strong>
-                                    <span>Klinika sistemi</span>
+                                    <span>Randevu sistemi</span>
                                 </span>
                             </a>
                             <p>
-                                Stomatoloji klinikalar üçün hazırlanmış vahid idarəetmə platforması.
+                                Müxtəlif sahələr üçün hazırlanmış vahid randevu platforması.
                                 Randevular, xəstə bazası, SMS və hesabatlar bir paneldə.
                             </p>
                             <a href="{{ route('register') }}" class="btn circle btn-theme effect btn-sm">İndi başla</a>

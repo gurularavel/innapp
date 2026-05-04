@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="az">
 <head>
     <meta charset="UTF-8">
@@ -89,7 +89,7 @@
                     <i class="bi bi-grid-fill" style="font-size:1.6rem;color:var(--af-ice)"></i>
                     <div class="brand-name">Inn<span>App</span></div>
                 </a>
-                <p class="mt-1 mb-0" style="color:rgba(255,255,255,.55);font-size:.88rem">Klinika İdarəetmə Sistemi</p>
+                <p class="mt-1 mb-0" style="color:rgba(255,255,255,.55);font-size:.88rem">Randevu İdarəetmə Sistemi</p>
             </div>
 
             <div class="auth-card">

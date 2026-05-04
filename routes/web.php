@@ -29,10 +29,13 @@ require __DIR__.'/auth.php';
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin'])->group(function () {
     Route::get('/dashboard', [Admin\DashboardController::class, 'index'])->name('dashboard');
 
-    Route::resource('doctors', Admin\DoctorController::class);
-    Route::patch('doctors/{doctor}/toggle-status', [Admin\DoctorController::class, 'toggleStatus'])->name('doctors.toggle-status');
+    Route::resource('users', Admin\DoctorController::class)->parameters(['users' => 'doctor']);
+    Route::patch('users/{doctor}/toggle-status', [Admin\DoctorController::class, 'toggleStatus'])->name('users.toggle-status');
 
     Route::resource('specialties', Admin\SpecialtyController::class);
+    Route::post('specialties/{specialty}/fields', [Admin\SpecialtyController::class, 'addField'])->name('specialties.fields.add');
+    Route::patch('specialties/{specialty}/fields/{field}', [Admin\SpecialtyController::class, 'updateField'])->name('specialties.fields.update');
+    Route::delete('specialties/{specialty}/fields/{field}', [Admin\SpecialtyController::class, 'removeField'])->name('specialties.fields.remove');
 
     Route::resource('packages', Admin\PackageController::class);
 

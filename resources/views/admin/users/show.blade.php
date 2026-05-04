@@ -7,17 +7,17 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div></div>
     <div class="d-flex gap-2">
-        <a href="{{ route('admin.doctors.edit', $doctor) }}" class="btn btn-outline-primary btn-sm">
+        <a href="{{ route('admin.users.edit', $doctor) }}" class="btn btn-outline-primary btn-sm">
             <i class="bi bi-pencil me-1"></i>Düzəlt
         </a>
-        <a href="{{ route('admin.doctors.index') }}" class="btn btn-outline-secondary btn-sm">
+        <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary btn-sm">
             <i class="bi bi-arrow-left me-1"></i>Geri
         </a>
     </div>
 </div>
 
 <div class="row g-4">
-    {{-- Doctor Info --}}
+    {{-- User Info --}}
     <div class="col-lg-4">
         <div class="card border-0 shadow-sm">
             <div class="card-body text-center py-4">

@@ -40,6 +40,11 @@ class Patient extends Model
         return $this->hasMany(PatientVisit::class)->latest('visited_at');
     }
 
+    public function fieldValues()
+    {
+        return $this->hasMany(PatientFieldValue::class);
+    }
+
     public function getPhotoUrlAttribute(): string
     {
         if ($this->photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($this->photo)) {

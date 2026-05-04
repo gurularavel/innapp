@@ -1,7 +1,7 @@
 @extends('layouts.public')
 
-@section('title', 'InnApp | Stomatoloji klinikalar üçün idarəetmə sistemi')
-@section('meta_description', 'InnApp stomatoloji klinikalar üçün randevu, xəstə bazası, SMS və hesabat idarəetməsi təqdim edir.')
+@section('title', 'InnApp | Randevu idarəetmə sistemi')
+@section('meta_description', 'InnApp müxtəlif sahələr üçün randevu, müştəri bazası, SMS və hesabat idarəetməsi təqdim edir.')
 
 @section('content')
 <div class="banner-area content-double transparent-nav bg-gradient text-light small-text">
@@ -12,10 +12,10 @@
                     <div class="row align-center">
                         <div class="col-lg-5 left-info simple-video">
                             <div class="content" data-animation="animated fadeInUpBig">
-                                <h1>Klinikanızı bir paneldən idarə edin</h1>
+                                <h1>İşinizi bir paneldən idarə edin</h1>
                                 <p>
-                                    InnApp stomatoloji klinikalar üçün hazırlanmış modern idarəetmə sistemidir.
-                                    Randevular, xəstə tarixçəsi, SMS bildirişləri və gəlir analitikası eyni platformada toplanır.
+                                    InnApp müxtəlif sahələr üçün hazırlanmış modern randevu idarəetmə sistemidir.
+                                    Randevular, müştəri tarixçəsi, SMS bildirişləri və gəlir analitikası eyni platformada toplanır.
                                 </p>
                                 <a class="btn circle btn-light border btn-md" href="{{ route('register') }}">Pulsuz başla</a>
                             </div>
@@ -40,9 +40,9 @@
                 <div class="col-lg-8 offset-lg-2">
                     <div class="about-content text-center">
                         <h4>InnApp haqqında</h4>
-                        <h2>Klinikanın gündəlik işini sadələşdirən sistem</h2>
+                        <h2>İşinizin gündəlik axınını sadələşdirən sistem</h2>
                         <p>
-                            Həkimlər və administratorlar üçün daha sürətli qeydiyyat, daha dəqiq planlama və daha rahat nəzarət.
+                            Mütəxəssislər və administratorlar üçün daha sürətli qeydiyyat, daha dəqiq planlama və daha rahat nəzarət.
                             Manual cədvəlləri və dağınıq qeydləri vahid rəqəmsal axına çevirin.
                         </p>
                     </div>
@@ -66,9 +66,9 @@
                             </div>
                             <div class="col-lg-4 col-md-6 single-item">
                                 <div class="item">
-                                    <img src="{{ asset('assets/img/icon/3.svg') }}" alt="Xəstə bazası">
-                                    <h4>Xəstə kartoteki</h4>
-                                    <p>Müalicə qeydləri, kontaktlar və vizit tarixçəsi hər xəstə üçün tam şəkildə saxlanılır.</p>
+                                    <img src="{{ asset('assets/img/icon/3.svg') }}" alt="Müştəri bazası">
+                                    <h4>Müştəri kartoteki</h4>
+                                    <p>Xidmət qeydləri, kontaktlar və vizit tarixçəsi hər müştəri üçün tam şəkildə saxlanılır.</p>
                                 </div>
                             </div>
                         </div>
@@ -88,10 +88,10 @@
                 </div>
                 <div class="col-lg-6 info">
                     <h5>Niyə InnApp</h5>
-                    <h2>Klinikanız üçün real əməliyyat üstünlüyü yaradın</h2>
+                    <h2>İşiniz üçün real əməliyyat üstünlüyü yaradın</h2>
                     <p>
-                        Admin işinin yükünü azaldın, həkimlərin qəbul ritmini qoruyun və rəhbərlik üçün ölçülə bilən nəticələr yaradın.
-                        InnApp həm kiçik kabinetlər, həm də çox həkimli klinikalar üçün uyğundur.
+                        Admin işinin yükünü azaldın, mütəxəssislərin qəbul ritmini qoruyun və rəhbərlik üçün ölçülə bilən nəticələr yaradın.
+                        InnApp həm kiçik kabinetlər, həm də çox mütəxəssisli müəssisələr üçün uyğundur.
                     </p>
                     <a class="btn circle btn-theme border btn-md" href="{{ route('demo.start') }}">Canlı demo gör</a>
                 </div>
@@ -107,7 +107,7 @@
                 <div class="site-heading text-center">
                     <h2>Əsas imkanlar</h2>
                     <p>
-                        Klinika idarəetməsinin gündəlik ehtiyaclarına uyğun qurulmuş funksiyalar.
+                        İdarəetmənin gündəlik ehtiyaclarına uyğun qurulmuş funksiyalar.
                         Artıq sistemlər arasında keçid etmədən hər şeyi bir yerdən idarə edin.
                     </p>
                 </div>
@@ -116,8 +116,8 @@
         <div class="features-items">
             <div class="row">
                 @foreach([
-                    ['fas fa-calendar-check', 'Randevu idarəetməsi', 'Günlük qəbul planını rahat qurun və hər həkimin iş saatını ayrıca idarə edin.'],
-                    ['fas fa-sliders-h', 'Tam fərdiləşmə', 'Xidmət növləri, iş qrafiki, SMS mətni və proses axınını klinikanıza uyğunlaşdırın.'],
+                    ['fas fa-calendar-check', 'Randevu idarəetməsi', 'Günlük qəbul planını rahat qurun və hər mütəxəssisin iş saatını ayrıca idarə edin.'],
+                    ['fas fa-sliders-h', 'Tam fərdiləşmə', 'Xidmət növləri, iş qrafiki, SMS mətni və proses axınını müəssisənizə uyğunlaşdırın.'],
                     ['fas fa-sms', 'SMS inteqrasiyası', 'Təsdiq və xatırlatma mesajlarını avtomatik göndərin.'],
                     ['fas fa-notes-medical', 'Vizit tarixçəsi', 'Keçmiş prosedurlar, qeydlər və faylları xəstə kartında saxlayın.'],
                     ['fas fa-chart-line', 'Hesabatlar', 'Gəlir, aktivlik və istifadə statistikasını aylıq və həftəlik izləyin.'],
@@ -146,11 +146,11 @@
             <div class="col-lg-6 info">
                 <h2>3 addımda işə başlayın</h2>
                 <p>
-                    Qeydiyyatdan keçin, klinika parametrlərini qurun və ilk xəstə axınınızı eyni gün ərzində sistemə köçürün.
+                    Qeydiyyatdan keçin, iş parametrlərini qurun və ilk müştəri axınınızı eyni gün ərzində sistemə köçürün.
                 </p>
                 <ul>
-                    <li>Hesab yaradın və klinika məlumatlarını əlavə edin</li>
-                    <li>Həkim iş saatları, xidmətlər və SMS şablonlarını qurun</li>
+                    <li>Hesab yaradın və müəssisə məlumatlarını əlavə edin</li>
+                    <li>Mütəxəssis iş saatları, xidmətlər və SMS şablonlarını qurun</li>
                     <li>Randevuları yaradın və qəbul prosesini rəqəmsallaşdırın</li>
                 </ul>
             </div>
@@ -158,8 +158,8 @@
                 <div class="faq-content">
                     <div class="accordion" id="setupAccordion">
                         @foreach([
-                            ['Quraşdırma nə qədər çəkir?', 'Əksər klinikalar ilkin qurulmanı 10-20 dəqiqə ərzində tamamlayır.'],
-                            ['Texniki bilik lazımdır?', 'Xeyr. İnterfeys klinika komandası üçün sadə və istifadəyə yönəlik hazırlanıb.'],
+                            ['Quraşdırma nə qədər çəkir?', 'Əksər müəssisələr ilkin qurulmanı 10-20 dəqiqə ərzində tamamlayır.'],
+                            ['Texniki bilik lazımdır?', 'Xeyr. İnterfeys komanda üçün sadə və istifadəyə yönəlik hazırlanıb.'],
                             ['Demo versiya var?', 'Bəli. Sistemə keçmədən əvvəl demo hesab ilə əsas axını yoxlaya bilərsiniz.'],
                         ] as $index => $item)
                             <div class="accordion-item card">
@@ -189,7 +189,7 @@
                 <div class="site-heading text-center">
                     <h2>Paketlər</h2>
                     <p>
-                        Aktiv klinikanın ölçüsünə və komandaya uyğun çevik plan seçin.
+                        Müəssisənizin ölçüsünə və komandaya uyğun çevik plan seçin.
                         Paketləri sonradan dəyişmək mümkündür.
                     </p>
                 </div>
@@ -205,7 +205,7 @@
                                     <h4>{{ $package->name }}</h4>
                                     <h2><sup>₼</sup>{{ number_format($package->price, 0) }} <sub>/ ay</sub></h2>
                                 </li>
-                                <li>{{ $package->description ?: 'Klinikanın gündəlik prosesləri üçün əsas funksiyalar.' }}</li>
+                                <li>{{ $package->description ?: 'Gündəlik proseslər üçün əsas funksiyalar.' }}</li>
                                 <li>{{ $package->patient_limit ? $package->patient_limit . ' xəstə limiti' : 'Limitsiz xəstə' }}</li>
                                 <li>{{ $package->sms_limit ? $package->sms_limit . ' SMS / ay' : 'Limitsiz SMS' }}</li>
                                 <li>Randevu və təqvim idarəetməsi</li>
@@ -218,9 +218,9 @@
                     </div>
                 @empty
                     @foreach([
-                        ['Start', '29', '50 xəstə limiti', '500 SMS / ay'],
-                        ['Pro', '79', 'Limitsiz xəstə', '2000 SMS / ay'],
-                        ['Klinika+', '149', 'Limitsiz xəstə', 'Limitsiz SMS'],
+                        ['Start', '29', '50 müştəri limiti', '500 SMS / ay'],
+                        ['Pro', '79', 'Limitsiz müştəri', '2000 SMS / ay'],
+                        ['Pro+', '149', 'Limitsiz müştəri', 'Limitsiz SMS'],
                     ] as $plan)
                         <div class="col-lg-4 col-md-6 single-item">
                             <div class="pricing-item">
@@ -251,18 +251,18 @@
     <div class="container">
         <div class="row align-center">
             <div class="col-lg-5 info">
-                <h2>Həkimlər nə deyir?</h2>
+                <h2>İstifadəçilər nə deyir?</h2>
                 <p>
-                    Real klinika prosesinə uyğun qurulmuş sistem olduğuna görə istifadəçilər ilk gündən fərqi hiss edir.
+                    Real iş prosesinə uyğun qurulmuş sistem olduğuna görə istifadəçilər ilk gündən fərqi hiss edir.
                 </p>
             </div>
             <div class="col-lg-7 testimonial-items">
                 <div id="testimonial-carousel" class="carousel slide" data-bs-ride="carousel">
                     <div class="carousel-inner">
                         @foreach([
-                            ['InnApp ilə qəbul planımız daha nizamlı oldu. Xəstə axını qarışmır və administrator daha az vaxt sərf edir.', 'Nigar Məmmədova', 'Diş həkimi'],
-                            ['SMS xatırlatmaları sayəsində buraxılan randevular ciddi şəkildə azalıb. Bu, birbaşa gəlirə təsir edir.', 'Tural Həsənov', 'Klinika rəhbəri'],
-                            ['Yeni işçi gələndə sistemi öyrətmək çətin olmur. İnterfeys həqiqətən sadə qurulub.', 'Sevinc Quliyeva', 'Ortodontist'],
+                            ['InnApp ilə qəbul planımız daha nizamlı oldu. Müştəri axını qarışmır və administrator daha az vaxt sərf edir.', 'Nigar Məmmədova', 'Mütəxəssis'],
+                            ['SMS xatırlatmaları sayəsində buraxılan randevular ciddi şəkildə azalıb. Bu, birbaşa gəlirə təsir edir.', 'Tural Həsənov', 'Müəssisə rəhbəri'],
+                            ['Yeni işçi gələndə sistemi öyrətmək çətin olmur. İnterfeys həqiqətən sadə qurulub.', 'Sevinc Quliyeva', 'Mütəxəssis'],
                         ] as $index => $testimonial)
                             <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
                                 <div class="item">
@@ -296,7 +296,7 @@
             <div class="col-lg-6 offset-lg-3">
                 <h3>Demo üçün əlaqə saxlayın</h3>
                 <p>
-                    Klinikaya uyğun təqdimat, demo keçid və ilkin qurulum istiqaməti üçün email ünvanınızı paylaşın.
+                    İşinizə uyğun təqdimat, demo keçid və ilkin qurulum istiqaməti üçün email ünvanınızı paylaşın.
                 </p>
                 <div class="subscribe">
                     <form action="#" onsubmit="return false;">
@@ -334,7 +334,7 @@
                     <ul class="info">
                         <li>
                             <i class="fas fa-map-marked-alt"></i>
-                            <span>Bakı, Azərbaycan<br>Stomatoloji klinikalar üçün SaaS platforma</span>
+                            <span>Bakı, Azərbaycan<br>Randevu idarəetməsi üçün SaaS platforma</span>
                         </li>
                         <li>
                             <i class="fas fa-phone"></i>
@@ -356,7 +356,7 @@
                 </div>
             </div>
             <div class="col-lg-6 contact-form">
-                <h2>Klinikanız üçün təqdimat istəyin</h2>
+                <h2>Müəssisəniz üçün təqdimat istəyin</h2>
                 <form action="#" class="contact-form" onsubmit="return false;">
                     <div class="row">
                         <div class="col-lg-12">
@@ -380,7 +380,7 @@
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="form-group comments">
-                                <textarea class="form-control" placeholder="Klinikanız haqqında qısa məlumat"></textarea>
+                                <textarea class="form-control" placeholder="Müəssisəniz haqqında qısa məlumat"></textarea>
                             </div>
                         </div>
                     </div>

@@ -75,7 +75,7 @@
                         <td class="text-muted small">{{ $smsLogs->firstItem() + $loop->index }}</td>
                         <td>
                             @if($log->doctor)
-                                <a href="{{ route('admin.doctors.show', $log->doctor) }}" class="text-decoration-none fw-medium">
+                                <a href="{{ route('admin.users.show', $log->doctor) }}" class="text-decoration-none fw-medium">
                                     {{ $log->doctor->full_name }}
                                 </a>
                             @else

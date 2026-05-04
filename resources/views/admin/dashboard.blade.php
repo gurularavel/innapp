@@ -66,7 +66,7 @@
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
                 <h6 class="mb-0 fw-semibold">Son Qeydiyyatlı İstifadəçilər</h6>
-                <a href="{{ route('admin.doctors.index') }}" class="btn btn-sm btn-outline-primary">Hamısı</a>
+                <a href="{{ route('admin.users.index') }}" class="btn btn-sm btn-outline-primary">Hamısı</a>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -83,7 +83,7 @@
                             @forelse($recentDoctors as $doctor)
                             <tr>
                                 <td>
-                                    <a href="{{ route('admin.doctors.show', $doctor) }}" class="text-decoration-none fw-medium">
+                                    <a href="{{ route('admin.users.show', $doctor) }}" class="text-decoration-none fw-medium">
                                         {{ $doctor->full_name }}
                                     </a>
                                     <div class="text-muted small">{{ $doctor->email }}</div>
@@ -143,7 +143,7 @@
             <div class="card-body">
                 <h6 class="fw-semibold mb-3">Sürətli Əməliyyatlar</h6>
                 <div class="d-grid gap-2">
-                    <a href="{{ route('admin.doctors.create') }}" class="btn btn-outline-primary">
+                    <a href="{{ route('admin.users.create') }}" class="btn btn-outline-primary">
                         <i class="bi bi-person-plus me-2"></i>Yeni İstifadəçi Əlavə Et
                     </a>
                     <a href="{{ route('admin.subscriptions.create') }}" class="btn btn-outline-success">

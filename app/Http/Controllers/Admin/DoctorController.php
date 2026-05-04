@@ -19,13 +19,13 @@ class DoctorController extends Controller
             ->latest()
             ->paginate(15);
 
-        return view('admin.doctors.index', compact('doctors'));
+        return view('admin.users.index', compact('doctors'));
     }
 
     public function create()
     {
         $specialties = Specialty::where('is_active', true)->get();
-        return view('admin.doctors.create', compact('specialties'));
+        return view('admin.users.create', compact('specialties'));
     }
 
     public function store(Request $request)
@@ -46,8 +46,8 @@ class DoctorController extends Controller
 
         User::create($validated);
 
-        return redirect()->route('admin.doctors.index')
-            ->with('success', 'Həkim uğurla yaradıldı.');
+        return redirect()->route('admin.users.index')
+            ->with('success', 'İstifadəçi uğurla yaradıldı.');
     }
 
     public function show(User $doctor)
@@ -55,13 +55,13 @@ class DoctorController extends Controller
         $doctor->load('specialty', 'subscriptions.package');
         $patientsCount     = $doctor->patients()->count();
         $appointmentsCount = $doctor->appointments()->count();
-        return view('admin.doctors.show', compact('doctor', 'patientsCount', 'appointmentsCount'));
+        return view('admin.users.show', compact('doctor', 'patientsCount', 'appointmentsCount'));
     }
 
     public function edit(User $doctor)
     {
         $specialties = Specialty::where('is_active', true)->get();
-        return view('admin.doctors.edit', compact('doctor', 'specialties'));
+        return view('admin.users.edit', compact('doctor', 'specialties'));
     }
 
     public function update(Request $request, User $doctor)
@@ -94,25 +94,25 @@ class DoctorController extends Controller
 
         $doctor->update($validated);
 
-        $message = 'Həkim məlumatları yeniləndi.';
+        $message = 'İstifadəçi məlumatları yeniləndi.';
         if ($emailChanged) {
             $message .= ' E-poçt dəyişdirildiyindən aktiv sessiyalar sonlandırıldı.';
         }
 
-        return redirect()->route('admin.doctors.index')->with('success', $message);
+        return redirect()->route('admin.users.index')->with('success', $message);
     }
 
     public function destroy(User $doctor)
     {
         $doctor->delete();
-        return redirect()->route('admin.doctors.index')
-            ->with('success', 'Həkim silindi.');
+        return redirect()->route('admin.users.index')
+            ->with('success', 'İstifadəçi silindi.');
     }
 
     public function toggleStatus(User $doctor)
     {
         $doctor->update(['is_active' => !$doctor->is_active]);
         $status = $doctor->is_active ? 'aktiv edildi' : 'deaktiv edildi';
-        return back()->with('success', "Həkim {$status}.");
+        return back()->with('success', "İstifadəçi {$status}.");
     }
 }
