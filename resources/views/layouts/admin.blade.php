@@ -146,7 +146,7 @@
             font-size: 0.875rem;
             font-weight: 500;
             transition: all 0.2s ease;
-            border-left: 0;
+            border-left: 3px solid transparent;
             gap: 0.75rem;
         }
 
@@ -168,14 +168,15 @@
         }
 
         .sidebar .nav-link.active {
-            background-color: var(--sidebar-active-bg);
-            color: #ffffff;
+            background: linear-gradient(90deg, rgba(79, 70, 229, 0.15) 0%, rgba(79, 70, 229, 0.02) 100%) !important;
+            color: #ffffff !important;
             font-weight: 600;
-            box-shadow: inset 1px 0 0 0 var(--accent-primary);
+            border-left: 4px solid #6366f1 !important;
+            border-radius: 0 10px 10px 0 !important;
         }
 
         .sidebar .nav-link.active i {
-            color: #818cf8;
+            color: #818cf8 !important;
         }
 
         /* User profile bottom bar */

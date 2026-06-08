@@ -187,14 +187,15 @@
         }
 
         .sidebar .nav-link.active {
-            background-color: var(--sidebar-active-bg);
-            color: #ffffff;
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.02) 100%) !important;
+            color: #ffffff !important;
             font-weight: 600;
-            border-left-color: var(--accent-primary);
+            border-left: 4px solid var(--accent-primary) !important;
+            border-radius: 0 10px 10px 0 !important;
         }
 
         .sidebar .nav-link.active i {
-            color: #60a5fa;
+            color: #60a5fa !important;
         }
 
         /* Subscription info block style (glassmorphism widget) */
