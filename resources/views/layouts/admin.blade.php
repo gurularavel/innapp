@@ -11,222 +11,640 @@
     <link rel="manifest" href="/favicon/site.webmanifest">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --sb-bg: #071628;
-            --sb-brand-bg: rgba(255,255,255,.04);
-            --sb-active: #1bc8c8;
-            --sb-active-bg: rgba(27,200,200,.14);
-            --sb-hover-bg: rgba(255,255,255,.06);
-            --sb-text: rgba(255,255,255,.64);
-            --sb-text-active: #ffffff;
-            --sb-border: rgba(255,255,255,.09);
-            --accent: #0e86d4;
-            --accent-2: #1bc8c8;
-            --accent-soft: rgba(14,134,212,.12);
-            --body-bg: #eef5fb;
-            --topbar-shadow: 0 10px 40px rgba(14,30,53,.07);
-            --card-shadow: 0 18px 40px rgba(14,30,53,.08);
-            --card-border: #e4edf6;
-            --text-dark: #0e1e35;
-            --text-mid: #4f6480;
+            /* Palette variables */
+            --body-bg: #f8fafc;
+            --sidebar-bg: #090e1a;
+            --sidebar-hover-bg: rgba(255, 255, 255, 0.04);
+            --sidebar-active-bg: rgba(99, 102, 241, 0.12);
+            --sidebar-border: rgba(255, 255, 255, 0.05);
+            --sidebar-text: #94a3b8;
+            --sidebar-text-active: #ffffff;
+            
+            --accent-primary: #4f46e5; /* Indigo */
+            --accent-primary-hover: #4338ca;
+            --accent-primary-light: rgba(79, 70, 229, 0.08);
+            
+            --text-dark: #0f172a; /* Slate 900 */
+            --text-mid: #475569; /* Slate 600 */
+            --text-light: #64748b; /* Slate 500 */
+            --border-color: #f1f5f9; /* Slate 100 */
+            
+            /* Shadows */
+            --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05), 0 4px 12px -2px rgba(15, 23, 42, 0.02);
+            --topbar-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+            --glow-shadow: 0 0 15px rgba(99, 102, 241, 0.15);
         }
-        * { box-sizing: border-box; }
-        body { background: radial-gradient(circle at top left, #f7fbff 0%, var(--body-bg) 55%); font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; color: var(--text-dark); }
-        .sidebar {
-            width: 260px;
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--body-bg);
+            color: var(--text-dark);
             min-height: 100vh;
-            background: linear-gradient(180deg, #061526 0%, #0c2440 100%);
-            display: flex; flex-direction: column;
+            overflow-x: hidden;
+            letter-spacing: -0.01em;
+        }
+
+        /* App Layout Container */
+        .app-wrapper {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 280px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--sidebar-border);
+            display: flex;
+            flex-direction: column;
             flex-shrink: 0;
-            box-shadow: 18px 0 42px rgba(6, 21, 38, .22);
-            position: sticky;
+            position: fixed;
             top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 1000;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
+        /* Logo Brand section */
         .sidebar-brand {
-            background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-            padding: 1.1rem 1.15rem;
-            border-bottom: 1px solid var(--sb-border);
-            margin: 14px 14px 0;
-            border-radius: 18px;
+            padding: 1.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border-bottom: 1px solid var(--sidebar-border);
         }
+
         .sidebar-brand .brand-icon {
-            width: 44px;
-            height: 44px;
-            background: linear-gradient(135deg, var(--accent), var(--accent-2));
-            border-radius: 14px;
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, var(--accent-primary), #818cf8);
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 16px 30px rgba(14,134,212,.26);
-            flex-shrink: 0;
+            box-shadow: var(--glow-shadow);
         }
+
         .sidebar-brand .brand-icon img {
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            height: 20px;
         }
-        .sidebar-brand .brand-text { color: #fff; font-weight: 800; font-size: 1.12rem; letter-spacing: .02em; }
-        .sidebar-brand .brand-sub { color: rgba(255,255,255,.5); font-size: .7rem; margin-top: 4px; text-transform: uppercase; letter-spacing: .14em; }
-        .sidebar ul.nav { padding: 1rem 0; }
-        .sidebar .nav-link {
-            color: var(--sb-text);
-            padding: .8rem 1rem;
-            margin: 3px .9rem;
-            border-radius: .85rem;
-            display: flex; align-items: center;
-            font-size: .9rem; font-weight: 600;
-            transition: background .18s, color .18s, transform .18s;
-            border-left: 0;
-        }
-        .sidebar .nav-link i { width: 22px; font-size: 1rem; flex-shrink: 0; color: var(--sb-text); transition: color .15s; }
-        .sidebar .nav-link:hover { background: var(--sb-hover-bg); color: #fff; transform: translateX(2px); }
-        .sidebar .nav-link:hover i { color: #fff; }
-        .sidebar .nav-link.active {
-            background: linear-gradient(135deg, rgba(14,134,212,.2), rgba(27,200,200,.16));
-            color: var(--sb-text-active);
-            box-shadow: inset 0 0 0 1px rgba(255,255,255,.05);
-        }
-        .sidebar .nav-link.active i { color: var(--sb-active); }
-        .sidebar .bottom-section {
-            padding: 1rem;
-            border-top: 1px solid var(--sb-border);
-            margin-top: auto;
-            background: rgba(0,0,0,.08);
-        }
-        .sidebar .bottom-section .user-label { color: var(--sb-text); font-size: .82rem; font-weight: 600; margin-bottom: .7rem; display: flex; align-items: center; gap: .5rem; }
-        .sidebar .bottom-section .user-label::before { content: ''; width: 8px; height: 8px; background: var(--accent-2); border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 0 5px rgba(27,200,200,.12); }
-        .sidebar .logout-btn {
-            background: rgba(255,255,255,.08) !important;
-            border: 1px solid rgba(255,255,255,.12) !important;
-            color: #ffffff !important;
-            font-size: .84rem !important;
-            padding: .6rem .85rem !important;
-            border-radius: .8rem !important;
-        }
-        .sidebar .logout-btn:hover { background: rgba(255,255,255,.13) !important; color: #fff !important; }
-        .main-content { flex: 1; overflow-x: hidden; }
-        .topbar {
-            background: rgba(255,255,255,.84);
-            backdrop-filter: blur(12px);
-            box-shadow: var(--topbar-shadow);
-            position: sticky; top: 0; z-index: 100;
-            border-bottom: 1px solid rgba(14,30,53,.05);
-        }
-        .topbar .page-title { font-size: 1.02rem; font-weight: 700; color: var(--text-dark); }
-        .topbar .admin-badge {
-            background: linear-gradient(135deg, var(--accent), var(--accent-2));
-            color: #fff;
-            font-size: .72rem;
-            padding: .34rem .78rem;
-            border-radius: 999px;
+
+        .sidebar-brand .brand-text {
+            color: #ffffff;
             font-weight: 700;
-            box-shadow: 0 10px 20px rgba(14,134,212,.18);
+            font-size: 1.25rem;
+            letter-spacing: -0.02em;
         }
-        .topbar .user-label { color: var(--text-mid); font-size: .84rem; font-weight: 600; }
-        .card { border: 1px solid var(--card-border) !important; box-shadow: var(--card-shadow); border-radius: 1.1rem !important; }
-        .card-header { background: #fff !important; border-bottom: 1px solid #e8edf4 !important; font-weight: 700; color: var(--text-dark); padding: 1rem 1.25rem; }
-        .card-footer { background: #fff !important; }
-        .table { font-size: .875rem; }
-        .table thead th { background: #f4f8fc; color: #4a6080; font-weight: 700; font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; border-bottom: none; padding: .82rem 1rem; }
-        .table tbody td { padding: .85rem 1rem; vertical-align: middle; color: #2c3e50; }
-        .table-hover tbody tr:hover { background-color: #f8fafd !important; }
-        .btn { border-radius: .8rem !important; font-weight: 600; font-size: .875rem; }
-        .btn-sm { padding: .3rem .7rem !important; font-size: .8rem !important; }
-        .badge { font-weight: 500; border-radius: .35rem; }
-        .pagination .page-link { border-radius: .4rem !important; margin: 0 2px; color: var(--accent); font-size: .875rem; }
-        .pagination .page-item.active .page-link { background: var(--accent); border-color: var(--accent); }
-        .form-control, .form-select, .input-group-text { border-color: #dce3ed; border-radius: .8rem !important; font-size: .875rem; color: #2c3e50; }
-        .form-control:focus, .form-select:focus { border-color: var(--accent); box-shadow: 0 0 0 .2rem rgba(232,67,147,.12); }
-        .form-label { font-size: .85rem; font-weight: 500; color: #3d5166; }
-        .stat-card { border-radius: .65rem !important; border: none !important; box-shadow: var(--card-shadow); overflow: hidden; }
-        .stat-card .stat-icon { width: 48px; height: 48px; border-radius: .5rem; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
-        .stat-card .stat-value { font-size: 1.75rem; font-weight: 700; color: #1a2e4a; line-height: 1.1; }
-        .stat-card .stat-label { font-size: .8rem; color: #6b7fa3; margin-top: .2rem; }
-        .alert { border: none; border-radius: .55rem; font-size: .875rem; }
-        .alert-success { background: #e8f8f0; color: #1a6640; }
-        .alert-danger { background: #fdecea; color: #7f1d1d; }
-        .alert-warning { background: #fef9ec; color: #7c5c10; }
+
+        .sidebar-brand .brand-sub {
+            color: var(--sidebar-text);
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-top: 2px;
+        }
+
+        /* Navigation menu */
+        .sidebar-nav-container {
+            flex-grow: 1;
+            padding: 1.5rem 1rem;
+            overflow-y: auto;
+        }
+
+        .sidebar-nav-container::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar-nav-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .sidebar .nav {
+            gap: 4px;
+        }
+
+        .sidebar .nav-link {
+            color: var(--sidebar-text);
+            padding: 0.7rem 1rem;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border-left: 0;
+            gap: 0.75rem;
+        }
+
+        .sidebar .nav-link i {
+            font-size: 1.15rem;
+            transition: transform 0.2s ease, color 0.2s ease;
+            color: var(--sidebar-text);
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: var(--sidebar-hover-bg);
+            color: var(--sidebar-text-active);
+            transform: translateX(3px);
+        }
+
+        .sidebar .nav-link:hover i {
+            color: #ffffff;
+            transform: scale(1.05);
+        }
+
+        .sidebar .nav-link.active {
+            background-color: var(--sidebar-active-bg);
+            color: #ffffff;
+            font-weight: 600;
+            box-shadow: inset 1px 0 0 0 var(--accent-primary);
+        }
+
+        .sidebar .nav-link.active i {
+            color: #818cf8;
+        }
+
+        /* User profile bottom bar */
+        .sidebar .bottom-section {
+            padding: 1.25rem 1.25rem;
+            border-top: 1px solid var(--sidebar-border);
+            background-color: rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .sidebar .bottom-section .user-label {
+            color: #ffffff;
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .sidebar .bottom-section .user-label::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background-color: #10b981; /* active indicator green */
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.18);
+        }
+
+        .sidebar .logout-btn {
+            background: rgba(239, 68, 68, 0.08) !important;
+            border: 1px solid rgba(239, 68, 68, 0.15) !important;
+            color: #f87171 !important;
+            font-size: 0.8rem !important;
+            padding: 0.55rem 0.85rem !important;
+            border-radius: 8px !important;
+            transition: all 0.2s ease !important;
+        }
+
+        .sidebar .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.15) !important;
+            color: #ffffff !important;
+        }
+
+        /* Main Content container */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            min-width: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Premium Topbar */
+        .topbar {
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+            padding: 1.1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 99;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .topbar .page-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            letter-spacing: -0.02em;
+        }
+
+        .topbar .admin-badge {
+            background-color: var(--accent-primary-light);
+            color: var(--accent-primary);
+            font-size: 0.75rem;
+            padding: 0.3rem 0.75rem;
+            border-radius: 999px;
+            font-weight: 600;
+            border: 1px solid rgba(79, 70, 229, 0.12);
+        }
+
+        .topbar .user-label {
+            color: var(--text-mid);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        /* Mobile Hamburger & Controls */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-dark);
+            cursor: pointer;
+            padding: 0.25rem;
+        }
+
+        /* Shell content area */
         .content-shell {
+            padding: 2rem;
+            flex-grow: 1;
+        }
+
+        /* Cards Restyling */
+        .card {
+            background: #ffffff;
+            border: 1px solid var(--border-color) !important;
+            box-shadow: var(--card-shadow);
+            border-radius: 14px !important;
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card-header {
+            background-color: #ffffff !important;
+            border-bottom: 1px solid var(--border-color) !important;
+            padding: 1.25rem 1.5rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 0.95rem;
+        }
+
+        .card-body {
             padding: 1.5rem;
         }
+
+        .card-footer {
+            background-color: #ffffff !important;
+            border-top: 1px solid var(--border-color) !important;
+            padding: 1.1rem 1.5rem;
+        }
+
+        /* Stats Cards */
+        .stat-card {
+            border-top: none !important;
+            border: 1px solid var(--border-color) !important;
+            background: #ffffff;
+            border-radius: 14px !important;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.05);
+        }
+
+        .stat-card .stat-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .stat-card .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            margin-bottom: 0.15rem;
+        }
+
+        /* Tables Restyling */
+        .table {
+            margin-bottom: 0;
+            font-size: 0.875rem;
+        }
+
+        .table thead th {
+            background-color: #fafbfd !important;
+            color: var(--text-light);
+            font-weight: 600;
+            font-size: 0.725rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.9rem 1.25rem;
+            border-bottom: 1px solid var(--border-color) !important;
+        }
+
+        .table tbody td {
+            padding: 1.1rem 1.25rem;
+            vertical-align: middle;
+            color: var(--text-mid);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #fafbfc !important;
+        }
+
+        .table-hover tbody tr {
+            transition: background-color 0.15s ease;
+        }
+
+        /* Form Controls */
+        .form-control, .form-select, .input-group-text {
+            border: 1px solid #e2e8f0;
+            border-radius: 10px !important;
+            font-size: 0.875rem;
+            color: var(--text-dark);
+            padding: 0.6rem 0.9rem;
+            transition: all 0.2s ease;
+            background-color: #ffffff;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+            color: var(--text-dark);
+        }
+
+        .form-label {
+            font-size: 0.825rem;
+            font-weight: 500;
+            color: var(--text-mid);
+            margin-bottom: 0.45rem;
+        }
+
+        /* Buttons Restyling */
+        .btn {
+            border-radius: 10px !important;
+            font-weight: 500;
+            font-size: 0.875rem;
+            padding: 0.55rem 1.1rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-sm {
+            padding: 0.35rem 0.8rem !important;
+            font-size: 0.775rem !important;
+            border-radius: 8px !important;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-primary) !important;
+            border-color: var(--accent-primary) !important;
+            color: #ffffff !important;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-primary-hover) !important;
+            border-color: var(--accent-primary-hover) !important;
+            transform: translateY(-1px);
+        }
+
+        .btn-outline-primary {
+            color: var(--accent-primary) !important;
+            border-color: var(--accent-primary) !important;
+            background-color: transparent !important;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--accent-primary) !important;
+            color: #ffffff !important;
+        }
+
+        /* Beautiful Soft Badges */
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.35rem 0.75rem;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid transparent;
+        }
+
+        .badge.bg-success {
+            background-color: #ecfdf5 !important;
+            color: #065f46 !important;
+            border-color: #d1fae5 !important;
+        }
+
+        .badge.bg-danger {
+            background-color: #fef2f2 !important;
+            color: #991b1b !important;
+            border-color: #fee2e2 !important;
+        }
+
+        .badge.bg-warning {
+            background-color: #fffbeb !important;
+            color: #92400e !important;
+            border-color: #fef3c7 !important;
+        }
+
+        .badge.bg-secondary {
+            background-color: #f8fafc !important;
+            color: #475569 !important;
+            border-color: #e2e8f0 !important;
+        }
+
+        .badge.bg-info {
+            background-color: #f0f9ff !important;
+            color: #075985 !important;
+            border-color: #e0f2fe !important;
+        }
+
+        /* Pagination style rules */
+        .pagination {
+            gap: 2px;
+            margin-bottom: 0;
+        }
+
+        .pagination .page-link {
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 8px !important;
+            color: var(--text-mid);
+            font-size: 0.825rem;
+            padding: 0.4rem 0.75rem;
+            transition: all 0.2s ease;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: var(--accent-primary) !important;
+            border-color: var(--accent-primary) !important;
+            color: #ffffff !important;
+        }
+
+        .pagination .page-link:hover {
+            background-color: #f8fafc;
+            color: var(--accent-primary);
+        }
+
+        /* Custom alert components */
+        .alert {
+            border: 1px solid transparent;
+            border-radius: 12px;
+            padding: 0.95rem 1.25rem;
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .alert-success {
+            background-color: #ecfdf5;
+            border-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .alert-danger {
+            background-color: #fef2f2;
+            border-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .alert-warning {
+            background-color: #fffbeb;
+            border-color: #fef3c7;
+            color: #92400e;
+        }
+
+        /* Responsive styling */
         @media (max-width: 991.98px) {
             .sidebar {
-                width: 100%;
-                min-height: auto;
-                position: relative;
+                transform: translateX(-100%);
             }
-            .d-flex {
-                flex-direction: column;
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .topbar {
+                padding: 1rem 1.25rem;
+            }
+
+            .content-shell {
+                padding: 1.25rem;
             }
         }
     </style>
     @stack('styles')
 </head>
 <body>
-<div class="d-flex">
+<div class="app-wrapper">
     <!-- Sidebar -->
-    <nav class="sidebar">
-        <div class="sidebar-brand d-flex align-items-center gap-2">
+    <nav class="sidebar" id="app-sidebar">
+        <div class="sidebar-brand">
             <div class="brand-icon">
                 <img src="{{ asset('favicon/favicon.svg') }}" alt="InnApp">
             </div>
             <a href="{{ route('admin.dashboard') }}" class="text-decoration-none d-flex flex-column">
                 <span class="brand-text">InnApp</span>
-                <span class="brand-sub">Super Admin Panel</span>
+                <span class="brand-sub">Super Admin</span>
             </a>
         </div>
-        <ul class="nav flex-column flex-grow-1">
-            <li class="nav-item">
-                <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                    <i class="bi bi-speedometer2 me-2"></i>Dashboard
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
-                    <i class="bi bi-person-badge me-2"></i>İstifadəçilər
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('admin.specialties.index') }}" class="nav-link {{ request()->routeIs('admin.specialties*') ? 'active' : '' }}">
-                    <i class="bi bi-bookmark me-2"></i>İxtisaslar
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('admin.packages.index') }}" class="nav-link {{ request()->routeIs('admin.packages*') ? 'active' : '' }}">
-                    <i class="bi bi-box me-2"></i>Paketlər
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('admin.subscriptions.index') }}" class="nav-link {{ request()->routeIs('admin.subscriptions*') ? 'active' : '' }}">
-                    <i class="bi bi-credit-card me-2"></i>Abunəliklər
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('admin.payments.index') }}" class="nav-link {{ request()->routeIs('admin.payments*') ? 'active' : '' }}">
-                    <i class="bi bi-receipt me-2"></i>Ödənişlər
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('admin.sms-logs.index') }}" class="nav-link {{ request()->routeIs('admin.sms-logs*') ? 'active' : '' }}">
-                    <i class="bi bi-chat-dots me-2"></i>SMS Loqlar
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('admin.settings.sms-templates') }}" class="nav-link {{ request()->routeIs('admin.settings.sms*') ? 'active' : '' }}">
-                    <i class="bi bi-pencil-square me-2"></i>Defolt SMS Şablonları
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('admin.settings.smtp') }}" class="nav-link {{ request()->routeIs('admin.settings.smtp*') ? 'active' : '' }}">
-                    <i class="bi bi-envelope-at me-2"></i>SMTP / E-poçt
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('admin.cron-log') }}" class="nav-link {{ request()->routeIs('admin.cron-log') ? 'active' : '' }}">
-                    <i class="bi bi-terminal me-2"></i>Cron / SMS Test
-                </a>
-            </li>
-        </ul>
+        <div class="sidebar-nav-container">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                        <i class="bi bi-grid-1x2"></i>Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
+                        <i class="bi bi-people"></i>İstifadəçilər
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.specialties.index') }}" class="nav-link {{ request()->routeIs('admin.specialties*') ? 'active' : '' }}">
+                        <i class="bi bi-bookmarks"></i>İxtisaslar
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.packages.index') }}" class="nav-link {{ request()->routeIs('admin.packages*') ? 'active' : '' }}">
+                        <i class="bi bi-box-seam"></i>Paketlər
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.subscriptions.index') }}" class="nav-link {{ request()->routeIs('admin.subscriptions*') ? 'active' : '' }}">
+                        <i class="bi bi-credit-card"></i>Abunəliklər
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.payments.index') }}" class="nav-link {{ request()->routeIs('admin.payments*') ? 'active' : '' }}">
+                        <i class="bi bi-wallet2"></i>Ödənişlər
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.sms-logs.index') }}" class="nav-link {{ request()->routeIs('admin.sms-logs*') ? 'active' : '' }}">
+                        <i class="bi bi-chat-text"></i>SMS Loqlar
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.settings.sms-templates') }}" class="nav-link {{ request()->routeIs('admin.settings.sms*') ? 'active' : '' }}">
+                        <i class="bi bi-chat-quote"></i>SMS Şablonları
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.settings.smtp') }}" class="nav-link {{ request()->routeIs('admin.settings.smtp*') ? 'active' : '' }}">
+                        <i class="bi bi-envelope"></i>SMTP / E-poçt
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.cron-log') }}" class="nav-link {{ request()->routeIs('admin.cron-log') ? 'active' : '' }}">
+                        <i class="bi bi-terminal-fill"></i>Cron / SMS Test
+                    </a>
+                </li>
+            </ul>
+        </div>
         <div class="bottom-section">
             <div class="user-label">{{ auth()->user()->name }} {{ auth()->user()->surname }}</div>
             <form method="POST" action="{{ route('logout') }}">
@@ -240,36 +658,41 @@
 
     <!-- Main Content -->
     <div class="main-content">
-        <div class="topbar px-4 py-2 d-flex align-items-center justify-content-between">
-            <span class="page-title">@yield('page-title', 'Dashboard')</span>
-            <div class="d-flex align-items-center gap-2">
-                <span class="admin-badge">Super Admin</span>
-                <span class="user-label">{{ auth()->user()->full_name }}</span>
+        <header class="topbar">
+            <div class="d-flex align-items-center gap-3">
+                <button class="mobile-menu-toggle" id="menu-toggle-btn" aria-label="Menu">
+                    <i class="bi bi-list"></i>
+                </button>
+                <span class="page-title">@yield('page-title', 'Dashboard')</span>
             </div>
-        </div>
+            <div class="d-flex align-items-center gap-3">
+                <span class="admin-badge">Super Admin</span>
+                <span class="user-label fw-semibold text-dark">{{ auth()->user()->full_name }}</span>
+            </div>
+        </header>
 
-        <div class="content-shell">
+        <main class="content-shell">
             @if(session('success'))
                 <div class="alert alert-success alert-dismissible fade show">
-                    {{ session('success') }}
+                    <span><i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}</span>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             @endif
             @if(session('error'))
                 <div class="alert alert-danger alert-dismissible fade show">
-                    {{ session('error') }}
+                    <span><i class="bi bi-exclamation-triangle-fill me-2"></i>{{ session('error') }}</span>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             @endif
             @if(session('warning'))
                 <div class="alert alert-warning alert-dismissible fade show">
-                    {{ session('warning') }}
+                    <span><i class="bi bi-exclamation-circle-fill me-2"></i>{{ session('warning') }}</span>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             @endif
 
             @yield('content')
-        </div>
+        </main>
     </div>
 </div>
 
@@ -277,6 +700,23 @@
 <script src="https://cdn.jsdelivr.net/npm/imask@7.6.1/dist/imask.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    // Mobile menu toggle functionality
+    const toggleBtn = document.getElementById('menu-toggle-btn');
+    const sidebar = document.getElementById('app-sidebar');
+    
+    if (toggleBtn && sidebar) {
+        toggleBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            sidebar.classList.toggle('mobile-open');
+        });
+
+        document.addEventListener('click', function (e) {
+            if (sidebar.classList.contains('mobile-open') && !sidebar.contains(e.target) && e.target !== toggleBtn) {
+                sidebar.classList.remove('mobile-open');
+            }
+        });
+    }
+
     document.querySelectorAll('input[name="phone"]').forEach(function (el) {
         // Normalize existing value to 994XXXXXXXXX before applying mask
         var digits = el.value.replace(/\D/g, '');
