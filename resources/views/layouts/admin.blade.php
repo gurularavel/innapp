@@ -605,6 +605,11 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="{{ route('admin.admins.index') }}" class="nav-link {{ request()->routeIs('admin.admins*') ? 'active' : '' }}">
+                        <i class="bi bi-shield-lock"></i>Adminlər
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="{{ route('admin.specialties.index') }}" class="nav-link {{ request()->routeIs('admin.specialties*') ? 'active' : '' }}">
                         <i class="bi bi-bookmarks"></i>İxtisaslar
                     </a>
@@ -622,6 +627,21 @@
                 <li class="nav-item">
                     <a href="{{ route('admin.payments.index') }}" class="nav-link {{ request()->routeIs('admin.payments*') ? 'active' : '' }}">
                         <i class="bi bi-wallet2"></i>Ödənişlər
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.promoters.index') }}" class="nav-link {{ request()->routeIs('admin.promoters*') ? 'active' : '' }}">
+                        <i class="bi bi-person-badge"></i>Promotorlar
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.promo-codes.index') }}" class="nav-link {{ request()->routeIs('admin.promo-codes*') ? 'active' : '' }}">
+                        <i class="bi bi-ticket-perforated"></i>Promo Kodlar
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.payouts.index') }}" class="nav-link {{ request()->routeIs('admin.payouts*') ? 'active' : '' }}">
+                        <i class="bi bi-cash-stack"></i>Çıxarışlar
                     </a>
                 </li>
                 <li class="nav-item">
@@ -647,7 +667,13 @@
             </ul>
         </div>
         <div class="bottom-section">
-            <div class="user-label">{{ auth()->user()->name }} {{ auth()->user()->surname }}</div>
+            <a href="{{ route('admin.profile.edit') }}" class="user-label text-decoration-none {{ request()->routeIs('admin.profile*') ? 'text-white' : '' }}">
+                {{ auth()->user()->name }} {{ auth()->user()->surname }}
+            </a>
+            <a href="{{ route('admin.profile.edit') }}" class="btn btn-sm w-100 d-flex align-items-center justify-content-center gap-1"
+               style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#cbd5e1">
+                <i class="bi bi-person-gear flex-shrink-0"></i>Profil
+            </a>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="logout-btn btn btn-sm w-100 d-flex align-items-center justify-content-center gap-1">
@@ -668,7 +694,9 @@
             </div>
             <div class="d-flex align-items-center gap-3">
                 <span class="admin-badge">Super Admin</span>
-                <span class="user-label fw-semibold text-dark">{{ auth()->user()->full_name }}</span>
+                <a href="{{ route('admin.profile.edit') }}" class="user-label fw-semibold text-dark text-decoration-none d-inline-flex align-items-center gap-1">
+                    <i class="bi bi-person-circle"></i>{{ auth()->user()->full_name }}
+                </a>
             </div>
         </header>
 

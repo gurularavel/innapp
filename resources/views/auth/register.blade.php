@@ -154,6 +154,17 @@
                             </div>
                         </div>
 
+                        <div class="mb-4">
+                            <label class="form-label" for="promo_code">Promo kod <span class="text-muted fw-normal">(varsa)</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-ticket-perforated"></i></span>
+                                <input type="text" id="promo_code" name="promo_code" class="form-control @error('promo_code') is-invalid @enderror"
+                                    value="{{ old('promo_code', $promoCode ?? '') }}" placeholder="Promo kodunuz" autocomplete="off"
+                                    style="text-transform:uppercase">
+                            </div>
+                            @error('promo_code')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                        </div>
+
                         <button type="submit" class="btn btn-auth w-100">
                             <i class="bi bi-rocket-takeoff me-2"></i>Hesab yarat
                         </button>

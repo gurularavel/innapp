@@ -28,6 +28,7 @@ class User extends Authenticatable
         'is_active',
         'is_demo',
         'demo_expires_at',
+        'signup_promo_code_id',
     ];
 
     protected $hidden = [
@@ -55,6 +56,51 @@ class User extends Authenticatable
     public function isDoctor(): bool
     {
         return $this->role === 'doctor';
+    }
+
+    public function isPromoter(): bool
+    {
+        return $this->role === 'promoter';
+    }
+
+    public function promoCodes()
+    {
+        return $this->hasMany(PromoCode::class, 'promoter_id');
+    }
+
+    public function signupPromoCode()
+    {
+        return $this->belongsTo(PromoCode::class, 'signup_promo_code_id');
+    }
+
+    public function redemptions()
+    {
+        return $this->hasMany(PromoRedemption::class, 'promoter_id');
+    }
+
+    public function payouts()
+    {
+        return $this->hasMany(PromoterPayout::class, 'promoter_id');
+    }
+
+    /**
+     * Promotorun komissiya balansları (AZN).
+     * pending  = gözləmədə (hold müddəti bitməyib)
+     * available = çıxarıla bilən
+     * paid     = artıq ödənilib
+     */
+    public function commissionBalances(): array
+    {
+        $sums = $this->redemptions()
+            ->selectRaw('status, COALESCE(SUM(commission_amount), 0) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        return [
+            'pending'   => round((float) ($sums['pending'] ?? 0), 2),
+            'available' => round((float) ($sums['available'] ?? 0), 2),
+            'paid'      => round((float) ($sums['paid'] ?? 0), 2),
+        ];
     }
 
     public function specialty()

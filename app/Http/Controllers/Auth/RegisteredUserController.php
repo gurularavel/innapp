@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\PromoCode;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -17,9 +18,12 @@ class RegisteredUserController extends Controller
     /**
      * Display the registration view.
      */
-    public function create(): View
+    public function create(Request $request): View
     {
-        return view('auth.register');
+        // Linkdən gələn promo kodu (?promo=KOD) formada öncədən doldurmaq üçün
+        $promoCode = $request->query('promo');
+
+        return view('auth.register', compact('promoCode'));
     }
 
     /**
@@ -34,13 +38,28 @@ class RegisteredUserController extends Controller
             'surname' => ['required', 'string', 'max:255'],
             'email'   => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'promo_code' => ['nullable', 'string', 'max:50'],
         ]);
 
+        // Promo kodu yoxla — yalnız istifadəyə yararlıdırsa müştəriyə bağla
+        $promoCodeId = null;
+        if ($request->filled('promo_code')) {
+            $promo = PromoCode::where('code', $request->promo_code)->first();
+            if ($promo && $promo->isUsable()) {
+                $promoCodeId = $promo->id;
+            } else {
+                return back()
+                    ->withInput($request->except('password', 'password_confirmation'))
+                    ->withErrors(['promo_code' => 'Promo kod etibarsız və ya müddəti bitib.']);
+            }
+        }
+
         $user = User::create([
-            'name'     => $request->name,
-            'surname'  => $request->surname,
-            'email'    => $request->email,
-            'password' => Hash::make($request->password),
+            'name'                 => $request->name,
+            'surname'              => $request->surname,
+            'email'                => $request->email,
+            'password'             => Hash::make($request->password),
+            'signup_promo_code_id' => $promoCodeId,
         ]);
 
         event(new Registered($user));

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin;
 use App\Http\Controllers\Doctor;
+use App\Http\Controllers\Promoter;
 use App\Http\Controllers\DemoController;
 use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
@@ -32,6 +33,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin'])
     Route::resource('users', Admin\DoctorController::class)->parameters(['users' => 'doctor']);
     Route::patch('users/{doctor}/toggle-status', [Admin\DoctorController::class, 'toggleStatus'])->name('users.toggle-status');
 
+    Route::resource('admins', Admin\AdminUserController::class)->parameters(['admins' => 'admin'])->except(['show']);
+
     Route::resource('specialties', Admin\SpecialtyController::class);
     Route::post('specialties/{specialty}/fields', [Admin\SpecialtyController::class, 'addField'])->name('specialties.fields.add');
     Route::patch('specialties/{specialty}/fields/{field}', [Admin\SpecialtyController::class, 'updateField'])->name('specialties.fields.update');
@@ -46,6 +49,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin'])
 
     Route::get('payments', [Admin\SubscriptionController::class, 'payments'])->name('payments.index');
 
+    // Promotorlar və promo kodlar
+    Route::resource('promoters', Admin\PromoterController::class)->parameters(['promoters' => 'promoter']);
+    Route::resource('promo-codes', Admin\PromoCodeController::class)->parameters(['promo-codes' => 'promoCode'])->except(['show']);
+    Route::get('payouts', [Admin\PayoutController::class, 'index'])->name('payouts.index');
+    Route::patch('payouts/{payout}/paid', [Admin\PayoutController::class, 'markPaid'])->name('payouts.paid');
+    Route::patch('payouts/{payout}/reject', [Admin\PayoutController::class, 'reject'])->name('payouts.reject');
+
     Route::get('sms-logs', [Admin\SmsLogController::class, 'index'])->name('sms-logs.index');
 
     Route::get('settings/sms-templates', [Admin\SettingController::class, 'smsTemplates'])->name('settings.sms-templates');
@@ -55,6 +65,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin'])
     Route::put('settings/smtp', [Admin\SettingController::class, 'saveSmtpSettings'])->name('settings.smtp.save');
 
     Route::get('cron-log', [Admin\SettingController::class, 'cronLog'])->name('cron-log');
+
+    Route::get('profile', [Admin\ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('profile', [Admin\ProfileController::class, 'update'])->name('profile.update');
+    Route::put('profile/password', [Admin\ProfileController::class, 'updatePassword'])->name('profile.password');
 });
 
 // Doctor routes
@@ -97,4 +111,13 @@ Route::prefix('panel')->name('panel.')->middleware(['auth', 'role:doctor'])->gro
     Route::put('profile/working-hours', [Doctor\ProfileController::class, 'saveWorkingHours'])->name('profile.working-hours.save');
     Route::get('sms-templates', [Doctor\ProfileController::class, 'smsTemplates'])->name('sms-templates.index');
     Route::put('sms-templates', [Doctor\ProfileController::class, 'saveSmsTemplates'])->name('sms-templates.save');
+});
+
+// Promoter routes
+Route::prefix('promoter')->name('promoter.')->middleware(['auth', 'role:promoter'])->group(function () {
+    Route::get('/dashboard', [Promoter\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/codes', [Promoter\DashboardController::class, 'codes'])->name('codes');
+    Route::get('/redemptions', [Promoter\DashboardController::class, 'redemptions'])->name('redemptions');
+    Route::get('/payouts', [Promoter\PayoutController::class, 'index'])->name('payouts.index');
+    Route::post('/payouts', [Promoter\PayoutController::class, 'store'])->name('payouts.store');
 });

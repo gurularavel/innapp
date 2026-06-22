@@ -30,9 +30,11 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $user = Auth::user();
-        $intended = $user->isAdmin()
-            ? route('admin.dashboard')
-            : route('panel.dashboard');
+        $intended = match (true) {
+            $user->isAdmin()    => route('admin.dashboard'),
+            $user->isPromoter() => route('promoter.dashboard'),
+            default             => route('panel.dashboard'),
+        };
 
         return redirect()->intended($intended);
     }

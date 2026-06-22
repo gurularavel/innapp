@@ -24,6 +24,21 @@
             <i class="bi bi-arrow-left me-1"></i>Abunəliyə qayıt
         </a>
 
+        @if($promo)
+        <div class="alert alert-success d-flex align-items-center gap-2 mb-3">
+            <i class="bi bi-ticket-perforated-fill fs-5"></i>
+            <div class="small">
+                <strong>{{ $promo->code }}</strong> promo kodu tətbiq olunur —
+                @if($promo->discount_type === 'percent')
+                    {{ rtrim(rtrim(number_format($promo->discount_value, 2), '0'), '.') }}% endirim
+                @else
+                    {{ number_format($promo->discount_value, 2) }} ₼ endirim
+                @endif
+                qiymətdən avtomatik çıxılıb.
+            </div>
+        </div>
+        @endif
+
         <div class="row g-4">
 
             {{-- ═══ LEFT: Period + Pay button ═══ --}}
@@ -41,22 +56,28 @@
                             <input type="hidden" name="period" id="period-input"
                                    value="{{ request('period', 'monthly') }}">
 
-                            @php
-                                $annualPrice  = round($package->price * 12 * 0.85, 2);
-                                $annualSaving = round($package->price * 12 - $annualPrice, 2);
-                            @endphp
-
                             <div class="d-flex flex-column gap-3 mb-4">
                                 {{-- Monthly --}}
                                 <div class="period-btn {{ request('period','monthly') === 'monthly' ? 'selected' : '' }}"
                                      data-period="monthly">
                                     <div class="d-flex align-items-center justify-content-between">
                                         <div>
-                                            <div class="fw-semibold">Aylıq</div>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="fw-semibold">Aylıq</span>
+                                                @if($monthly['promo_discount'] > 0)
+                                                    <span class="badge bg-success" style="font-size:.65rem">Promo</span>
+                                                @endif
+                                            </div>
                                             <div class="text-muted small">{{ $package->duration_days }} gün</div>
+                                            @if($monthly['discount'] > 0)
+                                            <div class="text-success small">{{ number_format($monthly['discount'], 2) }} ₼ endirim</div>
+                                            @endif
                                         </div>
                                         <div class="text-end">
-                                            <div class="fw-bold text-primary fs-5">{{ number_format($package->price, 2) }} ₼</div>
+                                            @if($monthly['discount'] > 0)
+                                            <div class="text-muted text-decoration-line-through" style="font-size:.78rem">{{ number_format($monthly['list'], 2) }} ₼</div>
+                                            @endif
+                                            <div class="fw-bold text-primary fs-5">{{ number_format($monthly['final'], 2) }} ₼</div>
                                             <div class="text-muted" style="font-size:.72rem">/ ay</div>
                                         </div>
                                     </div>
@@ -69,13 +90,18 @@
                                         <div>
                                             <div class="d-flex align-items-center gap-2">
                                                 <span class="fw-semibold">İllik</span>
-                                                <span class="badge bg-warning text-dark" style="font-size:.65rem">-15%</span>
+                                                @if($annual['promo_wins'])
+                                                    <span class="badge bg-success" style="font-size:.65rem">Promo</span>
+                                                @else
+                                                    <span class="badge bg-warning text-dark" style="font-size:.65rem">-15%</span>
+                                                @endif
                                             </div>
                                             <div class="text-muted small">{{ $package->duration_days * 12 }} gün</div>
-                                            <div class="text-success small">{{ number_format($annualSaving, 2) }} ₼ qənaət</div>
+                                            <div class="text-success small">{{ number_format($annual['discount'], 2) }} ₼ qənaət</div>
                                         </div>
                                         <div class="text-end">
-                                            <div class="fw-bold text-success fs-5">{{ number_format($annualPrice, 2) }} ₼</div>
+                                            <div class="text-muted text-decoration-line-through" style="font-size:.78rem">{{ number_format($annual['list'], 2) }} ₼</div>
+                                            <div class="fw-bold text-success fs-5">{{ number_format($annual['final'], 2) }} ₼</div>
                                             <div class="text-muted" style="font-size:.72rem">/ il</div>
                                         </div>
                                     </div>
@@ -145,9 +171,17 @@
                                 <span class="fw-medium">Bu gün, {{ now()->format('d.m.Y') }}</span>
                             @endif
                         </div>
-                        <div class="d-flex justify-content-between small mb-0">
+                        <div class="d-flex justify-content-between small mb-2">
                             <span class="text-muted">Bitmə tarixi</span>
                             <span id="summary-expires" class="fw-medium">—</span>
+                        </div>
+                        <div class="d-flex justify-content-between small mb-2">
+                            <span class="text-muted">Siyahı qiyməti</span>
+                            <span id="summary-list" class="fw-medium">—</span>
+                        </div>
+                        <div class="d-flex justify-content-between small mb-0 text-success" id="summary-discount-row">
+                            <span><i class="bi bi-tag me-1"></i><span id="summary-discount-label">Endirim</span></span>
+                            <span id="summary-discount" class="fw-medium">—</span>
                         </div>
 
                         {{-- Total --}}
@@ -177,11 +211,21 @@
 @push('scripts')
 <script>
 (function () {
-    const pkg = {
-        price:        {{ $package->price }},
-        durationDays: {{ $package->duration_days }},
-        annualPrice:  {{ round($package->price * 12 * 0.85, 2) }},
+    const pricing = {
+        monthly: {
+            list:     {{ $monthly['list'] }},
+            discount: {{ $monthly['discount'] }},
+            final:    {{ $monthly['final'] }},
+            promo:    {{ $monthly['promo_discount'] > 0 ? 'true' : 'false' }},
+        },
+        annual: {
+            list:     {{ $annual['list'] }},
+            discount: {{ $annual['discount'] }},
+            final:    {{ $annual['final'] }},
+            promo:    {{ $annual['promo_wins'] ? 'true' : 'false' }},
+        },
     };
+    const pkg = { durationDays: {{ $package->duration_days }} };
 
     @if($current && $current->expires_at->isFuture())
     const baseStart = new Date('{{ $current->expires_at->copy()->addDay()->toDateString() }}');
@@ -199,7 +243,7 @@
 
     function updateSummary(period) {
         const isAnnual = period === 'annual';
-        const price    = isAnnual ? pkg.annualPrice : pkg.price;
+        const p        = isAnnual ? pricing.annual : pricing.monthly;
         const days     = isAnnual ? pkg.durationDays * 12 : pkg.durationDays;
         const durLabel = isAnnual ? '1 il (' + days + ' gün)' : '1 ay (' + days + ' gün)';
 
@@ -208,9 +252,20 @@
 
         document.getElementById('summary-duration').textContent = durLabel;
         document.getElementById('summary-expires').textContent  = formatDate(expires);
-        document.getElementById('summary-total').textContent    = price.toFixed(2) + ' ₼';
-        document.getElementById('pay-label').textContent        = 'Ödənişə Keç — ' + price.toFixed(2) + ' ₼';
+        document.getElementById('summary-list').textContent     = p.list.toFixed(2) + ' ₼';
+        document.getElementById('summary-total').textContent    = p.final.toFixed(2) + ' ₼';
+        document.getElementById('pay-label').textContent        = 'Ödənişə Keç — ' + p.final.toFixed(2) + ' ₼';
         document.getElementById('period-input').value           = period;
+
+        // Endirim sətrini göstər/gizlət
+        const discRow = document.getElementById('summary-discount-row');
+        if (p.discount > 0) {
+            discRow.style.display = '';
+            document.getElementById('summary-discount').textContent = '− ' + p.discount.toFixed(2) + ' ₼';
+            document.getElementById('summary-discount-label').textContent = p.promo ? 'Promo endirim' : 'İllik endirim (15%)';
+        } else {
+            discRow.style.display = 'none';
+        }
     }
 
     document.querySelectorAll('.period-btn').forEach(function (btn) {

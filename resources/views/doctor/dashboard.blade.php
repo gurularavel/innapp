@@ -7,13 +7,17 @@
 {{-- Subscription warning --}}
 @php $subscription = auth()->user()->activeSubscription()->with('package')->first(); @endphp
 @if(!$subscription && !auth()->user()->is_demo)
-<div class="alert alert-warning d-flex align-items-center mb-4">
-    <i class="bi bi-exclamation-triangle-fill fs-5 me-3"></i>
-    <div>
-        <strong>Aktiv abunəliyiniz yoxdur!</strong>
-        Sistemi tam istifadə etmək üçün abunəliyə ehtiyacınız var.
-        Zəhmət olmasa administratorla əlaqə saxlayın.
+<div class="alert alert-warning d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+    <div class="d-flex align-items-center">
+        <i class="bi bi-exclamation-triangle-fill fs-5 me-3"></i>
+        <div>
+            <strong>Aktiv abunəliyiniz yoxdur.</strong>
+            Sistemdən tam yararlanmaq üçün uyğun paketi seçib ödəniş edin.
+        </div>
     </div>
+    <a href="{{ route('panel.subscription.index') }}" class="btn btn-warning btn-sm fw-semibold text-nowrap">
+        <i class="bi bi-box-seam me-1"></i>Paketləri gör
+    </a>
 </div>
 @endif
 

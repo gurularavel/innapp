@@ -24,8 +24,8 @@ class CheckSubscription
         $subscription = $user->activeSubscription;
 
         if (!$subscription) {
-            return redirect()->route('panel.dashboard')
-                ->with('warning', 'Aktiv abunəliyiniz yoxdur. Zəhmət olmasa Super Admin ilə əlaqə saxlayın.');
+            return redirect()->route('panel.subscription.index')
+                ->with('warning', 'Bu bölmədən istifadə üçün aktiv abunəlik lazımdır. Aşağıdan uyğun paketi seçib ödəniş edin.');
         }
 
         return $next($request);

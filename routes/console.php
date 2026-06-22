@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 
 Schedule::command('reminders:send')->everyFifteenMinutes();
 Schedule::command('demo:cleanup')->hourly();
+Schedule::command('promo:release-commissions')->hourly();
