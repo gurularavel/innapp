@@ -134,7 +134,7 @@ class SubscriptionController extends Controller
         // Activate subscription
         [$startsAt, $expiresAt] = $this->activateSubscription($payment);
 
-        // Promotor komissiyasını yaz (yalnız ilk uğurlu ödənişdə)
+        // Promotor komissiyasını yaz (müştərinin HƏR uğurlu ödənişində)
         $this->recordPromoCommission($payment);
 
         // Notify admin
@@ -210,25 +210,30 @@ class SubscriptionController extends Controller
     }
 
     /**
-     * Təsdiqlənmiş ilk ödənişdən sonra promotor komissiyasını yazır.
+     * Təsdiqlənmiş ödənişdən sonra promotor komissiyasını yazır.
+     *
+     * Komissiya ömürlükdür: müştəri qeydiyyatda hansı promo kodu bağlayıbsa,
+     * onun HƏR uğurlu ödənişində (renewal/upgrade daxil) həmin koddan götürülən
+     * faiz/məbləğ promotora yazılır — kod sonradan deaktiv olsa/müddəti bitsə belə.
      * Komissiya 14 gün "pending" qalır (refund riski), sonra "available" olur.
      */
     private function recordPromoCommission(SubscriptionPayment $payment): void
     {
-        if (!$payment->promo_code_id) {
+        // Mənbə = müştərinin qeydiyyat kodu (ömürlük əlaqə), ödənişin promo_code_id-i yox.
+        $promo = $payment->doctor->signupPromoCode;
+        if (!$promo) {
             return;
         }
 
-        // Hər müştəri üçün yalnız bir dəfə komissiya (təkrar callback-a qarşı qoruyucu)
-        $exists = PromoRedemption::where('customer_id', $payment->doctor_id)->exists();
+        // Hər ödəniş üçün yalnız bir dəfə komissiya (təkrar callback-a qarşı qoruyucu)
+        $exists = PromoRedemption::where('subscription_payment_id', $payment->id)->exists();
         if ($exists) {
             return;
         }
 
-        $promo = $payment->promoCode;
-        if (!$promo) {
-            return;
-        }
+        // used_count = bu kodla qeydiyyatdan keçən müştəri sayı (max_uses limiti üçün).
+        // Renewal-lar saya daxil olmamalıdır — yalnız müştərinin ilk komissiyasında artır.
+        $isFirstForCustomer = !PromoRedemption::where('customer_id', $payment->doctor_id)->exists();
 
         $commission = $promo->commissionFor((float) $payment->amount);
 
@@ -243,7 +248,9 @@ class SubscriptionController extends Controller
             'available_at'            => now()->addDays(14),
         ]);
 
-        $promo->increment('used_count');
+        if ($isFirstForCustomer) {
+            $promo->increment('used_count');
+        }
     }
 
     /**
