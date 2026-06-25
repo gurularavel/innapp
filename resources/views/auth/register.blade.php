@@ -94,8 +94,7 @@
 
             <div class="auth-card">
                 <div class="card-body p-4 p-md-5">
-                    <h5 class="fw-bold mb-1" style="color:var(--af-dark)">Hesab yaradın</h5>
-                    <p class="text-muted small mb-4">14 gün pulsuz sınaq · Kredit kartı tələb olunmur</p>
+                    <h5 class="fw-bold mb-4" style="color:var(--af-dark)">Hesab yaradın</h5>
 
                     @if($errors->any())
                     <div class="alert alert-danger py-2 small">
@@ -165,6 +164,17 @@
                             @error('promo_code')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                         </div>
 
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input @error('terms') is-invalid @enderror" type="checkbox"
+                                       id="terms" name="terms" value="1" {{ old('terms') ? 'checked' : '' }} required>
+                                <label class="form-check-label small text-muted" for="terms">
+                                    <a href="#" class="auth-link" data-bs-toggle="modal" data-bs-target="#termsModal">{{ $termsTitle ?? 'İstifadə qaydaları' }}</a>nı oxudum və qəbul edirəm
+                                </label>
+                            </div>
+                            @error('terms')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                        </div>
+
                         <button type="submit" class="btn btn-auth w-100">
                             <i class="bi bi-rocket-takeoff me-2"></i>Hesab yarat
                         </button>
@@ -186,6 +196,30 @@
         </div>
     </div>
 </div>
+<!-- İstifadə qaydaları modal -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+        <div class="modal-content" style="border:none;border-radius:14px;">
+            <div class="modal-header" style="background:var(--af-ice-lt);">
+                <h6 class="modal-title fw-bold" id="termsModalLabel" style="color:var(--af-dark)">
+                    <i class="bi bi-file-earmark-text me-2" style="color:var(--af-steel)"></i>{{ $termsTitle ?? 'İstifadə Qaydaları' }}
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Bağla"></button>
+            </div>
+            <div class="modal-body" style="font-size:.9rem;color:#334155;line-height:1.6;">
+                @if(trim($termsContent ?? '') !== '')
+                    {!! nl2br(e($termsContent)) !!}
+                @else
+                    <p class="text-muted mb-0">İstifadə qaydaları hələ əlavə edilməyib.</p>
+                @endif
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-auth px-4" data-bs-dismiss="modal">Bağla</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

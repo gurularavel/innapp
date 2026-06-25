@@ -64,6 +64,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin'])
     Route::get('settings/smtp', [Admin\SettingController::class, 'smtpSettings'])->name('settings.smtp');
     Route::put('settings/smtp', [Admin\SettingController::class, 'saveSmtpSettings'])->name('settings.smtp.save');
 
+    Route::get('settings/terms', [Admin\SettingController::class, 'terms'])->name('settings.terms');
+    Route::put('settings/terms', [Admin\SettingController::class, 'saveTerms'])->name('settings.terms.save');
+
     Route::get('cron-log', [Admin\SettingController::class, 'cronLog'])->name('cron-log');
 
     Route::get('profile', [Admin\ProfileController::class, 'edit'])->name('profile.edit');

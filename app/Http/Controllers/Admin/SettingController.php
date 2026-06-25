@@ -40,6 +40,27 @@ class SettingController extends Controller
         return back()->with('success', 'SMS şablonları yadda saxlandı.');
     }
 
+    public function terms()
+    {
+        $termsTitle   = Setting::get('terms_title', 'İstifadə Qaydaları');
+        $termsContent = Setting::get('terms_content', '');
+
+        return view('admin.settings.terms', compact('termsTitle', 'termsContent'));
+    }
+
+    public function saveTerms(Request $request)
+    {
+        $request->validate([
+            'terms_title'   => ['required', 'string', 'max:150'],
+            'terms_content' => ['required', 'string', 'max:20000'],
+        ]);
+
+        Setting::set('terms_title',   $request->terms_title);
+        Setting::set('terms_content', $request->terms_content);
+
+        return back()->with('success', 'İstifadə qaydaları yadda saxlandı.');
+    }
+
     public function cronLog()
     {
         $logPath = storage_path('logs/cron.log');

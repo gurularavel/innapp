@@ -660,6 +660,11 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="{{ route('admin.settings.terms') }}" class="nav-link {{ request()->routeIs('admin.settings.terms*') ? 'active' : '' }}">
+                        <i class="bi bi-file-earmark-text"></i>İstifadə Qaydaları
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="{{ route('admin.cron-log') }}" class="nav-link {{ request()->routeIs('admin.cron-log') ? 'active' : '' }}">
                         <i class="bi bi-terminal-fill"></i>Cron / SMS Test
                     </a>

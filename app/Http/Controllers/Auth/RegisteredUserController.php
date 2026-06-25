@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\PromoCode;
+use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -23,7 +24,11 @@ class RegisteredUserController extends Controller
         // Linkdən gələn promo kodu (?promo=KOD) formada öncədən doldurmaq üçün
         $promoCode = $request->query('promo');
 
-        return view('auth.register', compact('promoCode'));
+        // Admindən tənzimlənən istifadə qaydaları (modal-da göstərilir)
+        $termsTitle   = Setting::get('terms_title', 'İstifadə Qaydaları');
+        $termsContent = Setting::get('terms_content', '');
+
+        return view('auth.register', compact('promoCode', 'termsTitle', 'termsContent'));
     }
 
     /**
@@ -39,6 +44,9 @@ class RegisteredUserController extends Controller
             'email'   => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'promo_code' => ['nullable', 'string', 'max:50'],
+            'terms' => ['accepted'],
+        ], [
+            'terms.accepted' => 'Davam etmək üçün istifadə qaydalarını qəbul etməlisiniz.',
         ]);
 
         // Promo kodu yoxla — yalnız istifadəyə yararlıdırsa müştəriyə bağla
