@@ -58,7 +58,7 @@
             <div class="col-6">
                 <div class="card border-0 shadow-sm text-center py-3">
                     <div class="fs-3 fw-bold text-primary">{{ $patientsCount }}</div>
-                    <div class="text-muted small">Müştəri</div>
+                    <div class="text-muted small">Cari müştəri</div>
                 </div>
             </div>
             <div class="col-6">
@@ -88,7 +88,7 @@
                                 <th>Paket</th>
                                 <th>Başlanğıc</th>
                                 <th>Bitmə</th>
-                                <th>Müştəri</th>
+                                <th>İstifadə (kvota)</th>
                                 <th>SMS</th>
                                 <th>Status</th>
                             </tr>

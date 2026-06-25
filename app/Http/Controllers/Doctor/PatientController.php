@@ -200,6 +200,9 @@ class PatientController extends Controller
         $this->authorizePatient($patient);
         $patient->delete();
 
+        // Qeyd: patients_used QƏSDƏN azaldılmır. Limit "dövr ərzində cəmi əlavə"
+        // modelidir — müştəri silmək kvotada yer açmır (yalnız paket yeniləmə/yüksəltmə).
+
         return redirect()->route('panel.patients.index')
             ->with('success', 'Müştəri silindi.');
     }
