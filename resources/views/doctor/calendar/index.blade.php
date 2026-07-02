@@ -86,6 +86,12 @@
 @section('content')
 <div class="card border-0 shadow-sm">
     <div class="card-body p-3 p-sm-3 p-0">
+        {{-- Ay / il seçici --}}
+        <div class="d-flex flex-wrap align-items-center justify-content-end gap-2 mb-2 px-2 px-sm-0 pt-2 pt-sm-0">
+            <span class="text-muted small">Aya keç:</span>
+            <select id="cal-month-select" class="form-select form-select-sm" style="width:auto"></select>
+            <select id="cal-year-select" class="form-select form-select-sm" style="width:auto"></select>
+        </div>
         <div id="calendar"></div>
     </div>
 </div>
@@ -533,10 +539,25 @@ document.addEventListener('DOMContentLoaded', function () {
         return azDayNames[new Date(Date.UTC(d.year, d.month, d.day)).getUTCDay()];
     }
 
+    // ── Ay / il seçici (ox düymələrinə alternativ naviqasiya) ────────────────
+    const monthSel = document.getElementById('cal-month-select');
+    const yearSel  = document.getElementById('cal-year-select');
+    const thisYear = new Date().getFullYear();
+    azMonths.forEach((m, i) => monthSel.add(new Option(m, i)));
+    for (let y = thisYear - 2; y <= thisYear + 3; y++) yearSel.add(new Option(y, y));
+    monthSel.value = new Date().getMonth();
+    yearSel.value  = thisYear;
+
+    function jumpToMonth() {
+        calendar.gotoDate(new Date(parseInt(yearSel.value), parseInt(monthSel.value), 1));
+    }
+    monthSel.addEventListener('change', jumpToMonth);
+    yearSel.addEventListener('change', jumpToMonth);
+
     const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
         locale: 'az',
         firstDay: 1,
-        initialView: isMobile ? 'listWeek' : 'timeGridWeek',
+        initialView: isMobile ? 'listWeek' : 'dayGridMonth',
         headerToolbar: isMobile ? {
             left:   'prev,next',
             center: 'title',
@@ -563,6 +584,16 @@ document.addEventListener('DOMContentLoaded', function () {
             listWeek:     { titleFormat: azRangeTitle, listDayFormat: azListDay, listDaySideFormat: azDateTitle },
         },
         dayPopoverFormat: azDateTitle,
+
+        // Ox və ya digər naviqasiyada ay/il seçicilərini sinxron saxla
+        datesSet: function (info) {
+            const d = info.view.currentStart;
+            if (![...yearSel.options].some(o => parseInt(o.value) === d.getFullYear())) {
+                yearSel.add(new Option(d.getFullYear(), d.getFullYear()));
+            }
+            monthSel.value = d.getMonth();
+            yearSel.value  = d.getFullYear();
+        },
         dayHeaderContent: function (arg) {
             const az = ['Bazar', 'B.ertəsi', 'Çər.axş', 'Çərşənbə', 'Cüm.axş', 'Cümə', 'Şənbə'];
             const dow = arg.date.getDay();
