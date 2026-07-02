@@ -290,6 +290,57 @@
     </div>
 </div>
 
+<div id="promoters" class="promoter-area features-area default-padding">
+    <div class="container">
+        <div class="row align-center">
+            <div class="col-lg-6 info">
+                <h5>Tərəfdaşlıq proqramı</h5>
+                <h2>Promotor olun, hər satışdan qazanın</h2>
+                <p>
+                    InnApp-i tanıdığınız müəssisələrə tövsiyə edin. Qeydiyyatdan keçən kimi şəxsi promo kodunuz
+                    avtomatik yaradılır — müştəriləriniz endirim qazanır, siz isə onların hər uğurlu ödənişindən
+                    komissiya əldə edirsiniz.
+                </p>
+                <ul>
+                    <li>Şəxsi promo kod — qeydiyyatdan dərhal sonra avtomatik</li>
+                    <li>Müştəriləriniz üçün {{ rtrim(rtrim(number_format($promoDiscount ?? 20, 2), '0'), '.') }}% ilkin qeydiyyat endirimi</li>
+                    <li>Hər ödənişdən {{ rtrim(rtrim(number_format($promoCommission ?? 5, 2), '0'), '.') }}% davamlı komissiya</li>
+                    <li>Qazanclarınızı öz panelinizdən real vaxtda izləyin</li>
+                </ul>
+                <a class="btn circle btn-theme border btn-md" href="{{ route('promoter.register') }}">Promotor kimi qeydiyyat</a>
+            </div>
+            <div class="col-lg-6">
+                <div class="features-items">
+                    <div class="row">
+                        <div class="col-md-6 single-item">
+                            <div class="item">
+                                <div class="icon">
+                                    <i class="fas fa-tags"></i>
+                                </div>
+                                <div class="info">
+                                    <h4>{{ rtrim(rtrim(number_format($promoDiscount ?? 20, 2), '0'), '.') }}% endirim</h4>
+                                    <p>Kodunuzla qeydiyyatdan keçən hər müştəri ilk ödənişində endirim qazanır.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 single-item">
+                            <div class="item">
+                                <div class="icon">
+                                    <i class="fas fa-hand-holding-usd"></i>
+                                </div>
+                                <div class="info">
+                                    <h4>{{ rtrim(rtrim(number_format($promoCommission ?? 5, 2), '0'), '.') }}% komissiya</h4>
+                                    <p>Müştərilərinizin hər uğurlu ödənişindən hesabınıza komissiya yazılır.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="subscribe-area bg-fixed shadow dark text-light default-padding text-center" style="background-image: url('{{ asset('assets/img/banner/4.jpg') }}');">
     <div class="container">
         <div class="row">

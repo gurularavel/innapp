@@ -16,6 +16,9 @@ class HomeController extends Controller
 
         $packages = Package::where('is_active', true)->orderBy('price')->get();
 
-        return view('home', compact('packages'));
+        $promoDiscount   = (float) \App\Models\Setting::get('promo_default_discount_percent', 20);
+        $promoCommission = (float) \App\Models\Setting::get('promo_default_commission_percent', 5);
+
+        return view('home', compact('packages', 'promoDiscount', 'promoCommission'));
     }
 }

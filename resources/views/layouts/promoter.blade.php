@@ -37,6 +37,12 @@
         .sidebar-brand .brand-text { color: #fff; font-weight: 700; font-size: 1.25rem; letter-spacing: -.02em; }
         .sidebar-brand .brand-sub { color: var(--sidebar-text); font-size: .65rem; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; margin-top: 2px; }
         .sidebar-nav-container { flex-grow: 1; padding: 1.5rem 1rem; overflow-y: auto; }
+        @supports (-moz-appearance: none) {
+            .sidebar-nav-container { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.85) transparent; }
+        }
+        .sidebar-nav-container::-webkit-scrollbar { width: 6px; }
+        .sidebar-nav-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,.85); border-radius: 4px; }
+        .sidebar-nav-container::-webkit-scrollbar-thumb:hover { background: #ffffff; }
         .sidebar .nav { gap: 4px; }
         .sidebar .nav-link { color: var(--sidebar-text); padding: .7rem 1rem; border-radius: 10px; display: flex; align-items: center; font-size: .875rem; font-weight: 500; transition: all .2s; border-left: 3px solid transparent; gap: .75rem; }
         .sidebar .nav-link i { font-size: 1.15rem; color: var(--sidebar-text); }

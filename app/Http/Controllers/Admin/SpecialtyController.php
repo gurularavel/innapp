@@ -83,7 +83,7 @@ class SpecialtyController extends Controller
     {
         $validated = $request->validate([
             'label'        => 'required|string|max:255',
-            'type'         => 'required|in:text,number,date,select,textarea',
+            'type'         => 'required|in:text,number,date,select,textarea,file',
             'options_text' => 'nullable|string',
         ]);
 
@@ -119,7 +119,7 @@ class SpecialtyController extends Controller
 
         $validated = $request->validate([
             'label'        => 'required|string|max:255',
-            'type'         => 'required|in:text,number,date,select,textarea',
+            'type'         => 'required|in:text,number,date,select,textarea,file',
             'options_text' => 'nullable|string',
             'is_active'    => 'boolean',
         ]);

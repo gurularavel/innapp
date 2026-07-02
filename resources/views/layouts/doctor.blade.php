@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="az">
 <head>
     <meta charset="UTF-8">
@@ -142,13 +142,25 @@
             overflow-y: auto;
         }
 
+        /* Yalnız Firefox: standart scrollbar rəngi (Chrome-da webkit stilləri işləyir) */
+        @supports (-moz-appearance: none) {
+            .sidebar-nav-container {
+                scrollbar-width: thin;
+                scrollbar-color: rgba(255, 255, 255, 0.85) transparent;
+            }
+        }
+
         .sidebar-nav-container::-webkit-scrollbar {
-            width: 4px;
+            width: 6px;
         }
 
         .sidebar-nav-container::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.85);
             border-radius: 4px;
+        }
+
+        .sidebar-nav-container::-webkit-scrollbar-thumb:hover {
+            background: #ffffff;
         }
 
         .sidebar .nav {
@@ -780,37 +792,37 @@
         <div class="sidebar-nav-container">
             <ul class="nav flex-column">
                 <li class="nav-item">
-                    <a href="{{ route('panel.dashboard') }}" class="nav-link {{ request()->routeIs('doctor.dashboard') ? 'active' : '' }}" title="Dashboard">
+                    <a href="{{ route('panel.dashboard') }}" class="nav-link {{ request()->routeIs('panel.dashboard') ? 'active' : '' }}" title="Dashboard">
                         <i class="bi bi-grid-1x2"></i><span>Dashboard</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('panel.patients.index') }}" class="nav-link {{ request()->routeIs('doctor.patients*') ? 'active' : '' }}" title="Müştərilər">
+                    <a href="{{ route('panel.patients.index') }}" class="nav-link {{ request()->routeIs('panel.patients*') ? 'active' : '' }}" title="Müştərilər">
                         <i class="bi bi-people"></i><span>Müştərilər</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('panel.appointments.index') }}" class="nav-link {{ request()->routeIs('doctor.appointments*') ? 'active' : '' }}" title="Randevular">
+                    <a href="{{ route('panel.appointments.index') }}" class="nav-link {{ request()->routeIs('panel.appointments*') ? 'active' : '' }}" title="Randevular">
                         <i class="bi bi-calendar-check"></i><span>Randevular</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('panel.calendar.index') }}" class="nav-link {{ request()->routeIs('doctor.calendar*') ? 'active' : '' }}" title="Təqvim">
+                    <a href="{{ route('panel.calendar.index') }}" class="nav-link {{ request()->routeIs('panel.calendar*') ? 'active' : '' }}" title="Təqvim">
                         <i class="bi bi-calendar3"></i><span>Təqvim</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('panel.treatment-types.index') }}" class="nav-link {{ request()->routeIs('doctor.treatment-types*') ? 'active' : '' }}" title="Xidmət Növləri">
+                    <a href="{{ route('panel.treatment-types.index') }}" class="nav-link {{ request()->routeIs('panel.treatment-types*') ? 'active' : '' }}" title="Xidmət Növləri">
                         <i class="bi bi-list-check"></i><span>Xidmət Növləri</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('panel.subscription.index') }}" class="nav-link {{ request()->routeIs('doctor.subscription*') ? 'active' : '' }}" title="Abunəlik">
+                    <a href="{{ route('panel.subscription.index') }}" class="nav-link {{ request()->routeIs('panel.subscription*') ? 'active' : '' }}" title="Abunəlik">
                         <i class="bi bi-shield-check"></i><span>Abunəlik</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('panel.reports.revenue') }}" class="nav-link {{ request()->routeIs('doctor.reports*') ? 'active' : '' }}" title="Hesabat">
+                    <a href="{{ route('panel.reports.revenue') }}" class="nav-link {{ request()->routeIs('panel.reports*') ? 'active' : '' }}" title="Hesabat">
                         <i class="bi bi-bar-chart-line"></i><span>Hesabat</span>
                     </a>
                 </li>
@@ -877,7 +889,7 @@
         </header>
 
         @if(auth()->user()->is_demo)
-        @php $remaining = now()->diffInMinutes(auth()->user()->demo_expires_at, false); @endphp
+        @php $remaining = (int) now()->diffInMinutes(auth()->user()->demo_expires_at, false); @endphp
         <div class="demo-banner">
             <div class="demo-title">
                 <i class="bi bi-play-circle-fill"></i>

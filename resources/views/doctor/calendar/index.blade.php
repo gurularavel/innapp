@@ -222,6 +222,7 @@
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales-all.global.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -442,7 +443,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         fetch(storeUrl, {
             method:  'POST',
-            headers: { 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/x-www-form-urlencoded' },
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
             body:    body.toString(),
         })
         .then(r => r.json().then(data => ({ ok: r.ok, data })))
@@ -452,7 +458,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 calendar.refetchEvents();
                 showToast(data.message || 'Randevu yaradıldı.', 'success');
             } else {
-                showQaError(data.error || data.message || 'Xəta baş verdi.');
+                let msg = data.error || data.message || 'Xəta baş verdi.';
+                if (data.errors) {
+                    msg = Object.values(data.errors).flat().join(' ');
+                }
+                showQaError(msg);
             }
         })
         .catch(() => showQaError('Şəbəkə xətası. Yenidən cəhd edin.'))
@@ -491,6 +501,38 @@ document.addEventListener('DOMContentLoaded', function () {
     const isMobile = window.innerWidth < 768;
     let businessHours = [];
 
+    // Chrome-un Intl API-si "az" dili üçün ay adlarını dəstəkləmir ("M06" göstərir),
+    // ona görə başlıqlar üçün öz Azərbaycan dili formatlarımızı veririk.
+    const azMonths = ['Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'İyun',
+                      'İyul', 'Avqust', 'Sentyabr', 'Oktyabr', 'Noyabr', 'Dekabr'];
+    const azDayNames = ['Bazar', 'Bazar ertəsi', 'Çərşənbə axşamı', 'Çərşənbə',
+                        'Cümə axşamı', 'Cümə', 'Şənbə'];
+
+    function azMonthTitle(arg) {
+        const d = arg.start || arg.date;
+        return azMonths[d.month] + ' ' + d.year;
+    }
+    function azDateTitle(arg) {
+        const d = arg.start || arg.date;
+        return d.day + ' ' + azMonths[d.month] + ' ' + d.year;
+    }
+    function azRangeTitle(arg) {
+        const s = arg.start || arg.date;
+        const e = arg.end;
+        if (!e) return azDateTitle(arg);
+        if (s.year === e.year && s.month === e.month) {
+            return s.day + ' – ' + e.day + ' ' + azMonths[s.month] + ' ' + s.year;
+        }
+        if (s.year === e.year) {
+            return s.day + ' ' + azMonths[s.month] + ' – ' + e.day + ' ' + azMonths[e.month] + ' ' + s.year;
+        }
+        return s.day + ' ' + azMonths[s.month] + ' ' + s.year + ' – ' + e.day + ' ' + azMonths[e.month] + ' ' + e.year;
+    }
+    function azListDay(arg) {
+        const d = arg.date;
+        return azDayNames[new Date(Date.UTC(d.year, d.month, d.day)).getUTCDay()];
+    }
+
     const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
         locale: 'az',
         firstDay: 1,
@@ -500,16 +542,32 @@ document.addEventListener('DOMContentLoaded', function () {
             center: 'title',
             right:  'timeGridDay,listWeek'
         } : {
-            left:   'prev,next today',
+            left:   'prev,next today addAppointment',
             center: 'title',
             right:  'dayGridMonth,timeGridWeek,listWeek'
         },
+        customButtons: {
+            addAppointment: {
+                text: '+ Yeni randevu',
+                click: function () {
+                    const now = new Date();
+                    openQuickAdd(now, pad(now.getHours()) + ':' + pad(now.getMinutes() >= 30 ? 30 : 0));
+                }
+            }
+        },
         buttonText: { today: 'Bu gün', month: 'Ay', week: 'Həftə', day: 'Gün', list: 'Siyahı' },
+        views: {
+            dayGridMonth: { titleFormat: azMonthTitle },
+            timeGridWeek: { titleFormat: azRangeTitle },
+            timeGridDay:  { titleFormat: azDateTitle },
+            listWeek:     { titleFormat: azRangeTitle, listDayFormat: azListDay, listDaySideFormat: azDateTitle },
+        },
+        dayPopoverFormat: azDateTitle,
         dayHeaderContent: function (arg) {
             const az = ['Bazar', 'B.ertəsi', 'Çər.axş', 'Çərşənbə', 'Cüm.axş', 'Cümə', 'Şənbə'];
             const dow = arg.date.getDay();
-            const num = arg.text.match(/\d+/);
-            return num ? az[dow] + ' ' + num[0] : az[dow];
+            // Ay görünüşündə yalnız gün adı, digər görünüşlərdə gün adı + tarix
+            return arg.view.type === 'dayGridMonth' ? az[dow] : az[dow] + ' ' + arg.date.getDate();
         },
         slotMinTime: '07:00:00',
         slotMaxTime: '21:00:00',

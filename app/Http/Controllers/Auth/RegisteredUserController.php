@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\PromoCode;
 use App\Models\Setting;
+use App\Models\Specialty;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -28,7 +29,10 @@ class RegisteredUserController extends Controller
         $termsTitle   = Setting::get('terms_title', 'İstifadə Qaydaları');
         $termsContent = Setting::get('terms_content', '');
 
-        return view('auth.register', compact('promoCode', 'termsTitle', 'termsContent'));
+        // Vəzifə / ixtisas seçimi üçün aktiv ixtisaslar
+        $specialties = Specialty::where('is_active', true)->orderBy('name')->get();
+
+        return view('auth.register', compact('promoCode', 'termsTitle', 'termsContent', 'specialties'));
     }
 
     /**
@@ -43,6 +47,7 @@ class RegisteredUserController extends Controller
             'surname' => ['required', 'string', 'max:255'],
             'email'   => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'specialty_id' => ['nullable', 'exists:specialties,id'],
             'promo_code' => ['nullable', 'string', 'max:50'],
             'terms' => ['accepted'],
         ], [
@@ -67,6 +72,7 @@ class RegisteredUserController extends Controller
             'surname'              => $request->surname,
             'email'                => $request->email,
             'password'             => Hash::make($request->password),
+            'specialty_id'         => $request->specialty_id,
             'signup_promo_code_id' => $promoCodeId,
         ]);
 

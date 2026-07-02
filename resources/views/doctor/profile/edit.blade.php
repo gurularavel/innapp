@@ -84,10 +84,19 @@
                         <div class="text-muted" style="font-size:.75rem;">Email dəyişdirilmir.</div>
                     </div>
 
-                    <div class="mb-3 p-3 bg-light rounded">
-                        <div class="text-muted small">İxtisas</div>
-                        <div class="fw-medium">{{ auth()->user()->specialty?->name ?? '—' }}</div>
-                        <div class="text-muted" style="font-size:.75rem;">İxtisası administrator dəyişir.</div>
+                    <div class="mb-3">
+                        <label for="specialty_id" class="form-label fw-medium">Vəzifə / İxtisas</label>
+                        <select class="form-select @error('specialty_id') is-invalid @enderror"
+                                id="specialty_id" name="specialty_id">
+                            <option value="">— Seçin —</option>
+                            @foreach($specialties ?? [] as $sp)
+                                <option value="{{ $sp->id }}"
+                                    {{ old('specialty_id', auth()->user()->specialty_id) == $sp->id ? 'selected' : '' }}>
+                                    {{ $sp->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('specialty_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
 
                     <button type="submit" class="btn btn-primary">

@@ -61,6 +61,27 @@ class SettingController extends Controller
         return back()->with('success', 'İstifadə qaydaları yadda saxlandı.');
     }
 
+    public function promoSettings()
+    {
+        $discountPercent   = Setting::get('promo_default_discount_percent', 20);
+        $commissionPercent = Setting::get('promo_default_commission_percent', 5);
+
+        return view('admin.settings.promo', compact('discountPercent', 'commissionPercent'));
+    }
+
+    public function savePromoSettings(Request $request)
+    {
+        $request->validate([
+            'promo_default_discount_percent'   => ['required', 'numeric', 'min:0', 'max:100'],
+            'promo_default_commission_percent' => ['required', 'numeric', 'min:0', 'max:100'],
+        ]);
+
+        Setting::set('promo_default_discount_percent',   $request->promo_default_discount_percent);
+        Setting::set('promo_default_commission_percent', $request->promo_default_commission_percent);
+
+        return back()->with('success', 'Promotor ayarları yadda saxlandı.');
+    }
+
     public function cronLog()
     {
         $logPath = storage_path('logs/cron.log');

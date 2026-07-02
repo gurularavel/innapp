@@ -221,6 +221,12 @@ class AppointmentController extends Controller
             $slotS = clone $current;
             $slotE = (clone $current)->addMinutes($duration);
 
+            // Keçmiş saatlar seçilə bilməz (store "after:now" tələb edir)
+            if ($slotS->lte(now())) {
+                $current->addMinutes(30);
+                continue;
+            }
+
             $conflict = false;
 
             // Check appointments

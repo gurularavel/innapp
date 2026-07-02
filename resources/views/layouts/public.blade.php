@@ -413,6 +413,7 @@
                     <li><a href="#features">Xüsusiyyətlər</a></li>
                     <li><a href="#overview">Üstünlüklər</a></li>
                     <li><a href="#pricing">Paketlər</a></li>
+                    <li><a href="#promoters">Promotorlar</a></li>
                     <li><a href="#contact">Əlaqə</a></li>
                 </ul>
 
@@ -454,6 +455,7 @@
             <li><a href="#features">Xüsusiyyətlər</a></li>
             <li><a href="#overview">Üstünlüklər</a></li>
             <li><a href="#pricing">Paketlər</a></li>
+            <li><a href="#promoters">Promotorlar</a></li>
             <li><a href="#contact">Əlaqə</a></li>
         </ul>
 

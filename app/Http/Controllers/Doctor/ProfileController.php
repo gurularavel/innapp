@@ -29,7 +29,9 @@ class ProfileController extends Controller
             ];
         }
 
-        return view('doctor.profile.edit', compact('user', 'workingHours', 'existingBreaks'));
+        $specialties = \App\Models\Specialty::where('is_active', true)->orderBy('name')->get();
+
+        return view('doctor.profile.edit', compact('user', 'workingHours', 'existingBreaks', 'specialties'));
     }
 
     public function update(Request $request)
@@ -40,6 +42,7 @@ class ProfileController extends Controller
             'name'             => 'required|string|max:255',
             'surname'          => 'required|string|max:255',
             'phone'            => 'nullable|string|max:20',
+            'specialty_id'     => 'nullable|exists:specialties,id',
             'muessise_adi'     => 'nullable|string|max:100',
             'muessise_unvani'  => 'nullable|string|max:255',
             'muessise_xerite'  => 'nullable|url|max:2000',
@@ -116,7 +119,9 @@ class ProfileController extends Controller
             ];
         }
 
-        return view('doctor.profile.edit', compact('user', 'workingHours', 'existingBreaks'));
+        $specialties = \App\Models\Specialty::where('is_active', true)->orderBy('name')->get();
+
+        return view('doctor.profile.edit', compact('user', 'workingHours', 'existingBreaks', 'specialties'));
     }
 
     private function generateUniqueCode(): string

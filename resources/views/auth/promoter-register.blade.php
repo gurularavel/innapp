@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="az">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Qeydiyyat — InnApp</title>
+    <title>Promotor Qeydiyyatı — InnApp</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -77,6 +77,15 @@
         .auth-link:hover { color: var(--af-steel-dk); text-decoration: underline; }
         .form-check-input:checked { background-color: var(--af-steel); border-color: var(--af-steel); }
         .is-invalid { border-color: #dc3545 !important; }
+        .promo-benefits {
+            background: var(--af-ice-lt);
+            border: 1.5px solid #deeaf8;
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: .85rem;
+            color: var(--af-dark);
+        }
+        .promo-benefits .bi { color: var(--af-steel); }
     </style>
 </head>
 <body>
@@ -89,12 +98,18 @@
                     <i class="bi bi-grid-fill" style="font-size:1.6rem;color:var(--af-ice)"></i>
                     <div class="brand-name">Inn<span>App</span></div>
                 </a>
-                <p class="mt-1 mb-0" style="color:rgba(255,255,255,.55);font-size:.88rem">Randevu İdarəetmə Sistemi</p>
+                <p class="mt-1 mb-0" style="color:rgba(255,255,255,.55);font-size:.88rem">Promotor Tərəfdaşlıq Proqramı</p>
             </div>
 
             <div class="auth-card">
                 <div class="card-body p-4 p-md-5">
-                    <h5 class="fw-bold mb-4" style="color:var(--af-dark)">Hesab yaradın</h5>
+                    <h5 class="fw-bold mb-3" style="color:var(--af-dark)">Promotor hesabı yaradın</h5>
+
+                    <div class="promo-benefits mb-4">
+                        <div class="mb-1"><i class="bi bi-ticket-perforated me-2"></i>Qeydiyyatdan dərhal sonra <strong>şəxsi promo kodunuz</strong> avtomatik yaradılır</div>
+                        <div class="mb-1"><i class="bi bi-percent me-2"></i>Müştəriləriniz üçün <strong>{{ rtrim(rtrim(number_format($discountPercent, 2), '0'), '.') }}% qeydiyyat endirimi</strong></div>
+                        <div><i class="bi bi-cash-coin me-2"></i>Hər uğurlu ödənişdən <strong>{{ rtrim(rtrim(number_format($commissionPercent, 2), '0'), '.') }}% komissiya</strong></div>
+                    </div>
 
                     @if($errors->any())
                     <div class="alert alert-danger py-2 small">
@@ -104,7 +119,7 @@
                     </div>
                     @endif
 
-                    <form method="POST" action="{{ route('register') }}">
+                    <form method="POST" action="{{ route('promoter.register') }}">
                         @csrf
 
                         <div class="row g-3 mb-3">
@@ -136,20 +151,12 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label" for="specialty_id">Vəzifə / İxtisas</label>
+                            <label class="form-label" for="phone">Telefon <span class="text-muted fw-normal">(ixtiyari)</span></label>
                             <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-briefcase"></i></span>
-                                <select id="specialty_id" name="specialty_id"
-                                        class="form-control @error('specialty_id') is-invalid @enderror">
-                                    <option value="">— Seçin —</option>
-                                    @foreach($specialties ?? [] as $sp)
-                                        <option value="{{ $sp->id }}" {{ old('specialty_id') == $sp->id ? 'selected' : '' }}>
-                                            {{ $sp->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                                <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                                <input type="text" id="phone" name="phone" class="form-control @error('phone') is-invalid @enderror"
+                                    value="{{ old('phone') }}" placeholder="+994 55 123 45 67" autocomplete="tel">
                             </div>
-                            @error('specialty_id')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                         </div>
 
                         <div class="mb-3">
@@ -171,17 +178,6 @@
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label" for="promo_code">Promo kod <span class="text-muted fw-normal">(varsa)</span></label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-ticket-perforated"></i></span>
-                                <input type="text" id="promo_code" name="promo_code" class="form-control @error('promo_code') is-invalid @enderror"
-                                    value="{{ old('promo_code', $promoCode ?? '') }}" placeholder="Promo kodunuz" autocomplete="off"
-                                    style="text-transform:uppercase">
-                            </div>
-                            @error('promo_code')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-                        </div>
-
-                        <div class="mb-4">
                             <div class="form-check">
                                 <input class="form-check-input @error('terms') is-invalid @enderror" type="checkbox"
                                        id="terms" name="terms" value="1" {{ old('terms') ? 'checked' : '' }} required>
@@ -193,7 +189,7 @@
                         </div>
 
                         <button type="submit" class="btn btn-auth w-100">
-                            <i class="bi bi-rocket-takeoff me-2"></i>Hesab yarat
+                            <i class="bi bi-megaphone me-2"></i>Promotor ol
                         </button>
                     </form>
 

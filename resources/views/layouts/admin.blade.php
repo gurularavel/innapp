@@ -124,13 +124,25 @@
             overflow-y: auto;
         }
 
+        /* Yalnız Firefox: standart scrollbar rəngi (Chrome-da webkit stilləri işləyir) */
+        @supports (-moz-appearance: none) {
+            .sidebar-nav-container {
+                scrollbar-width: thin;
+                scrollbar-color: rgba(255, 255, 255, 0.85) transparent;
+            }
+        }
+
         .sidebar-nav-container::-webkit-scrollbar {
-            width: 4px;
+            width: 6px;
         }
 
         .sidebar-nav-container::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.85);
             border-radius: 4px;
+        }
+
+        .sidebar-nav-container::-webkit-scrollbar-thumb:hover {
+            background: #ffffff;
         }
 
         .sidebar .nav {
@@ -662,6 +674,11 @@
                 <li class="nav-item">
                     <a href="{{ route('admin.settings.terms') }}" class="nav-link {{ request()->routeIs('admin.settings.terms*') ? 'active' : '' }}">
                         <i class="bi bi-file-earmark-text"></i>İstifadə Qaydaları
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.settings.promo') }}" class="nav-link {{ request()->routeIs('admin.settings.promo*') ? 'active' : '' }}">
+                        <i class="bi bi-percent"></i>Promotor Ayarları
                     </a>
                 </li>
                 <li class="nav-item">
