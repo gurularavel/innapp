@@ -667,6 +667,21 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="{{ route('admin.settings.greetings') }}" class="nav-link {{ request()->routeIs('admin.settings.greetings*') ? 'active' : '' }}">
+                        <i class="bi bi-gift"></i>Təbrik Şablonları
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.holidays.index') }}" class="nav-link {{ request()->routeIs('admin.holidays*') ? 'active' : '' }}">
+                        <i class="bi bi-calendar-heart"></i>Bayram Təqvimi
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.settings.whatsapp') }}" class="nav-link {{ request()->routeIs('admin.settings.whatsapp*') ? 'active' : '' }}">
+                        <i class="bi bi-whatsapp"></i>WhatsApp
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="{{ route('admin.settings.smtp') }}" class="nav-link {{ request()->routeIs('admin.settings.smtp*') ? 'active' : '' }}">
                         <i class="bi bi-envelope"></i>SMTP / E-poçt
                     </a>

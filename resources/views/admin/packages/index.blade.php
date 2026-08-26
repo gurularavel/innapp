@@ -18,9 +18,9 @@
                     <tr>
                         <th>#</th>
                         <th>Ad</th>
-                        <th>Qiymət</th>
+                        <th>Əməkdaş qiyməti</th>
                         <th>Müştəri Limiti</th>
-                        <th>SMS Limiti</th>
+                        <th>Maks. əməkdaş</th>
                         <th>Müddət (gün)</th>
                         <th>Abunəliklər</th>
                         <th>Status</th>
@@ -32,9 +32,9 @@
                     <tr>
                         <td class="text-muted small">{{ $loop->iteration }}</td>
                         <td class="fw-medium">{{ $package->name }}</td>
-                        <td>{{ number_format($package->price, 2) }} ₼</td>
+                        <td>{{ number_format($package->price_per_seat, 2) }} ₼ / əməkdaş</td>
                         <td>{{ $package->patient_limit ?? '∞' }}</td>
-                        <td>{{ $package->sms_limit ?? '∞' }}</td>
+                        <td>{{ $package->max_seats ?? '∞' }}</td>
                         <td>{{ $package->duration_days }}</td>
                         <td>
                             <span class="badge bg-info bg-opacity-10 text-info">

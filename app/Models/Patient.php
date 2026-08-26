@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Patient extends Model
 {
     protected $fillable = [
+        'clinic_id',
         'doctor_id',
         'name',
         'surname',
@@ -25,6 +26,12 @@ class Patient extends Model
         'birth_date' => 'date',
     ];
 
+    public function clinic()
+    {
+        return $this->belongsTo(Clinic::class);
+    }
+
+    /** The member who registered this patient. */
     public function doctor()
     {
         return $this->belongsTo(User::class, 'doctor_id');

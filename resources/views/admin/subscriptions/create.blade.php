@@ -41,7 +41,7 @@
                             <option value="">— Paket Seçin —</option>
                             @foreach($packages as $package)
                                 <option value="{{ $package->id }}" {{ old('package_id') == $package->id ? 'selected' : '' }}>
-                                    {{ $package->name }} — {{ number_format($package->price, 2) }} ₼
+                                    {{ $package->name }} — {{ number_format($package->price_per_seat, 2) }} ₼ / əməkdaş
                                     ({{ $package->duration_days }} gün)
                                 </option>
                             @endforeach

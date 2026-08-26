@@ -49,7 +49,7 @@ class SubscriptionController extends Controller
             'starts_at' => $startsAt->toDateString(),
             'expires_at' => $startsAt->addDays($package->duration_days)->toDateString(),
             'patients_used' => 0,
-            'sms_used' => 0,
+            'seats' => max(1, (int) $request->input('seats', 1)),
             'is_active' => true,
         ]);
 

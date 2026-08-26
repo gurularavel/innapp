@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Clinic;
 use App\Models\PromoCode;
 use App\Models\Setting;
 use App\Models\Specialty;
@@ -48,6 +49,8 @@ class RegisteredUserController extends Controller
             'email'   => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'specialty_id' => ['nullable', 'exists:specialties,id'],
+            'account_type' => ['nullable', 'in:solo,clinic'],
+            'clinic_name' => ['nullable', 'string', 'max:100'],
             'promo_code' => ['nullable', 'string', 'max:50'],
             'terms' => ['accepted'],
         ], [
@@ -67,14 +70,31 @@ class RegisteredUserController extends Controller
             }
         }
 
+        // Every account lives inside a clinic. A solo specialist simply gets a
+        // one-person clinic named after them, so both flows share one structure.
+        $clinicName = $request->account_type === 'clinic' && $request->filled('clinic_name')
+            ? $request->clinic_name
+            : trim($request->name . ' ' . $request->surname);
+
+        $clinic = Clinic::create([
+            'name'      => $clinicName,
+            'is_active' => true,
+        ]);
+
         $user = User::create([
+            'clinic_id'            => $clinic->id,
             'name'                 => $request->name,
             'surname'              => $request->surname,
             'email'                => $request->email,
             'password'             => Hash::make($request->password),
+            'role'                 => 'owner',
             'specialty_id'         => $request->specialty_id,
+            'takes_appointments'   => true,
+            'is_active'            => true,
             'signup_promo_code_id' => $promoCodeId,
         ]);
+
+        $clinic->update(['owner_id' => $user->id]);
 
         event(new Registered($user));
 

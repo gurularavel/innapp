@@ -14,7 +14,7 @@ class HomeController extends Controller
                 : redirect()->route('panel.dashboard');
         }
 
-        $packages = Package::where('is_active', true)->orderBy('price')->get();
+        $packages = Package::where('is_active', true)->orderBy('price_per_seat')->get();
 
         $promoDiscount   = (float) \App\Models\Setting::get('promo_default_discount_percent', 20);
         $promoCommission = (float) \App\Models\Setting::get('promo_default_commission_percent', 5);

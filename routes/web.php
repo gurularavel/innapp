@@ -9,9 +9,9 @@ use Illuminate\Support\Facades\Route;
 
 // Short map URL redirect (public, no auth)
 Route::get('/map/{code}', function (string $code) {
-    $user = \App\Models\User::where('muessise_xerite_code', $code)->first();
-    if ($user && $user->muessise_xerite) {
-        return redirect($user->muessise_xerite);
+    $clinic = \App\Models\Clinic::where('map_code', $code)->first();
+    if ($clinic && $clinic->map_url) {
+        return redirect($clinic->map_url);
     }
     abort(404);
 })->name('map.redirect');
@@ -67,6 +67,14 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin'])
     Route::get('settings/sms-templates', [Admin\SettingController::class, 'smsTemplates'])->name('settings.sms-templates');
     Route::put('settings/sms-templates', [Admin\SettingController::class, 'saveSmsTemplates'])->name('settings.sms-templates.save');
 
+    // Təbrik mesajları: qlobal şablonlar + platforma bayram təqvimi
+    Route::get('settings/greetings', [Admin\SettingController::class, 'greetings'])->name('settings.greetings');
+    Route::put('settings/greetings', [Admin\SettingController::class, 'saveGreetings'])->name('settings.greetings.save');
+    Route::resource('holidays', Admin\HolidayController::class)->except(['show']);
+
+    Route::get('settings/whatsapp', [Admin\SettingController::class, 'whatsapp'])->name('settings.whatsapp');
+    Route::put('settings/whatsapp', [Admin\SettingController::class, 'saveWhatsapp'])->name('settings.whatsapp.save');
+
     Route::get('settings/smtp', [Admin\SettingController::class, 'smtpSettings'])->name('settings.smtp');
     Route::put('settings/smtp', [Admin\SettingController::class, 'saveSmtpSettings'])->name('settings.smtp.save');
 
@@ -83,9 +91,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin'])
     Route::put('profile/password', [Admin\ProfileController::class, 'updatePassword'])->name('profile.password');
 });
 
-// Doctor routes
-Route::prefix('panel')->name('panel.')->middleware(['auth', 'role:doctor'])->group(function () {
+// Clinic panel — owner, specialists and receptionists share the same panel
+Route::prefix('panel')->name('panel.')->middleware(['auth', 'role:owner,doctor,receptionist'])->group(function () {
     Route::get('/dashboard', [Doctor\DashboardController::class, 'index'])->name('dashboard');
+
+    // Staff management (clinic owner only — enforced inside the controller)
+    Route::resource('staff', Doctor\StaffController::class)->except(['show']);
+    Route::patch('staff/{staff}/toggle-status', [Doctor\StaffController::class, 'toggleStatus'])->name('staff.toggle-status');
 
     Route::get('patients/search', [Doctor\PatientController::class, 'search'])->name('patients.search');
     Route::resource('patients', Doctor\PatientController::class)->middleware('subscription');
@@ -123,6 +135,15 @@ Route::prefix('panel')->name('panel.')->middleware(['auth', 'role:doctor'])->gro
     Route::put('profile/working-hours', [Doctor\ProfileController::class, 'saveWorkingHours'])->name('profile.working-hours.save');
     Route::get('sms-templates', [Doctor\ProfileController::class, 'smsTemplates'])->name('sms-templates.index');
     Route::put('sms-templates', [Doctor\ProfileController::class, 'saveSmsTemplates'])->name('sms-templates.save');
+
+    // Ad günü və bayram təbrikləri
+    Route::get('greetings', [Doctor\GreetingController::class, 'index'])->name('greetings.index');
+    Route::put('greetings', [Doctor\GreetingController::class, 'save'])->name('greetings.save');
+    Route::get('greetings/holidays/create', [Doctor\GreetingController::class, 'createHoliday'])->name('greetings.holidays.create');
+    Route::post('greetings/holidays', [Doctor\GreetingController::class, 'storeHoliday'])->name('greetings.holidays.store');
+    Route::get('greetings/holidays/{holiday}/edit', [Doctor\GreetingController::class, 'editHoliday'])->name('greetings.holidays.edit');
+    Route::put('greetings/holidays/{holiday}', [Doctor\GreetingController::class, 'updateHoliday'])->name('greetings.holidays.update');
+    Route::delete('greetings/holidays/{holiday}', [Doctor\GreetingController::class, 'destroyHoliday'])->name('greetings.holidays.destroy');
 });
 
 // Promoter routes

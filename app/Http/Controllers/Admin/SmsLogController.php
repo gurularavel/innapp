@@ -25,6 +25,10 @@ class SmsLogController extends Controller
             $query->where('type', $request->type);
         }
 
+        if ($request->filled('channel')) {
+            $query->where('channel', $request->channel);
+        }
+
         $smsLogs = $query->latest()->paginate(20);
         $doctors = User::where('role', 'doctor')->get();
 

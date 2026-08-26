@@ -55,6 +55,7 @@
                             @csrf
                             <input type="hidden" name="period" id="period-input"
                                    value="{{ request('period', 'monthly') }}">
+                            <input type="hidden" name="seats" value="{{ $seats }}">
 
                             <div class="d-flex flex-column gap-3 mb-4">
                                 {{-- Monthly --}}
@@ -152,8 +153,11 @@
                             <div>
                                 <div class="fw-semibold">{{ $package->name }}</div>
                                 <div class="text-muted small">
-                                    {{ $package->patient_limit ?? '∞' }} müştəri ·
-                                    {{ $package->sms_limit ?? '∞' }} SMS
+                                    {{ $seats }} əməkdaş · limitsiz mesaj
+                                </div>
+                                <div class="text-muted" style="font-size:.75rem">
+                                    {{ number_format($package->price_per_seat, 2) }} ₼ × {{ $seats }} =
+                                    {{ number_format($package->priceFor($seats), 2) }} ₼ / ay
                                 </div>
                             </div>
                         </div>

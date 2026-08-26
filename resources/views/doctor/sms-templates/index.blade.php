@@ -1,35 +1,106 @@
 @extends('layouts.doctor')
 
-@section('title', 'SMS Şablonları')
-@section('page-title', 'SMS Şablonları')
+@section('title', 'Bildiriş Ayarları')
+@section('page-title', 'Bildiriş Ayarları')
 
 @section('content')
+@php
+    $currentChannel = old('notify_channel', $clinic->notify_channel ?? 'sms');
+    $canEdit        = auth()->user()->canManageClinic();
+@endphp
 <div class="row justify-content-center">
     <div class="col-lg-8">
 
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-header bg-white border-bottom">
                 <h6 class="mb-0 fw-semibold">
-                    <i class="bi bi-chat-dots me-2 text-info"></i>SMS Şablonları
+                    <i class="bi bi-chat-dots me-2 text-info"></i>Bildiriş Ayarları
                 </h6>
             </div>
             <div class="card-body">
                 <p class="text-muted small mb-4">
-                    Boş buraxsanız sistem tərəfindən müəyyən edilmiş defolt şablon istifadə olunacaq.
+                    Müştərilərinizə göndərilən mesajın kanalını və mətnini buradan idarə edirsiniz.
+                    Bu ayarlar bütün klinika üçün ortaqdır — şablonu boş buraxsanız sistem defoltu istifadə olunacaq.
                 </p>
+
+                @unless($canEdit)
+                    <div class="alert alert-secondary small py-2 px-3">
+                        <i class="bi bi-lock me-1"></i>
+                        Bu ayarları yalnız klinika sahibi dəyişə bilər.
+                    </div>
+                @endunless
 
                 <form method="POST" action="{{ route('panel.sms-templates.save') }}">
                     @csrf
                     @method('PUT')
 
+                    {{-- Channel selection --}}
+                    <div class="mb-4">
+                        <label class="form-label fw-medium">
+                            <i class="bi bi-send me-1 text-success"></i>Mesaj kanalı
+                        </label>
+                        <p class="text-muted small mb-2">
+                            Randevu təsdiqi və xatırlatma mesajlarının hansı kanalla göndəriləcəyini seçin.
+                        </p>
+
+                        @if(!$whatsappAvailable)
+                            <div class="alert alert-secondary small py-2 px-3 mb-3">
+                                <i class="bi bi-info-circle me-1"></i>
+                                WhatsApp hazırda sistemdə aktiv deyil. Aktivləşdirilməsi üçün administrator ilə əlaqə saxlayın.
+                            </div>
+                        @endif
+
+                        <div class="row g-2">
+                            @foreach([
+                                ['value' => 'sms',      'icon' => 'bi-chat-text',  'color' => 'primary', 'title' => 'Yalnız SMS',      'desc' => 'Adi qaydada SMS göndərilir.'],
+                                ['value' => 'whatsapp', 'icon' => 'bi-whatsapp',   'color' => 'success', 'title' => 'Yalnız WhatsApp', 'desc' => 'Mesaj WhatsApp ilə göndərilir.'],
+                                ['value' => 'both',     'icon' => 'bi-layers',     'color' => 'info',    'title' => 'SMS + WhatsApp',  'desc' => 'Hər iki kanala göndərilir.'],
+                            ] as $opt)
+                                @php
+                                    $disabled = $opt['value'] !== 'sms' && !$whatsappAvailable;
+                                @endphp
+                                <div class="col-md-4">
+                                    <input type="radio"
+                                           class="btn-check"
+                                           name="notify_channel"
+                                           id="channel_{{ $opt['value'] }}"
+                                           value="{{ $opt['value'] }}"
+                                           {{ $currentChannel === $opt['value'] ? 'checked' : '' }}
+                                           {{ $disabled ? 'disabled' : '' }}
+                                           autocomplete="off">
+                                    <label class="btn btn-outline-{{ $opt['color'] }} w-100 h-100 text-start p-3 {{ $disabled ? 'opacity-50' : '' }}"
+                                           for="channel_{{ $opt['value'] }}">
+                                        <i class="bi {{ $opt['icon'] }} fs-5 d-block mb-1"></i>
+                                        <span class="fw-semibold d-block">{{ $opt['title'] }}</span>
+                                        <span class="small d-block opacity-75">{{ $opt['desc'] }}</span>
+                                    </label>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        @error('notify_channel')
+                            <div class="text-danger small mt-2">{{ $message }}</div>
+                        @enderror
+
+                        <div class="text-muted mt-2 small">
+                            <i class="bi bi-info-circle me-1"></i>
+                            <strong>SMS + WhatsApp</strong> seçildikdə hər randevu üçün iki mesaj göndərilir.
+                            Paketinizdə mesaj limiti yoxdur.
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
                     {{-- Appointment template --}}
                     <div class="mb-4">
                         <label class="form-label fw-medium">
-                            <i class="bi bi-calendar-check me-1 text-primary"></i>Randevu Təsdiq SMS
+                            <i class="bi bi-calendar-check me-1 text-primary"></i>Randevu Təsdiq mesajı
                         </label>
-                        <p class="text-muted small mb-2">Randevu yaradıldıqda müştəriyə göndərilir.</p>
+                        <p class="text-muted small mb-2">
+                            Randevu yaradıldıqda müştəriyə göndərilir — seçdiyiniz hər kanal üçün eyni mətn işlədilir.
+                        </p>
                         <div class="mb-2 d-flex flex-wrap gap-1">
-                            @foreach(['{ad_soyad}', '{xidmet}', '{tarix}', '{saat}', '{muessise}', '{xerite}'] as $ph)
+                            @foreach(['{ad_soyad}', '{xidmet}', '{mutexessis}', '{tarix}', '{saat}', '{muessise}', '{xerite}'] as $ph)
                                 <button type="button" class="btn btn-outline-secondary btn-sm placeholder-btn"
                                         data-target="sms_appointment_template" data-placeholder="{{ $ph }}">{{ $ph }}</button>
                             @endforeach
@@ -38,7 +109,7 @@
                                   name="sms_appointment_template"
                                   class="form-control font-monospace @error('sms_appointment_template') is-invalid @enderror"
                                   rows="3" maxlength="160"
-                                  placeholder="Boş buraxın — defolt şablon istifadə olunacaq">{{ old('sms_appointment_template', auth()->user()->sms_appointment_template) }}</textarea>
+                                  placeholder="Boş buraxın — defolt şablon istifadə olunacaq">{{ old('sms_appointment_template', $clinic->sms_appointment_template ?? '') }}</textarea>
                         <div class="d-flex justify-content-between mt-1">
                             @error('sms_appointment_template')
                                 <div class="text-danger small">{{ $message }}</div>
@@ -52,11 +123,13 @@
                     {{-- Reminder template --}}
                     <div class="mb-4">
                         <label class="form-label fw-medium">
-                            <i class="bi bi-bell me-1 text-warning"></i>Xatırlatma SMS
+                            <i class="bi bi-bell me-1 text-warning"></i>Xatırlatma mesajı
                         </label>
-                        <p class="text-muted small mb-2">Randevudan əvvəl avtomatik göndərilir.</p>
+                        <p class="text-muted small mb-2">
+                            Randevudan əvvəl avtomatik göndərilir — seçdiyiniz hər kanal üçün eyni mətn işlədilir.
+                        </p>
                         <div class="mb-2 d-flex flex-wrap gap-1">
-                            @foreach(['{ad_soyad}', '{xidmet}', '{tarix}', '{saat}', '{muessise}'] as $ph)
+                            @foreach(['{ad_soyad}', '{xidmet}', '{mutexessis}', '{tarix}', '{saat}', '{muessise}'] as $ph)
                                 <button type="button" class="btn btn-outline-secondary btn-sm placeholder-btn"
                                         data-target="sms_reminder_template" data-placeholder="{{ $ph }}">{{ $ph }}</button>
                             @endforeach
@@ -65,7 +138,7 @@
                                   name="sms_reminder_template"
                                   class="form-control font-monospace @error('sms_reminder_template') is-invalid @enderror"
                                   rows="3" maxlength="160"
-                                  placeholder="Boş buraxın — defolt şablon istifadə olunacaq">{{ old('sms_reminder_template', auth()->user()->sms_reminder_template) }}</textarea>
+                                  placeholder="Boş buraxın — defolt şablon istifadə olunacaq">{{ old('sms_reminder_template', $clinic->sms_reminder_template ?? '') }}</textarea>
                         <div class="d-flex justify-content-between mt-1">
                             @error('sms_reminder_template')
                                 <div class="text-danger small">{{ $message }}</div>
@@ -82,7 +155,7 @@
                             <div class="form-check form-check-inline mb-0">
                                 <input class="form-check-input" type="checkbox"
                                        id="sms_copy_to_self" name="sms_copy_to_self" value="1"
-                                       {{ auth()->user()->sms_copy_to_self ? 'checked' : '' }}
+                                       {{ ($clinic->sms_copy_to_self ?? false) ? 'checked' : '' }}
                                        style="width:1.2em;height:1.2em;cursor:pointer;">
                                 <label class="form-check-label fw-medium ms-1" for="sms_copy_to_self" style="cursor:pointer;">
                                     Xatırlatma SMS-nin kopyasını mənə də göndər
@@ -102,7 +175,7 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary" @disabled(!$canEdit)>
                         <i class="bi bi-check-lg me-1"></i>Yadda Saxla
                     </button>
                 </form>
@@ -146,6 +219,7 @@
                     <tbody>
                         <tr><td><code>{ad_soyad}</code></td><td>Xəstənin tam adı</td><td class="text-muted">Əli Əliyev</td></tr>
                         <tr><td><code>{xidmet}</code></td><td>Müalicə / xidmət növü</td><td class="text-muted">Diş müalicəsi</td></tr>
+                        <tr><td><code>{mutexessis}</code></td><td>Randevunu qəbul edən əməkdaş</td><td class="text-muted">Aysel Məmmədova</td></tr>
                         <tr><td><code>{tarix}</code></td><td>Randevu tarixi</td><td class="text-muted">26.03.2026</td></tr>
                         <tr><td><code>{saat}</code></td><td>Randevu saatı</td><td class="text-muted">14:00</td></tr>
                         <tr><td><code>{muessise}</code></td><td>Müəssisə adı (profildən)</td><td class="text-muted">DentCare</td></tr>

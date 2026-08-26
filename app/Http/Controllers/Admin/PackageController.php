@@ -23,14 +23,17 @@ class PackageController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
+            'price_per_seat' => 'required|numeric|min:0',
+            'min_seats' => 'nullable|integer|min:1',
+            'max_seats' => 'nullable|integer|min:1|gte:min_seats',
+            'description' => 'nullable|string|max:500',
             'patient_limit' => 'nullable|integer|min:1',
-            'sms_limit' => 'nullable|integer|min:1',
             'duration_days' => 'required|integer|min:1',
             'is_active' => 'boolean',
         ]);
 
         $validated['is_active'] = $request->boolean('is_active', true);
+        $validated['min_seats'] = $validated['min_seats'] ?? 1;
 
         Package::create($validated);
 
@@ -47,14 +50,17 @@ class PackageController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
+            'price_per_seat' => 'required|numeric|min:0',
+            'min_seats' => 'nullable|integer|min:1',
+            'max_seats' => 'nullable|integer|min:1|gte:min_seats',
+            'description' => 'nullable|string|max:500',
             'patient_limit' => 'nullable|integer|min:1',
-            'sms_limit' => 'nullable|integer|min:1',
             'duration_days' => 'required|integer|min:1',
             'is_active' => 'boolean',
         ]);
 
         $validated['is_active'] = $request->boolean('is_active', false);
+        $validated['min_seats'] = $validated['min_seats'] ?? 1;
 
         $package->update($validated);
 

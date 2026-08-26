@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Doctor;
 
 use App\Http\Controllers\Controller;
+use App\Models\Clinic;
 use App\Models\DoctorBreak;
 use App\Models\DoctorWorkingHours;
+use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -30,8 +32,9 @@ class ProfileController extends Controller
         }
 
         $specialties = \App\Models\Specialty::where('is_active', true)->orderBy('name')->get();
+        $clinic      = $user->clinic;
 
-        return view('doctor.profile.edit', compact('user', 'workingHours', 'existingBreaks', 'specialties'));
+        return view('doctor.profile.edit', compact('user', 'workingHours', 'existingBreaks', 'specialties', 'clinic'));
     }
 
     public function update(Request $request)
@@ -39,27 +42,18 @@ class ProfileController extends Controller
         $user = Auth::user();
 
         $validated = $request->validate([
-            'name'             => 'required|string|max:255',
-            'surname'          => 'required|string|max:255',
-            'phone'            => 'nullable|string|max:20',
-            'specialty_id'     => 'nullable|exists:specialties,id',
-            'muessise_adi'     => 'nullable|string|max:100',
-            'muessise_unvani'  => 'nullable|string|max:255',
-            'muessise_xerite'  => 'nullable|url|max:2000',
+            'name'         => 'required|string|max:255',
+            'surname'      => 'required|string|max:255',
+            'phone'        => 'nullable|string|max:20',
+            'specialty_id' => 'nullable|exists:specialties,id',
         ]);
 
-        // Generate short code when a map URL is provided
-        if (!empty($validated['muessise_xerite']) && empty($user->muessise_xerite_code)) {
-            $validated['muessise_xerite_code'] = $this->generateUniqueCode();
-        }
-
-        // Clear the code if map URL is removed
-        if (empty($validated['muessise_xerite'])) {
-            $validated['muessise_xerite_code'] = null;
-            $validated['muessise_xerite'] = null;
-        }
-
         $user->update($validated);
+
+        // Clinic identity is a separate, owner-only form on the same page.
+        if ($user->canManageClinic() && $request->filled('clinic_name')) {
+            $this->saveClinic($request, $user);
+        }
 
         return redirect()->route('panel.profile.edit')
             ->with('success', 'Profil yeniləndi.');
@@ -80,27 +74,47 @@ class ProfileController extends Controller
             ->with('success', 'Şifrə uğurla dəyişdirildi.');
     }
 
-    public function smsTemplates()
+    public function smsTemplates(WhatsAppService $whatsapp)
     {
-        return view('doctor.sms-templates.index');
+        // WhatsApp can only be picked once the admin has configured it.
+        $whatsappAvailable = $whatsapp->isConfigured();
+        $clinic            = Auth::user()->clinic;
+
+        return view('doctor.sms-templates.index', compact('whatsappAvailable', 'clinic'));
     }
 
-    public function saveSmsTemplates(Request $request)
+    public function saveSmsTemplates(Request $request, WhatsAppService $whatsapp)
     {
         $request->validate([
             'sms_appointment_template' => ['nullable', 'string', 'max:160'],
             'sms_reminder_template'    => ['nullable', 'string', 'max:160'],
             'sms_copy_to_self'         => ['boolean'],
+            'notify_channel'           => ['required', 'in:sms,whatsapp,both'],
         ]);
 
-        Auth::user()->update([
+        $user = Auth::user();
+
+        // Messaging identity is clinic-wide, so only the owner may change it.
+        abort_unless($user->canManageClinic(), 403, 'Bildiriş ayarlarını yalnız klinika sahibi dəyişə bilər.');
+
+        $channel = $request->notify_channel;
+
+        // Guard against a stale form: WhatsApp may have been turned off since the page loaded.
+        if ($channel !== 'sms' && !$whatsapp->isConfigured()) {
+            return back()->withInput()->withErrors([
+                'notify_channel' => 'WhatsApp hazırda aktiv deyil. Zəhmət olmasa administrator ilə əlaqə saxlayın.',
+            ]);
+        }
+
+        $user->clinic?->update([
             'sms_appointment_template' => $request->sms_appointment_template ?: null,
             'sms_reminder_template'    => $request->sms_reminder_template ?: null,
             'sms_copy_to_self'         => $request->boolean('sms_copy_to_self'),
+            'notify_channel'           => $channel,
         ]);
 
         return redirect()->route('panel.sms-templates.index')
-            ->with('success', 'SMS şablonları yadda saxlandı.');
+            ->with('success', 'Bildiriş ayarları yadda saxlandı.');
     }
 
     public function workingHours()
@@ -120,17 +134,47 @@ class ProfileController extends Controller
         }
 
         $specialties = \App\Models\Specialty::where('is_active', true)->orderBy('name')->get();
+        $clinic      = $user->clinic;
 
-        return view('doctor.profile.edit', compact('user', 'workingHours', 'existingBreaks', 'specialties'));
+        return view('doctor.profile.edit', compact('user', 'workingHours', 'existingBreaks', 'specialties', 'clinic'));
     }
 
-    private function generateUniqueCode(): string
+    /**
+     * Clinic-wide identity used in messages: name, address and the short map link.
+     */
+    private function saveClinic(Request $request, $user): void
     {
-        do {
-            $code = Str::lower(Str::random(7));
-        } while (\App\Models\User::where('muessise_xerite_code', $code)->exists());
+        $data = $request->validate([
+            'clinic_name'    => 'required|string|max:100',
+            'clinic_address' => 'nullable|string|max:255',
+            'clinic_phone'   => 'nullable|string|max:20',
+            'clinic_map_url' => 'nullable|url|max:2000',
+        ]);
 
-        return $code;
+        $clinic = $user->clinic;
+
+        if (! $clinic) {
+            return;
+        }
+
+        $mapUrl  = $data['clinic_map_url'] ?? null;
+        $mapCode = $clinic->map_code;
+
+        if ($mapUrl && ! $mapCode) {
+            $mapCode = Clinic::generateMapCode();
+        }
+
+        if (! $mapUrl) {
+            $mapCode = null;
+        }
+
+        $clinic->update([
+            'name'     => $data['clinic_name'],
+            'address'  => $data['clinic_address'] ?? null,
+            'phone'    => $data['clinic_phone'] ?? null,
+            'map_url'  => $mapUrl,
+            'map_code' => $mapCode,
+        ]);
     }
 
     public function saveWorkingHours(Request $request)

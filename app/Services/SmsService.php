@@ -3,106 +3,101 @@
 namespace App\Services;
 
 use App\Models\Appointment;
-use App\Models\DoctorSubscription;
-use App\Models\Setting;
+use App\Models\Clinic;
+use App\Models\Patient;
 use App\Models\SmsLog;
+use App\Services\Concerns\NormalizesPhone;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class SmsService
 {
+    use NormalizesPhone;
+
     private string $driver;
 
-    public function __construct()
+    public function __construct(private MessageBuilder $builder)
     {
         $this->driver = config('services.sms.driver', 'log');
     }
 
-    public function send(string $phone, string $message, ?int $doctorId = null, string $type = 'custom', ?int $appointmentId = null): bool
-    {
-        if ($doctorId) {
-            $subscription = DoctorSubscription::where('doctor_id', $doctorId)
-                ->where('is_active', true)
-                ->where('expires_at', '>=', now()->toDateString())
-                ->first();
-
-            if ($subscription && $subscription->smsLimitReached()) {
-                Log::warning("SMS limit reached for doctor #{$doctorId}");
-                $this->logSms($phone, $message, $type, 'failed', $doctorId, $appointmentId, null);
-                return false;
-            }
-        }
-
+    /**
+     * Messaging is unlimited under seat based pricing, so there is no quota to
+     * check or decrement here — only delivery and logging.
+     *
+     * @param  array{patient_id?: int|null, reference?: string|null}  $context
+     *         Extra bookkeeping for greetings: who it was for and which
+     *         occasion, so the same greeting is never sent twice.
+     */
+    public function send(
+        string $phone,
+        string $message,
+        ?int   $doctorId = null,
+        string $type = 'custom',
+        ?int   $appointmentId = null,
+        ?int   $clinicId = null,
+        array  $context = []
+    ): bool {
         ['success' => $success, 'receiver_id' => $receiverId, 'response_body' => $responseBody] = match ($this->driver) {
             'poctgoyercini' => $this->sendViaPostaGuvercini($phone, $message),
             default          => $this->sendViaLog($phone, $message),
         };
 
         $status = $success ? 'sent' : 'failed';
-        $this->logSms($phone, $message, $type, $status, $doctorId, $appointmentId, $receiverId, $responseBody);
-
-        if ($success && $doctorId) {
-            DoctorSubscription::where('doctor_id', $doctorId)
-                ->where('is_active', true)
-                ->where('expires_at', '>=', now()->toDateString())
-                ->increment('sms_used');
-        }
+        $this->logSms($phone, $message, $type, $status, $doctorId, $appointmentId, $receiverId, $responseBody, $clinicId, $context);
 
         return $success;
     }
 
+    /**
+     * Birthday / holiday greeting for one patient.
+     *
+     * `$reference` identifies the occasion ("birthday:2026-08-26") and is
+     * written to the log so a repeated run recognises it as already handled.
+     */
+    public function sendGreeting(
+        Patient $patient,
+        Clinic  $clinic,
+        string  $type,
+        string  $message,
+        string  $reference
+    ): bool {
+        return $this->send(
+            $patient->phone,
+            $message,
+            null,
+            $type,
+            null,
+            $clinic->id,
+            ['patient_id' => $patient->id, 'reference' => $reference]
+        );
+    }
+
     public function sendAppointmentSms(Appointment $appointment): bool
     {
-        $message = $this->buildMessage('sms_appointment_template', $appointment);
+        $message = $this->builder->build('sms_appointment_template', $appointment);
 
         return $this->send(
             $appointment->patient->phone,
             $message,
             $appointment->doctor_id,
             'appointment',
-            $appointment->id
+            $appointment->id,
+            $appointment->clinic_id
         );
     }
 
     public function sendReminderSms(Appointment $appointment): bool
     {
-        $message = $this->buildMessage('sms_reminder_template', $appointment);
+        $message = $this->builder->build('sms_reminder_template', $appointment);
 
         return $this->send(
             $appointment->patient->phone,
             $message,
             $appointment->doctor_id,
             'reminder',
-            $appointment->id
-        );
-    }
-
-    private function buildMessage(string $templateKey, Appointment $appointment): string
-    {
-        $globalDefaults = [
-            'sms_appointment_template' => 'Hörmətli {ad_soyad}, {tarix} {saat} randevunuz təsdiqləndi.',
-            'sms_reminder_template'    => 'Xatırlatma: {ad_soyad}, {tarix} {saat} randevunuz var.',
-        ];
-
-        // User's own template takes priority; fall back to global admin default
-        $user     = $appointment->doctor;
-        $template = ($user?->{$templateKey} ?? null)
-            ?: Setting::get($templateKey, $globalDefaults[$templateKey] ?? '');
-
-        $patient     = $appointment->patient;
-        $scheduledAt = $appointment->scheduled_at;
-        $service     = $appointment->treatmentType?->name ?? '';
-        $muessise    = $user?->muessise_adi ?: Setting::get('default_muessise_adi', '');
-
-        $xerite = '';
-        if ($user?->muessise_xerite_code && $user?->muessise_xerite) {
-            $xerite = rtrim(config('app.url'), '/') . '/map/' . $user->muessise_xerite_code;
-        }
-
-        return str_replace(
-            ['{ad_soyad}', '{xidmet}', '{tarix}', '{saat}', '{muessise}', '{xerite}'],
-            [$patient->full_name, $service, $scheduledAt->format('d.m.Y'), $scheduledAt->format('H:i'), $muessise, $xerite],
-            $template
+            $appointment->id,
+            $appointment->clinic_id
         );
     }
 
@@ -194,32 +189,6 @@ class SmsService
     // Helpers
     // -------------------------------------------------------------------------
 
-    /**
-     * Normalize an Azerbaijani phone number to international MSISDN format.
-     * Examples:
-     *   055 123 45 67  →  994551234567
-     *   +994551234567  →  994551234567
-     *   994551234567   →  994551234567
-     */
-    private function normalizePhone(string $phone): string
-    {
-        // Strip everything except digits
-        $phone = preg_replace('/\D/', '', $phone);
-
-        // +994... → 994...  (already stripped + above)
-        // 0... → 994...
-        if (str_starts_with($phone, '0')) {
-            $phone = '994' . substr($phone, 1);
-        }
-
-        // Bare 9-digit number (e.g. 551234567) → 994...
-        if (strlen($phone) === 9) {
-            $phone = '994' . $phone;
-        }
-
-        return $phone;
-    }
-
     private function logSms(
         string  $phone,
         string  $message,
@@ -228,14 +197,20 @@ class SmsService
         ?int    $doctorId,
         ?int    $appointmentId,
         ?string $receiverId,
-        ?array  $responseBody = null
+        ?array  $responseBody = null,
+        ?int    $clinicId = null,
+        array   $context = []
     ): void {
         SmsLog::create([
             'appointment_id' => $appointmentId,
+            'patient_id'     => $context['patient_id'] ?? null,
+            'clinic_id'      => $clinicId,
             'doctor_id'      => $doctorId,
             'phone'          => $phone,
             'message'        => $message,
             'type'           => $type,
+            'reference'      => $context['reference'] ?? null,
+            'channel'        => 'sms',
             'status'         => $status,
             'sent_at'        => $status === 'sent' ? now() : null,
             'receiver_id'    => $receiverId,

@@ -203,13 +203,14 @@
                             <ul>
                                 <li class="pricing-header">
                                     <h4>{{ $package->name }}</h4>
-                                    <h2><sup>₼</sup>{{ number_format($package->price, 0) }} <sub>/ ay</sub></h2>
+                                    <h2><sup>₼</sup>{{ number_format($package->price_per_seat, 0) }} <sub>/ əməkdaş / ay</sub></h2>
                                 </li>
-                                <li>{{ $package->description ?: 'Gündəlik proseslər üçün əsas funksiyalar.' }}</li>
-                                <li>{{ $package->patient_limit ? $package->patient_limit . ' xəstə limiti' : 'Limitsiz xəstə' }}</li>
-                                <li>{{ $package->sms_limit ? $package->sms_limit . ' SMS / ay' : 'Limitsiz SMS' }}</li>
+                                <li>{{ $package->description ?: 'Tək mütəxəssis üçün də, klinika üçün də.' }}</li>
+                                <li>{{ $package->patient_limit ? $package->patient_limit . ' müştəri limiti' : 'Limitsiz müştəri' }}</li>
+                                <li>Limitsiz SMS və WhatsApp</li>
                                 <li>Randevu və təqvim idarəetməsi</li>
                                 <li>Vizit və gəlir hesabatları</li>
+                                <li>İstədiyiniz qədər əməkdaş əlavə edin</li>
                                 <li class="footer">
                                     <a class="btn circle btn-theme border btn-sm" href="{{ route('register') }}">Seç</a>
                                 </li>

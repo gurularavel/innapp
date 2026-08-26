@@ -8,7 +8,7 @@
 <div class="card border-0 shadow-sm mb-4">
     <div class="card-body">
         <form method="GET" action="{{ route('admin.sms-logs.index') }}" class="row g-3 align-items-end">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label for="doctor_id" class="form-label fw-medium small">İstifadəçi</label>
                 <select class="form-select form-select-sm" id="doctor_id" name="doctor_id">
                     <option value="">— Hamısı —</option>
@@ -19,7 +19,15 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
+                <label for="channel" class="form-label fw-medium small">Kanal</label>
+                <select class="form-select form-select-sm" id="channel" name="channel">
+                    <option value="">— Hamısı —</option>
+                    <option value="sms" {{ request('channel') === 'sms' ? 'selected' : '' }}>SMS</option>
+                    <option value="whatsapp" {{ request('channel') === 'whatsapp' ? 'selected' : '' }}>WhatsApp</option>
+                </select>
+            </div>
+            <div class="col-md-2">
                 <label for="status" class="form-label fw-medium small">Status</label>
                 <select class="form-select form-select-sm" id="status" name="status">
                     <option value="">— Hamısı —</option>
@@ -28,12 +36,14 @@
                     <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Gözləyir</option>
                 </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label for="type" class="form-label fw-medium small">Növ</label>
                 <select class="form-select form-select-sm" id="type" name="type">
                     <option value="">— Hamısı —</option>
-                    <option value="appointment_reminder" {{ request('type') === 'appointment_reminder' ? 'selected' : '' }}>Randevu Xatırlatması</option>
-                    <option value="appointment_confirmation" {{ request('type') === 'appointment_confirmation' ? 'selected' : '' }}>Randevu Təsdiqi</option>
+                    <option value="appointment" {{ request('type') === 'appointment' ? 'selected' : '' }}>Randevu Təsdiqi</option>
+                    <option value="reminder" {{ request('type') === 'reminder' ? 'selected' : '' }}>Randevu Xatırlatması</option>
+                    <option value="birthday" {{ request('type') === 'birthday' ? 'selected' : '' }}>Ad günü təbriki</option>
+                    <option value="holiday" {{ request('type') === 'holiday' ? 'selected' : '' }}>Bayram təbriki</option>
                     <option value="custom" {{ request('type') === 'custom' ? 'selected' : '' }}>Fərdi</option>
                 </select>
             </div>
@@ -64,6 +74,7 @@
                         <th>İstifadəçi</th>
                         <th>Telefon</th>
                         <th>Mesaj</th>
+                        <th>Kanal</th>
                         <th>Növ</th>
                         <th>Status</th>
                         <th>Göndərilib</th>
@@ -89,15 +100,12 @@
                             </span>
                         </td>
                         <td>
-                            @php
-                                $typeLabels = [
-                                    'appointment_reminder'     => ['label' => 'Xatırlatma',   'color' => 'info'],
-                                    'appointment_confirmation' => ['label' => 'Təsdiq',        'color' => 'primary'],
-                                    'custom'                   => ['label' => 'Fərdi',         'color' => 'secondary'],
-                                ];
-                                $typeData = $typeLabels[$log->type] ?? ['label' => $log->type, 'color' => 'secondary'];
-                            @endphp
-                            <span class="badge bg-{{ $typeData['color'] }}">{{ $typeData['label'] }}</span>
+                            <span class="badge bg-{{ $log->channel_badge }}">
+                                <i class="bi {{ $log->channel_icon }} me-1"></i>{{ $log->channel_label }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ $log->type_badge }}">{{ $log->type_label }}</span>
                         </td>
                         <td>
                             @if($log->status === 'sent')
@@ -114,7 +122,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="text-center text-muted py-4">
+                        <td colspan="8" class="text-center text-muted py-4">
                             <i class="bi bi-chat-dots fs-3 d-block mb-2"></i>
                             SMS loq tapılmadı
                         </td>

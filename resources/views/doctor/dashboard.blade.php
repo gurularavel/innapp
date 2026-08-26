@@ -156,15 +156,14 @@
                         @endif
                     </div>
                     <div class="col-6">
-                        <div class="text-muted small">SMS İstifadəsi</div>
-                        <div class="fw-medium">
-                            {{ $subscription->sms_used }}/{{ $subscription->package->sms_limit ?? '∞' }}
+                        <div class="text-muted small">Əməkdaş yerləri</div>
+                        <div class="fw-medium {{ $subscription->seatsExceeded() ? 'text-danger' : '' }}">
+                            {{ $subscription->used_seats }}/{{ $subscription->seats }}
                         </div>
-                        @if($subscription->package->sms_limit)
                         <div class="progress mt-1" style="height:4px;">
-                            <div class="progress-bar bg-warning" style="width:{{ min(100, ($subscription->sms_used / $subscription->package->sms_limit) * 100) }}%"></div>
+                            <div class="progress-bar {{ $subscription->seatsExceeded() ? 'bg-danger' : 'bg-success' }}"
+                                 style="width:{{ $subscription->seats > 0 ? min(100, ($subscription->used_seats / $subscription->seats) * 100) : 0 }}%"></div>
                         </div>
-                        @endif
                     </div>
                 </div>
                 <div class="mt-3 d-flex justify-content-between align-items-center">

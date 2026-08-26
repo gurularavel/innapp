@@ -8,18 +8,23 @@ use App\Models\DoctorBreak;
 use App\Models\DoctorWorkingHours;
 use App\Models\Patient;
 use App\Models\TreatmentType;
-use App\Services\SmsService;
+use App\Models\User;
+use App\Services\NotificationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AppointmentController extends Controller
 {
-    public function __construct(private SmsService $smsService) {}
+    public function __construct(private NotificationService $notifications) {}
 
     public function index(Request $request)
     {
-        $query = Auth::user()->appointments()->with('patient', 'treatmentType');
+        $user  = Auth::user();
+        $staff = $this->clinicStaff();
+
+        // Specialists see their own diary; owners and receptionists see the clinic's.
+        $query = $this->scopedAppointments($request)->with('patient', 'treatmentType', 'doctor');
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -33,25 +38,28 @@ class AppointmentController extends Controller
             $query->where('patient_id', $request->patient_id);
         }
 
-        $appointments = $query->orderBy('scheduled_at', 'desc')->paginate(15);
+        $appointments = $query->orderBy('scheduled_at', 'desc')->paginate(15)->withQueryString();
         $selectedPatient = $request->filled('patient_id')
-            ? Patient::find($request->patient_id)
+            ? $user->patients()->find($request->patient_id)
             : null;
 
-        return view('doctor.appointments.index', compact('appointments', 'selectedPatient'));
+        return view('doctor.appointments.index', compact('appointments', 'selectedPatient', 'staff'));
     }
 
     public function create()
     {
-        $patients = Auth::user()->patients()->get();
+        $patients       = Auth::user()->patients()->get();
         $treatmentTypes = Auth::user()->treatmentTypes()->get();
-        return view('doctor.appointments.create', compact('patients', 'treatmentTypes'));
+        $staff          = $this->clinicStaff();
+
+        return view('doctor.appointments.create', compact('patients', 'treatmentTypes', 'staff'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
             'patient_id' => 'required|exists:patients,id',
+            'staff_id' => 'nullable|exists:users,id',
             'treatment_type_id' => 'nullable|exists:treatment_types,id',
             'scheduled_at' => 'required|date|after:now',
             'duration_minutes' => 'required|integer|min:5|max:480',
@@ -60,15 +68,15 @@ class AppointmentController extends Controller
         ]);
         $validated['duration_minutes'] = (int) $validated['duration_minutes'];
 
-        $patient = Patient::findOrFail($validated['patient_id']);
-        if ($patient->doctor_id !== Auth::id()) {
-            abort(403);
-        }
+        $staffId = $this->resolveStaffId($request);
+
+        // The patient must belong to this clinic, not merely exist.
+        Auth::user()->patients()->findOrFail($validated['patient_id']);
 
         $startTime = Carbon::parse($validated['scheduled_at']);
         $endTime   = (clone $startTime)->addMinutes($validated['duration_minutes']);
 
-        $conflictCount = Appointment::where('doctor_id', Auth::id())
+        $conflictCount = Appointment::where('doctor_id', $staffId)
             ->whereNotIn('status', ['cancelled'])
             ->where('scheduled_at', '<', $endTime)
             ->whereRaw('DATE_ADD(scheduled_at, INTERVAL duration_minutes MINUTE) > ?', [$startTime])
@@ -81,13 +89,15 @@ class AppointmentController extends Controller
             return back()->withInput()->withErrors(['scheduled_at' => 'Bu vaxtda başqa randevu var. Zəhmət olmasa başqa vaxt seçin.']);
         }
 
-        $validated['doctor_id'] = Auth::id();
+        unset($validated['staff_id']);
+        $validated['doctor_id'] = $staffId;
+        $validated['clinic_id'] = Auth::user()->clinic_id;
 
         $appointment = Appointment::create($validated);
 
-        // Send appointment confirmation SMS
+        // Send the confirmation over the channel(s) this user picked
         if (in_array($appointment->status, ['pending', 'confirmed'])) {
-            $this->smsService->sendAppointmentSms($appointment);
+            $this->notifications->sendAppointment($appointment);
         }
 
         if ($request->boolean('_ajax')) {
@@ -108,9 +118,11 @@ class AppointmentController extends Controller
     public function edit(Appointment $appointment)
     {
         $this->authorizeAppointment($appointment);
-        $patients = Auth::user()->patients()->get();
+        $patients       = Auth::user()->patients()->get();
         $treatmentTypes = Auth::user()->treatmentTypes()->get();
-        return view('doctor.appointments.edit', compact('appointment', 'patients', 'treatmentTypes'));
+        $staff          = $this->clinicStaff();
+
+        return view('doctor.appointments.edit', compact('appointment', 'patients', 'treatmentTypes', 'staff'));
     }
 
     public function update(Request $request, Appointment $appointment)
@@ -119,6 +131,7 @@ class AppointmentController extends Controller
 
         $validated = $request->validate([
             'patient_id' => 'required|exists:patients,id',
+            'staff_id' => 'nullable|exists:users,id',
             'treatment_type_id' => 'nullable|exists:treatment_types,id',
             'scheduled_at' => 'required|date',
             'duration_minutes' => 'required|integer|min:5|max:480',
@@ -127,10 +140,16 @@ class AppointmentController extends Controller
         ]);
         $validated['duration_minutes'] = (int) $validated['duration_minutes'];
 
+        $staffId = $this->resolveStaffId($request, $appointment->doctor_id);
+        unset($validated['staff_id']);
+        $validated['doctor_id'] = $staffId;
+
+        Auth::user()->patients()->findOrFail($validated['patient_id']);
+
         $startTime = Carbon::parse($validated['scheduled_at']);
         $endTime   = (clone $startTime)->addMinutes($validated['duration_minutes']);
 
-        $conflictCount = Appointment::where('doctor_id', Auth::id())
+        $conflictCount = Appointment::where('doctor_id', $staffId)
             ->whereNotIn('status', ['cancelled'])
             ->where('id', '!=', $appointment->id)
             ->where('scheduled_at', '<', $endTime)
@@ -182,7 +201,7 @@ class AppointmentController extends Controller
             return response()->json(['error' => 'date required'], 422);
         }
 
-        $doctorId = Auth::id();
+        $doctorId = $this->resolveStaffId($request);
         $carbon   = Carbon::parse($date);
         // Carbon: 0=Sun,1=Mon..6=Sat → our DB: 1=Mon..7=Sun
         $dayOfWeek = $carbon->dayOfWeek === 0 ? 7 : $carbon->dayOfWeek;
@@ -289,10 +308,88 @@ class AppointmentController extends Controller
         ]);
     }
 
+    /**
+     * An appointment belongs to the clinic; a specialist without management
+     * rights is still limited to their own diary.
+     */
     private function authorizeAppointment(Appointment $appointment): void
     {
-        if ($appointment->doctor_id !== Auth::id()) {
+        $user = Auth::user();
+
+        if ($appointment->clinic_id !== $user->clinic_id) {
             abort(403);
         }
+
+        if (! $this->seesWholeClinic() && $appointment->doctor_id !== $user->id) {
+            abort(403);
+        }
+    }
+
+    /** Owners and receptionists work across the clinic; specialists do not. */
+    private function seesWholeClinic(): bool
+    {
+        $user = Auth::user();
+
+        return $user->isOwner() || $user->isReceptionist();
+    }
+
+    /** Members who can be assigned an appointment. */
+    private function clinicStaff()
+    {
+        $user = Auth::user();
+
+        if (! $this->seesWholeClinic()) {
+            return collect($user->takesAppointments() ? [$user] : []);
+        }
+
+        return $user->clinic
+            ? $user->clinic->specialists()->orderBy('name')->get()
+            : collect();
+    }
+
+    private function scopedAppointments(Request $request)
+    {
+        $user = Auth::user();
+
+        if (! $this->seesWholeClinic()) {
+            return $user->appointments();
+        }
+
+        $query = $user->clinicAppointments();
+
+        if ($request->filled('staff_id')) {
+            $query->where('doctor_id', $request->staff_id);
+        }
+
+        return $query;
+    }
+
+    /**
+     * Which staff member the appointment belongs to. Specialists may only book
+     * for themselves, so a forged staff_id cannot reassign their work.
+     */
+    private function resolveStaffId(Request $request, ?int $fallback = null): int
+    {
+        $user = Auth::user();
+
+        if (! $this->seesWholeClinic()) {
+            return $user->id;
+        }
+
+        $requested = $request->input('staff_id') ?: $fallback;
+
+        if ($requested) {
+            $isMember = User::where('id', $requested)
+                ->where('clinic_id', $user->clinic_id)
+                ->where('takes_appointments', true)
+                ->exists();
+
+            if ($isMember) {
+                return (int) $requested;
+            }
+        }
+
+        // Fall back to the first specialist so a receptionist always has a target.
+        return (int) ($user->clinic?->specialists()->value('id') ?? $user->id);
     }
 }

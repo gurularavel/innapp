@@ -826,9 +826,21 @@
                         <i class="bi bi-bar-chart-line"></i><span>Hesabat</span>
                     </a>
                 </li>
+                @if(auth()->user()->canManageClinic())
                 <li class="nav-item">
-                    <a href="{{ route('panel.sms-templates.index') }}" class="nav-link {{ request()->routeIs('panel.sms-templates*') ? 'active' : '' }}" title="SMS Şablonları">
-                        <i class="bi bi-chat-dots"></i><span>SMS Şablonları</span>
+                    <a href="{{ route('panel.staff.index') }}" class="nav-link {{ request()->routeIs('panel.staff*') ? 'active' : '' }}" title="Əməkdaşlar">
+                        <i class="bi bi-people"></i><span>Əməkdaşlar</span>
+                    </a>
+                </li>
+                @endif
+                <li class="nav-item">
+                    <a href="{{ route('panel.sms-templates.index') }}" class="nav-link {{ request()->routeIs('panel.sms-templates*') ? 'active' : '' }}" title="Bildirişlər">
+                        <i class="bi bi-chat-dots"></i><span>Bildirişlər</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('panel.greetings.index') }}" class="nav-link {{ request()->routeIs('panel.greetings*') ? 'active' : '' }}" title="Təbriklər">
+                        <i class="bi bi-gift"></i><span>Təbriklər</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -844,12 +856,14 @@
         <div class="sub-info-block">
             <div class="sub-pkg">{{ $subscription->package->name }}</div>
             <div class="sub-row">
-                <span>Müştəri</span>
-                <span>{{ $subscription->patients_used }}/{{ $subscription->package->patient_limit ?? '∞' }}</span>
+                <span>Əməkdaş</span>
+                <span class="{{ $subscription->seatsExceeded() ? 'text-danger fw-bold' : '' }}">
+                    {{ $subscription->used_seats }}/{{ $subscription->seats }}
+                </span>
             </div>
             <div class="sub-row">
-                <span>SMS</span>
-                <span>{{ $subscription->sms_used }}/{{ $subscription->package->sms_limit ?? '∞' }}</span>
+                <span>Müştəri</span>
+                <span>{{ $subscription->patients_used }}/{{ $subscription->package->patient_limit ?? '∞' }}</span>
             </div>
             <div class="sub-exp">
                 <i class="bi bi-clock-history"></i>

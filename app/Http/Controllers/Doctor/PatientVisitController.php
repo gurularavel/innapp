@@ -16,7 +16,7 @@ class PatientVisitController extends Controller
     public function create(Patient $patient)
     {
         $this->authorizePatient($patient);
-        $treatmentTypes = TreatmentType::where('doctor_id', Auth::id())->orderBy('name')->get();
+        $treatmentTypes = Auth::user()->treatmentTypes()->orderBy('name')->get();
         return view('doctor.patients.visits.form', compact('patient', 'treatmentTypes'));
     }
 
@@ -33,6 +33,7 @@ class PatientVisitController extends Controller
 
         $visit = PatientVisit::create([
             'patient_id' => $patient->id,
+            'clinic_id'  => Auth::user()->clinic_id,
             'doctor_id'  => Auth::id(),
             'visited_at' => $validated['visited_at'],
             'title'      => $validated['title'] ?? null,
@@ -60,7 +61,7 @@ class PatientVisitController extends Controller
         $this->authorizePatient($patient);
         $this->authorizeVisit($patient, $visit);
         $visit->load('files');
-        $treatmentTypes = TreatmentType::where('doctor_id', Auth::id())->orderBy('name')->get();
+        $treatmentTypes = Auth::user()->treatmentTypes()->orderBy('name')->get();
         return view('doctor.patients.visits.form', compact('patient', 'visit', 'treatmentTypes'));
     }
 
@@ -128,7 +129,7 @@ class PatientVisitController extends Controller
 
     private function authorizePatient(Patient $patient): void
     {
-        if ($patient->doctor_id !== Auth::id()) {
+        if ($patient->clinic_id !== Auth::user()->clinic_id) {
             abort(403);
         }
     }

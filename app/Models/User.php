@@ -10,21 +10,20 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
+    /** In-clinic roles, ordered by authority. */
+    public const CLINIC_ROLES = ['owner', 'doctor', 'receptionist'];
+
     protected $fillable = [
+        'clinic_id',
         'name',
         'surname',
         'email',
         'phone',
-        'sms_appointment_template',
-        'sms_reminder_template',
-        'muessise_adi',
-        'muessise_unvani',
-        'muessise_xerite',
-        'muessise_xerite_code',
-        'sms_copy_to_self',
         'password',
         'role',
         'specialty_id',
+        'takes_appointments',
+        'job_title',
         'is_active',
         'is_demo',
         'demo_expires_at',
@@ -39,29 +38,147 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'is_active' => 'boolean',
-            'sms_copy_to_self' => 'boolean',
-            'is_demo' => 'boolean',
-            'demo_expires_at' => 'datetime',
+            'email_verified_at'  => 'datetime',
+            'password'           => 'hashed',
+            'is_active'          => 'boolean',
+            'takes_appointments' => 'boolean',
+            'is_demo'            => 'boolean',
+            'demo_expires_at'    => 'datetime',
         ];
     }
+
+    // -------------------------------------------------------------------------
+    // Roles
+    // -------------------------------------------------------------------------
 
     public function isAdmin(): bool
     {
         return $this->role === 'super_admin';
     }
 
-    public function isDoctor(): bool
-    {
-        return $this->role === 'doctor';
-    }
-
     public function isPromoter(): bool
     {
         return $this->role === 'promoter';
     }
+
+    /** Belongs to a clinic — owner, specialist or receptionist. */
+    public function isClinicMember(): bool
+    {
+        return in_array($this->role, self::CLINIC_ROLES, true);
+    }
+
+    public function isOwner(): bool
+    {
+        return $this->role === 'owner';
+    }
+
+    public function isReceptionist(): bool
+    {
+        return $this->role === 'receptionist';
+    }
+
+    /**
+     * Kept for backwards compatibility: anywhere that used to ask "is this a
+     * doctor?" really means "is this a clinic member?".
+     */
+    public function isDoctor(): bool
+    {
+        return $this->isClinicMember();
+    }
+
+    /** Only the owner manages staff, billing and clinic-wide settings. */
+    public function canManageClinic(): bool
+    {
+        return $this->isOwner();
+    }
+
+    /** Has a calendar and can be assigned appointments. */
+    public function takesAppointments(): bool
+    {
+        return $this->takes_appointments && $this->isClinicMember();
+    }
+
+    public function getRoleLabelAttribute(): string
+    {
+        return match ($this->role) {
+            'super_admin'  => 'Sistem admini',
+            'owner'        => 'Klinika sahibi',
+            'doctor'       => 'Mütəxəssis',
+            'receptionist' => 'Resepsiyonist',
+            'promoter'     => 'Promotor',
+            default        => $this->role,
+        };
+    }
+
+    // -------------------------------------------------------------------------
+    // Clinic scoping
+    // -------------------------------------------------------------------------
+
+    public function clinic()
+    {
+        return $this->belongsTo(Clinic::class);
+    }
+
+    /** Colleagues in the same clinic, including this user. */
+    public function clinicMembers()
+    {
+        return $this->hasMany(User::class, 'clinic_id', 'clinic_id');
+    }
+
+    /** The clinic's shared patient base — every member sees the same records. */
+    public function patients()
+    {
+        return $this->hasMany(Patient::class, 'clinic_id', 'clinic_id');
+    }
+
+    /** Services are defined once for the whole clinic. */
+    public function treatmentTypes()
+    {
+        return $this->hasMany(TreatmentType::class, 'clinic_id', 'clinic_id');
+    }
+
+    /** This member's own appointments — their personal calendar. */
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class, 'doctor_id');
+    }
+
+    /** Every appointment in the clinic, regardless of who takes it. */
+    public function clinicAppointments()
+    {
+        return $this->hasMany(Appointment::class, 'clinic_id', 'clinic_id');
+    }
+
+    public function subscriptions()
+    {
+        return $this->hasMany(DoctorSubscription::class, 'clinic_id', 'clinic_id');
+    }
+
+    public function activeSubscription()
+    {
+        return $this->hasOne(DoctorSubscription::class, 'clinic_id', 'clinic_id')
+            ->where('is_active', true)
+            ->where('expires_at', '>=', now()->toDateString());
+    }
+
+    public function workingHours()
+    {
+        return $this->hasMany(DoctorWorkingHours::class, 'doctor_id');
+    }
+
+    public function breaks()
+    {
+        return $this->hasMany(DoctorBreak::class, 'doctor_id');
+    }
+
+    public function specialty()
+    {
+        return $this->belongsTo(Specialty::class);
+    }
+
+    // -------------------------------------------------------------------------
+    // Promoter
+    // -------------------------------------------------------------------------
 
     public function promoCodes()
     {
@@ -84,10 +201,10 @@ class User extends Authenticatable
     }
 
     /**
-     * Promotorun komissiya balansları (AZN).
-     * pending  = gözləmədə (hold müddəti bitməyib)
-     * available = çıxarıla bilən
-     * paid     = artıq ödənilib
+     * Promoter commission balances (AZN).
+     * pending   = on hold
+     * available = withdrawable
+     * paid      = already paid out
      */
     public function commissionBalances(): array
     {
@@ -103,50 +220,8 @@ class User extends Authenticatable
         ];
     }
 
-    public function specialty()
-    {
-        return $this->belongsTo(Specialty::class);
-    }
-
-    public function patients()
-    {
-        return $this->hasMany(Patient::class, 'doctor_id');
-    }
-
-    public function appointments()
-    {
-        return $this->hasMany(Appointment::class, 'doctor_id');
-    }
-
-    public function treatmentTypes()
-    {
-        return $this->hasMany(TreatmentType::class, 'doctor_id');
-    }
-
-    public function subscriptions()
-    {
-        return $this->hasMany(DoctorSubscription::class, 'doctor_id');
-    }
-
-    public function workingHours()
-    {
-        return $this->hasMany(DoctorWorkingHours::class, 'doctor_id');
-    }
-
-    public function breaks()
-    {
-        return $this->hasMany(DoctorBreak::class, 'doctor_id');
-    }
-
-    public function activeSubscription()
-    {
-        return $this->hasOne(DoctorSubscription::class, 'doctor_id')
-            ->where('is_active', true)
-            ->where('expires_at', '>=', now()->toDateString());
-    }
-
     public function getFullNameAttribute(): string
     {
-        return $this->name . ' ' . $this->surname;
+        return trim($this->name . ' ' . $this->surname);
     }
 }

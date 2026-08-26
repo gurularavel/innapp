@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class PatientVisit extends Model
 {
     protected $fillable = [
+        'clinic_id',
         'patient_id',
         'doctor_id',
         'visited_at',
@@ -23,6 +24,12 @@ class PatientVisit extends Model
         return $this->belongsTo(Patient::class);
     }
 
+    public function clinic()
+    {
+        return $this->belongsTo(Clinic::class);
+    }
+
+    /** The member who wrote this visit note. */
     public function doctor()
     {
         return $this->belongsTo(User::class, 'doctor_id');

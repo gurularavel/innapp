@@ -10,4 +10,6 @@ Artisan::command('inspire', function () {
 
 Schedule::command('reminders:send')->everyFifteenMinutes();
 Schedule::command('demo:cleanup')->hourly();
+// Ticks every hour; the command itself acts only on the hour the admin configured.
+Schedule::command('greetings:send')->hourly();
 Schedule::command('promo:release-commissions')->hourly();

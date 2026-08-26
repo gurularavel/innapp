@@ -9,35 +9,18 @@ class PackageSeeder extends Seeder
 {
     public function run(): void
     {
-        $packages = [
+        // Pricing is per staff seat — a solo specialist is simply one seat.
+        Package::updateOrCreate(
+            ['name' => 'Standart'],
             [
-                'name' => 'Starter',
-                'price' => 29.99,
-                'patient_limit' => 50,
-                'sms_limit' => 200,
-                'duration_days' => 30,
-                'is_active' => true,
-            ],
-            [
-                'name' => 'Pro',
-                'price' => 79.99,
-                'patient_limit' => 200,
-                'sms_limit' => 1000,
-                'duration_days' => 30,
-                'is_active' => true,
-            ],
-            [
-                'name' => 'Enterprise',
-                'price' => 149.99,
-                'patient_limit' => null,
-                'sms_limit' => null,
-                'duration_days' => 30,
-                'is_active' => true,
-            ],
-        ];
-
-        foreach ($packages as $package) {
-            Package::updateOrCreate(['name' => $package['name']], $package);
-        }
+                'price_per_seat' => 20.00,
+                'min_seats'      => 1,
+                'max_seats'      => null,
+                'patient_limit'  => null,
+                'duration_days'  => 30,
+                'description'    => 'Hər əməkdaş üçün 20 ₼ / ay. Limitsiz müştəri, limitsiz SMS və WhatsApp.',
+                'is_active'      => true,
+            ]
+        );
     }
 }

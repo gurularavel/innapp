@@ -21,17 +21,25 @@ class DemoController extends Controller
         // Clean up expired demos first
         $this->cleanupExpired();
 
-        $user = User::create([
-            'name'             => 'Demo',
-            'surname'          => 'İstifadəçi',
-            'email'            => 'demo_' . Str::random(10) . '@demo.innapp.az',
-            'password'         => Hash::make(Str::random(32)),
-            'role'             => 'doctor',
-            'is_active'        => true,
-            'is_demo'          => true,
-            'demo_expires_at'  => now()->addHours(2),
-            'muessise_adi'     => 'Demo Klinika',
+        $clinic = \App\Models\Clinic::create([
+            'name'      => 'Demo Klinika',
+            'is_active' => true,
         ]);
+
+        $user = User::create([
+            'clinic_id'          => $clinic->id,
+            'name'               => 'Demo',
+            'surname'            => 'İstifadəçi',
+            'email'              => 'demo_' . Str::random(10) . '@demo.innapp.az',
+            'password'           => Hash::make(Str::random(32)),
+            'role'               => 'owner',
+            'takes_appointments' => true,
+            'is_active'          => true,
+            'is_demo'            => true,
+            'demo_expires_at'    => now()->addHours(2),
+        ]);
+
+        $clinic->update(['owner_id' => $user->id]);
 
         $this->seedDemoData($user);
 
@@ -70,7 +78,7 @@ class DemoController extends Controller
 
         $createdTypes = [];
         foreach ($types as $t) {
-            $createdTypes[] = TreatmentType::create(array_merge($t, ['doctor_id' => $user->id]));
+            $createdTypes[] = TreatmentType::create(array_merge($t, ['clinic_id' => $user->clinic_id, 'doctor_id' => $user->id]));
         }
 
         // Patients
@@ -89,7 +97,7 @@ class DemoController extends Controller
 
         $createdPatients = [];
         foreach ($patients as $p) {
-            $createdPatients[] = Patient::create(array_merge($p, ['doctor_id' => $user->id]));
+            $createdPatients[] = Patient::create(array_merge($p, ['clinic_id' => $user->clinic_id, 'doctor_id' => $user->id]));
         }
 
         // Appointments: today, yesterday (completed), tomorrow, next week
@@ -115,6 +123,7 @@ class DemoController extends Controller
         foreach ($appointments as $a) {
             $date = now()->addDays($a['offset'])->format('Y-m-d');
             Appointment::create([
+                'clinic_id'         => $user->clinic_id,
                 'doctor_id'         => $user->id,
                 'patient_id'        => $createdPatients[$a['patient']]->id,
                 'treatment_type_id' => $createdTypes[$a['type']]->id,
@@ -256,6 +265,7 @@ class DemoController extends Controller
             $visitedAt = now()->addDays($v['offset'])->setTimeFromTimeString($v['hour'] . ':00');
 
             $visit = PatientVisit::create([
+                'clinic_id'  => $user->clinic_id,
                 'patient_id' => $patient->id,
                 'doctor_id'  => $user->id,
                 'visited_at' => $visitedAt,
@@ -307,12 +317,18 @@ class DemoController extends Controller
             }
         }
 
-        $user->appointments()->delete();
-        $user->patients()->delete();
-        $user->treatmentTypes()->delete();
+        $clinic = $user->clinic;
+
         $user->workingHours()->delete();
         $user->breaks()->delete();
-        $user->subscriptions()->delete();
+
+        // Everything else hangs off the clinic, which is removed last so the
+        // cascade takes the appointments, patients, services and subscription with it.
         $user->delete();
+
+        if ($clinic) {
+            $clinic->members()->delete();
+            $clinic->delete();
+        }
     }
 }

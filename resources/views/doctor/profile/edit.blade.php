@@ -39,44 +39,70 @@
                         @error('phone')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
 
+                    @if(auth()->user()->canManageClinic() && $clinic)
+                    <hr class="my-4">
+                    <h6 class="fw-semibold mb-3">
+                        <i class="bi bi-building me-1 text-primary"></i>Müəssisə məlumatları
+                    </h6>
+                    <p class="text-muted small mb-3">
+                        Bu məlumatlar bütün klinika üçün ortaqdır və müştərilərə gedən mesajlarda istifadə olunur.
+                    </p>
+
                     <div class="mb-3">
-                        <label for="muessise_adi" class="form-label fw-medium">Müəssisə adı</label>
-                        <input type="text" class="form-control @error('muessise_adi') is-invalid @enderror"
-                               id="muessise_adi" name="muessise_adi"
-                               value="{{ old('muessise_adi', auth()->user()->muessise_adi) }}"
+                        <label for="clinic_name" class="form-label fw-medium">Müəssisə adı</label>
+                        <input type="text" class="form-control @error('clinic_name') is-invalid @enderror"
+                               id="clinic_name" name="clinic_name"
+                               value="{{ old('clinic_name', $clinic->name) }}"
                                maxlength="100" placeholder="Şirkət, mərkəz, salon...">
-                        @error('muessise_adi')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        <div class="form-text">SMS şablonundakı <code>{muessise}</code> bu adla əvəzlənəcək.</div>
+                        @error('clinic_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <div class="form-text">Mesaj şablonundakı <code>{muessise}</code> bu adla əvəzlənəcək.</div>
                     </div>
 
                     <div class="mb-3">
-                        <label for="muessise_unvani" class="form-label fw-medium">Müəssisə ünvanı</label>
-                        <input type="text" class="form-control @error('muessise_unvani') is-invalid @enderror"
-                               id="muessise_unvani" name="muessise_unvani"
-                               value="{{ old('muessise_unvani', auth()->user()->muessise_unvani) }}"
+                        <label for="clinic_address" class="form-label fw-medium">Müəssisə ünvanı</label>
+                        <input type="text" class="form-control @error('clinic_address') is-invalid @enderror"
+                               id="clinic_address" name="clinic_address"
+                               value="{{ old('clinic_address', $clinic->address) }}"
                                maxlength="255" placeholder="Bakı, Nərimanov r., Tbilisi pr. 123">
-                        @error('muessise_unvani')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        @error('clinic_address')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="clinic_phone" class="form-label fw-medium">Müəssisə telefonu</label>
+                        <input type="text" class="form-control @error('clinic_phone') is-invalid @enderror"
+                               id="clinic_phone" name="clinic_phone"
+                               value="{{ old('clinic_phone', $clinic->phone) }}" maxlength="20">
+                        @error('clinic_phone')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
 
                     <div class="mb-4">
-                        <label for="muessise_xerite" class="form-label fw-medium">
+                        <label for="clinic_map_url" class="form-label fw-medium">
                             <i class="bi bi-geo-alt me-1 text-danger"></i>Google Maps linki
                         </label>
-                        <input type="url" class="form-control @error('muessise_xerite') is-invalid @enderror"
-                               id="muessise_xerite" name="muessise_xerite"
-                               value="{{ old('muessise_xerite', auth()->user()->muessise_xerite) }}"
+                        <input type="url" class="form-control @error('clinic_map_url') is-invalid @enderror"
+                               id="clinic_map_url" name="clinic_map_url"
+                               value="{{ old('clinic_map_url', $clinic->map_url) }}"
                                placeholder="https://maps.google.com/...">
-                        @error('muessise_xerite')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        @if(auth()->user()->muessise_xerite_code && auth()->user()->muessise_xerite)
+                        @error('clinic_map_url')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        @if($clinic->mapLink())
                             <div class="form-text">
                                 <i class="bi bi-link-45deg text-success"></i> Qısa link:
-                                <code>{{ rtrim(config('app.url'), '/') }}/map/{{ auth()->user()->muessise_xerite_code }}</code>
+                                <code>{{ $clinic->mapLink() }}</code>
                                 — <code>{xerite}</code> ilə istifadə edin.
                             </div>
                         @else
                             <div class="form-text">Link saxlandıqdan sonra <code>{xerite}</code> üçün qısa URL yaradılacaq.</div>
                         @endif
                     </div>
+                    @elseif($clinic)
+                    <div class="mb-3 p-3 bg-light rounded">
+                        <div class="text-muted small">Müəssisə</div>
+                        <div class="fw-medium">{{ $clinic->name }}</div>
+                        <div class="text-muted" style="font-size:.75rem;">
+                            Müəssisə məlumatlarını yalnız klinika sahibi dəyişə bilər.
+                        </div>
+                    </div>
+                    @endif
 
                     <div class="mb-3 p-3 bg-light rounded">
                         <div class="text-muted small">Email</div>

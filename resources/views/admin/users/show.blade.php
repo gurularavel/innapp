@@ -103,7 +103,7 @@
                                     {{ $sub->patients_used }}/{{ $sub->package->patient_limit ?? '∞' }}
                                 </td>
                                 <td class="text-muted small">
-                                    {{ $sub->sms_used }}/{{ $sub->package->sms_limit ?? '∞' }}
+                                    {{ $sub->used_seats }}/{{ $sub->seats }}
                                 </td>
                                 <td>
                                     @if($sub->is_active && $sub->expires_at->isFuture())

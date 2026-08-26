@@ -19,28 +19,38 @@ class SubscriptionController extends Controller
     public function index()
     {
         $doctor   = Auth::user();
-        $current  = $doctor->activeSubscription()->with('package')->first();
-        $packages = Package::where('is_active', true)->orderBy('price')->get();
+        $clinic   = $doctor->clinic;
+        $current  = $clinic?->activeSubscription()->with('package')->first();
+        $packages = Package::where('is_active', true)->orderBy('price_per_seat')->get();
         $history  = $doctor->subscriptions()->with('package')
             ->orderByDesc('starts_at')
             ->limit(10)
             ->get();
 
-        return view('doctor.subscription.index', compact('current', 'packages', 'history'));
+        // Pay for at least the accounts that already exist.
+        $usedSeats = $clinic?->usedSeats() ?? 1;
+
+        return view('doctor.subscription.index', compact('current', 'packages', 'history', 'clinic', 'usedSeats'));
     }
 
-    public function checkout(Package $package)
+    public function checkout(Request $request, Package $package)
     {
         abort_if(!$package->is_active, 404);
         $doctor  = Auth::user();
-        $current = $doctor->activeSubscription()->with('package')->first();
+        $clinic  = $doctor->clinic;
+        $current = $clinic?->activeSubscription()->with('package')->first();
+
+        $usedSeats = $clinic?->usedSeats() ?? 1;
+        $seats     = $this->resolveSeats($request, $package, $usedSeats);
 
         // İlk ödəniş promosu (varsa) — qiymət xülasəsində endirimi göstərmək üçün
         $promo   = $this->resolveFirstPaymentPromo($doctor);
-        $monthly = $this->computePrice($package, false, $promo);
-        $annual  = $this->computePrice($package, true, $promo);
+        $monthly = $this->computePrice($package, false, $promo, $seats);
+        $annual  = $this->computePrice($package, true, $promo, $seats);
 
-        return view('doctor.subscription.checkout', compact('package', 'current', 'promo', 'monthly', 'annual'));
+        return view('doctor.subscription.checkout', compact(
+            'package', 'current', 'promo', 'monthly', 'annual', 'seats', 'usedSeats', 'clinic'
+        ));
     }
 
     /**
@@ -50,18 +60,27 @@ class SubscriptionController extends Controller
     {
         abort_if(!$package->is_active, 404);
 
-        $request->validate(['period' => 'required|in:monthly,annual']);
+        $request->validate([
+            'period' => 'required|in:monthly,annual',
+            'seats'  => 'nullable|integer|min:1|max:500',
+        ]);
 
         $doctor   = Auth::user();
+        $clinic   = $doctor->clinic;
         $isAnnual = $request->period === 'annual';
+
+        abort_unless($doctor->canManageClinic(), 403, 'Abunəliyi yalnız klinika sahibi ödəyə bilər.');
+
+        $usedSeats = $clinic?->usedSeats() ?? 1;
+        $seats     = $this->resolveSeats($request, $package, $usedSeats);
 
         // Promo endirimi — yalnız ilk ödənişdə və kod hələ də yararlıdırsa
         $promo    = $this->resolveFirstPaymentPromo($doctor);
-        $pricing  = $this->computePrice($package, $isAnnual, $promo);
+        $pricing  = $this->computePrice($package, $isAnnual, $promo, $seats);
         $price    = $pricing['final'];
         $discount = $pricing['discount'];
 
-        $description = $package->name . ($isAnnual ? ' (İllik)' : ' (Aylıq)');
+        $description = $package->name . ' — ' . $seats . ' əməkdaş' . ($isAnnual ? ' (İllik)' : ' (Aylıq)');
         $callbackUrl = route('panel.subscription.callback');
 
         try {
@@ -72,8 +91,10 @@ class SubscriptionController extends Controller
 
         // Save pending payment record
         SubscriptionPayment::create([
+            'clinic_id'                  => $doctor->clinic_id,
             'doctor_id'                  => $doctor->id,
             'package_id'                 => $package->id,
+            'seats'                      => $seats,
             'promo_code_id'              => $promo?->id,
             'period'                     => $request->period,
             'amount'                     => $price,
@@ -167,14 +188,18 @@ class SubscriptionController extends Controller
      * Paket + dövr + promo üçün qiymət bölgüsü.
      * Qayda: illik 15% və promo endirimindən böyük olanı tətbiq olunur (üst-üstə gəlmir).
      */
-    private function computePrice(Package $package, bool $isAnnual, ?\App\Models\PromoCode $promo): array
+    private function computePrice(Package $package, bool $isAnnual, ?\App\Models\PromoCode $promo, int $seats = 1): array
     {
-        $listPrice      = $isAnnual ? (float) $package->price * 12 : (float) $package->price;
+        $monthly        = $package->priceFor($seats);
+        $listPrice      = $isAnnual ? $monthly * 12 : $monthly;
         $annualDiscount = $isAnnual ? round($listPrice * 0.15, 2) : 0.0;
         $promoDiscount  = $promo ? $promo->discountFor($listPrice) : 0.0;
         $discount       = round(max($annualDiscount, $promoDiscount), 2);
 
         return [
+            'seats'           => $seats,
+            'per_seat'        => round((float) $package->price_per_seat, 2),
+            'monthly'         => round($monthly, 2),
             'list'            => round($listPrice, 2),
             'annual_discount' => $annualDiscount,
             'promo_discount'  => round($promoDiscount, 2),
@@ -183,6 +208,23 @@ class SubscriptionController extends Controller
             // Promo bu dövr üçün qalib gəldimi (yəni illik 15%-dən böyük və ya bərabər)?
             'promo_wins'      => $promo && $promoDiscount > 0 && $promoDiscount >= $annualDiscount,
         ];
+    }
+
+    /**
+     * Neçə yer alınır. Mövcud aktiv hesablardan az ola bilməz — əks halda
+     * ödənişdən dərhal sonra klinika limitdən kənarda qalardı.
+     */
+    private function resolveSeats(Request $request, Package $package, int $usedSeats): int
+    {
+        $requested = (int) ($request->input('seats') ?: $usedSeats);
+
+        $seats = max($requested, $usedSeats, $package->min_seats, 1);
+
+        if ($package->max_seats !== null) {
+            $seats = min($seats, $package->max_seats);
+        }
+
+        return $seats;
     }
 
     /**
@@ -259,9 +301,11 @@ class SubscriptionController extends Controller
     private function activateSubscription(SubscriptionPayment $payment): array
     {
         $doctor   = $payment->doctor;
+        $clinicId = $payment->clinic_id ?? $doctor->clinic_id;
         $package  = $payment->package;
         $isAnnual = $payment->period === 'annual';
         $days     = $isAnnual ? $package->duration_days * 12 : $package->duration_days;
+        $seats    = max(1, (int) $payment->seats);
 
         $current = $doctor->subscriptions()
             ->where('is_active', true)
@@ -270,8 +314,10 @@ class SubscriptionController extends Controller
 
         if ($current && $current->expires_at->isFuture()) {
             if ($current->package_id === $package->id) {
-                // Same package → extend
-                $current->expires_at = $current->expires_at->addDays($days);
+                // Same package → extend the period and take the newly paid seat count
+                $current->expires_at    = $current->expires_at->addDays($days);
+                $current->seats         = max($current->seats, $seats);
+                $current->price_per_seat = $package->price_per_seat;
                 $current->save();
                 return [$current->starts_at, $current->expires_at];
             } else {
@@ -280,13 +326,15 @@ class SubscriptionController extends Controller
                 $expiresAt = (clone $startsAt)->addDays($days);
                 $doctor->subscriptions()->where('is_active', true)->update(['is_active' => false]);
                 DoctorSubscription::create([
-                    'doctor_id'     => $doctor->id,
-                    'package_id'    => $package->id,
-                    'starts_at'     => $startsAt->toDateString(),
-                    'expires_at'    => $expiresAt->toDateString(),
-                    'patients_used' => 0,
-                    'sms_used'      => 0,
-                    'is_active'     => true,
+                    'clinic_id'      => $clinicId,
+                    'doctor_id'      => $doctor->id,
+                    'package_id'     => $package->id,
+                    'seats'          => $seats,
+                    'price_per_seat' => $package->price_per_seat,
+                    'starts_at'      => $startsAt->toDateString(),
+                    'expires_at'     => $expiresAt->toDateString(),
+                    'patients_used'  => 0,
+                    'is_active'      => true,
                 ]);
                 return [$startsAt, $expiresAt];
             }
@@ -297,13 +345,15 @@ class SubscriptionController extends Controller
         $expiresAt = now()->addDays($days);
         $doctor->subscriptions()->where('is_active', true)->update(['is_active' => false]);
         DoctorSubscription::create([
-            'doctor_id'     => $doctor->id,
-            'package_id'    => $package->id,
-            'starts_at'     => $startsAt->toDateString(),
-            'expires_at'    => $expiresAt->toDateString(),
-            'patients_used' => 0,
-            'sms_used'      => 0,
-            'is_active'     => true,
+            'clinic_id'      => $clinicId,
+            'doctor_id'      => $doctor->id,
+            'package_id'     => $package->id,
+            'seats'          => $seats,
+            'price_per_seat' => $package->price_per_seat,
+            'starts_at'      => $startsAt->toDateString(),
+            'expires_at'     => $expiresAt->toDateString(),
+            'patients_used'  => 0,
+            'is_active'      => true,
         ]);
         return [$startsAt, $expiresAt];
     }

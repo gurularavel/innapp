@@ -48,7 +48,7 @@
                             {{ $subscription->patients_used }}/{{ $subscription->package->patient_limit ?? '∞' }}
                         </td>
                         <td class="text-muted small">
-                            {{ $subscription->sms_used }}/{{ $subscription->package->sms_limit ?? '∞' }}
+                            {{ $subscription->used_seats }}/{{ $subscription->seats }}
                         </td>
                         <td>
                             @if($subscription->is_active && $subscription->expires_at->isFuture())

@@ -98,6 +98,8 @@ class PatientController extends Controller
         }
 
         $validated = $request->validate($rules);
+        // Patients belong to the clinic; doctor_id records who registered them.
+        $validated['clinic_id'] = $doctor->clinic_id;
         $validated['doctor_id'] = $doctor->id;
 
         $existing = $doctor->patients()->where('phone', $validated['phone'])->first();
@@ -285,7 +287,7 @@ class PatientController extends Controller
 
     private function authorizePatient(Patient $patient): void
     {
-        if ($patient->doctor_id !== Auth::id()) {
+        if ($patient->clinic_id !== Auth::user()->clinic_id) {
             abort(403);
         }
     }

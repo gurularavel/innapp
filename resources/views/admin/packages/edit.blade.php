@@ -29,12 +29,17 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label for="price" class="form-label fw-medium">Qiymət (₼) <span class="text-danger">*</span></label>
+                            <label for="price_per_seat" class="form-label fw-medium">
+                                Bir əməkdaş üçün qiymət (₼) <span class="text-danger">*</span>
+                            </label>
                             <input type="number" step="0.01" min="0"
-                                   class="form-control @error('price') is-invalid @enderror"
-                                   id="price" name="price" value="{{ old('price', $package->price) }}" required>
-                            @error('price')
+                                   class="form-control @error('price_per_seat') is-invalid @enderror"
+                                   id="price_per_seat" name="price_per_seat" value="{{ old('price_per_seat', $package->price_per_seat) }}" required>
+                            @error('price_per_seat')
                                 <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <div class="form-text">Aylıq məbləğ = bu qiymət × əməkdaş sayı.</div>
+                        </div>
                             @enderror
                         </div>
 
@@ -62,16 +67,35 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label for="sms_limit" class="form-label fw-medium">SMS Limiti</label>
-                            <input type="number" min="0"
-                                   class="form-control @error('sms_limit') is-invalid @enderror"
-                                   id="sms_limit" name="sms_limit"
-                                   value="{{ old('sms_limit', $package->sms_limit) }}"
+                            <label for="min_seats" class="form-label fw-medium">Minimum əməkdaş</label>
+                            <input type="number" min="1"
+                                   class="form-control @error('min_seats') is-invalid @enderror"
+                                   id="min_seats" name="min_seats" value="{{ old('min_seats', $package->min_seats) }}">
+                            @error('min_seats')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="max_seats" class="form-label fw-medium">Maksimum əməkdaş</label>
+                            <input type="number" min="1"
+                                   class="form-control @error('max_seats') is-invalid @enderror"
+                                   id="max_seats" name="max_seats" value="{{ old('max_seats', $package->max_seats) }}"
                                    placeholder="Boş = limitsiz">
-                            @error('sms_limit')
+                            @error('max_seats')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                             <div class="form-text">Boş buraxsanız limitsiz olacaq.</div>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="description" class="form-label fw-medium">Təsvir</label>
+                            <textarea class="form-control @error('description') is-invalid @enderror"
+                                      id="description" name="description" rows="2"
+                                      placeholder="Paketin qısa izahı">{{ old('description', $package->description) }}</textarea>
+                            @error('description')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="col-12">

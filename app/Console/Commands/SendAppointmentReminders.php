@@ -4,16 +4,16 @@ namespace App\Console\Commands;
 
 use App\Models\Appointment;
 use App\Models\Setting;
-use App\Services\SmsService;
+use App\Services\NotificationService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
 class SendAppointmentReminders extends Command
 {
     protected $signature = 'reminders:send';
-    protected $description = 'Send appointment reminder SMS messages (2 hours before)';
+    protected $description = 'Send appointment reminders over each user\'s chosen channel (SMS and/or WhatsApp)';
 
-    public function __construct(private SmsService $smsService)
+    public function __construct(private NotificationService $notifications)
     {
         parent::__construct();
     }
@@ -50,22 +50,26 @@ class SendAppointmentReminders extends Command
         $failed = 0;
 
         foreach ($appointments as $appointment) {
-            $success = $this->smsService->sendReminderSms($appointment);
+            $results = $this->notifications->results($appointment, 'reminder');
+            $success = in_array(true, $results, true);
+            $channels = implode(', ', array_keys($results));
 
             if ($success) {
                 $appointment->update(['reminder_sent' => true]);
                 $sent++;
-                $this->line("Reminder sent for appointment #{$appointment->id} to {$appointment->patient->full_name}");
-                Log::channel('cron')->info("SMS sent: appointment #{$appointment->id}", [
+                $this->line("Reminder sent for appointment #{$appointment->id} to {$appointment->patient->full_name} via {$channels}");
+                Log::channel('cron')->info("Reminder sent: appointment #{$appointment->id}", [
                     'patient'      => $appointment->patient->full_name,
                     'scheduled_at' => $appointment->scheduled_at,
+                    'channels'     => $results,
                 ]);
             } else {
                 $failed++;
                 $this->warn("Failed to send reminder for appointment #{$appointment->id}");
-                Log::channel('cron')->warning("SMS FAILED: appointment #{$appointment->id}", [
+                Log::channel('cron')->warning("Reminder FAILED: appointment #{$appointment->id}", [
                     'patient'      => $appointment->patient->full_name,
                     'scheduled_at' => $appointment->scheduled_at,
+                    'channels'     => $results,
                 ]);
             }
         }

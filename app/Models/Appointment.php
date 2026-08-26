@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Appointment extends Model
 {
     protected $fillable = [
+        'clinic_id',
         'doctor_id',
         'patient_id',
         'treatment_type_id',
@@ -23,6 +24,12 @@ class Appointment extends Model
         'reminder_sent' => 'boolean',
     ];
 
+    public function clinic()
+    {
+        return $this->belongsTo(Clinic::class);
+    }
+
+    /** The staff member this appointment is booked with. */
     public function doctor()
     {
         return $this->belongsTo(User::class, 'doctor_id');

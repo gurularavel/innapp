@@ -49,4 +49,15 @@ return [
         'originator' => env('SMS_ORIGINATOR'),
     ],
 
+    /*
+     | WhatsApp Cloud API — fallback values. The admin panel
+     | (Ayarlar » WhatsApp) writes into the `settings` table and takes priority.
+     */
+    'whatsapp' => [
+        'api_version'     => env('WHATSAPP_API_VERSION', 'v21.0'),
+        'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
+        'access_token'    => env('WHATSAPP_ACCESS_TOKEN'),
+        'language_code'   => env('WHATSAPP_LANGUAGE_CODE', 'az'),
+    ],
+
 ];

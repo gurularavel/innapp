@@ -29,6 +29,8 @@ class TreatmentTypeController extends Controller
             'color' => 'required|string|regex:/^#[0-9A-Fa-f]{6}$/',
         ]);
 
+        // Services are defined once for the whole clinic.
+        $validated['clinic_id'] = Auth::user()->clinic_id;
         $validated['doctor_id'] = Auth::id();
 
         $type = TreatmentType::create($validated);
@@ -81,7 +83,7 @@ class TreatmentTypeController extends Controller
 
     private function authorize(TreatmentType $treatmentType): void
     {
-        if ($treatmentType->doctor_id !== Auth::id()) {
+        if ($treatmentType->clinic_id !== Auth::user()->clinic_id) {
             abort(403);
         }
     }
