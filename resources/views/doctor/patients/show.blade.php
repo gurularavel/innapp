@@ -22,7 +22,7 @@
 
 <div class="row g-4">
     {{-- Patient Info --}}
-    <div class="col-lg-4">
+    <div class="col-lg-3">
         <div class="card border-0 shadow-sm">
             <div class="card-body text-center py-4">
                 @if($patient->photo_url)
@@ -86,7 +86,7 @@
     </div>
 
     {{-- Right Column: Tabs --}}
-    <div class="col-lg-8">
+    <div class="col-lg-9">
 
         {{-- Tabs --}}
         <ul class="nav nav-tabs mb-0" id="patientTabs" style="border-bottom:none;">

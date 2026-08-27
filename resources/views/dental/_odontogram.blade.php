@@ -32,6 +32,11 @@
 .odo-head{padding:.75rem .9rem;border-bottom:1px solid #e9edf2;}
 .odo-body{padding:.9rem;}
 
+/* permanent / primary switch */
+.odo-set{display:inline-flex;align-items:center;padding-inline:.8rem;white-space:nowrap;}
+.odo-set .badge{font-size:.65rem;}
+.odo-set.active .badge{background:#fff!important;color:#6c757d!important;}
+
 /* status palette */
 .odo-palette{display:flex;flex-wrap:wrap;gap:.35rem;}
 .odo-pill{display:inline-flex;align-items:center;gap:.35rem;border:1px solid #dde3ea;background:#fff;
@@ -41,6 +46,11 @@
 .odo-pill .dot{width:.6rem;height:.6rem;border-radius:50%;background:var(--c);flex-shrink:0;}
 .odo-pill.active{border-color:var(--c);background:var(--c);color:#fff;box-shadow:0 2px 8px -2px var(--c);}
 .odo-pill.active .dot{background:#fff;}
+.odo-pill-count{display:inline-flex;align-items:center;justify-content:center;min-width:1.15rem;height:1.15rem;
+    padding:0 .25rem;border-radius:999px;background:var(--c);color:#fff;font-size:.66rem;font-weight:700;}
+.odo-pill.active .odo-pill-count{background:#fff;color:var(--c);}
+.odo-pill-funnel{display:none;font-size:.7rem;}
+.odo-pill.odo-filtering .odo-pill-funnel{display:inline-block;}
 
 /* chart */
 /* `safe center` keeps the chart centred but never scrolls its left edge out of reach */
@@ -58,7 +68,14 @@
 
 /* one tooth */
 .odo-tooth{display:flex;flex-direction:column;align-items:center;gap:.1rem;
-    background:none;border:0;padding:.1rem .05rem;cursor:pointer;--c:#adb5bd;}
+    background:none;border:0;padding:.1rem .05rem;cursor:pointer;--c:#adb5bd;
+    transition:opacity .15s;}
+/* a status filter is on and this tooth does not carry it */
+.odo-tooth.odo-dim{opacity:.15;}
+/* still reachable while filtered, so it can be marked */
+.odo-tooth.odo-dim:not([disabled]):hover{opacity:.6;}
+/* …and the ones that do carry it get a heavier outline */
+.odo-chart.odo-filtering .odo-tooth:not(.odo-dim) .odo-path{stroke-width:3.2;}
 .odo-tooth.lower{flex-direction:column-reverse;}
 .odo-tooth[disabled]{cursor:default;}
 .odo-num{font-size:.68rem;font-weight:600;color:#8b97a5;font-variant-numeric:tabular-nums;}
@@ -113,9 +130,13 @@
             </span>
         </div>
         <div class="d-flex align-items-center gap-2">
-            <div class="btn-group btn-group-sm" role="group" aria-label="Diş dəsti">
-                <button type="button" class="btn btn-outline-secondary active" data-odo-set="permanent">Daimi</button>
-                <button type="button" class="btn btn-outline-secondary" data-odo-set="primary">Süd dişləri</button>
+            <div class="d-flex gap-2" role="group" aria-label="Diş dəsti">
+                <button type="button" class="btn btn-sm btn-outline-secondary odo-set active" data-odo-set="permanent">
+                    Daimi<span class="badge rounded-pill text-bg-primary ms-2" data-odo-set-count hidden>0</span>
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary odo-set" data-odo-set="primary">
+                    Süd dişləri<span class="badge rounded-pill text-bg-primary ms-2" data-odo-set-count hidden>0</span>
+                </button>
             </div>
             @if($mode === 'edit')
             <button type="button" class="btn btn-sm btn-outline-danger" data-odo-clear>
@@ -126,27 +147,42 @@
     </div>
 
     <div class="odo-body">
-        @if($mode === 'edit')
-        {{-- status brush --}}
+        {{-- Status pills: the marking colour in edit mode, and in both modes a
+             filter that leaves only the teeth carrying that status lit up. --}}
         <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-            <span class="text-muted" style="font-size:.78rem;">Vəziyyət:</span>
+            <span class="text-muted" style="font-size:.78rem;">
+                {{ $mode === 'edit' ? 'Vəziyyət:' : 'Filtr:' }}
+            </span>
             <div class="odo-palette" data-odo-palette>
+                @if($mode !== 'edit')
+                <button type="button" class="odo-pill active" style="--c:#6c757d" data-odo-status="">
+                    Hamısı
+                </button>
+                @endif
                 @foreach($T::STATUSES as $key => $s)
                 <button type="button"
-                        class="odo-pill {{ $key === $T::DEFAULT_STATUS ? 'active' : '' }}"
+                        class="odo-pill {{ $mode === 'edit' && $key === $T::DEFAULT_STATUS ? 'active' : '' }}"
                         style="--c:{{ $s['color'] }}"
                         data-odo-status="{{ $key }}">
                     <span class="dot"></span>{{ $s['label'] }}
+                    <span class="odo-pill-count" data-odo-pill-count hidden>0</span>
+                    <i class="bi bi-funnel-fill odo-pill-funnel"></i>
                 </button>
                 @endforeach
             </div>
         </div>
         <div class="text-muted mb-2" style="font-size:.75rem;">
             <i class="bi bi-info-circle me-1"></i>
-            Əvvəlcə vəziyyəti seçin, sonra dişin üstünə klikləyin. Bir neçə dişi birdən seçmək üçün
-            siçanı (və ya barmağınızı) basılı saxlayaraq sürüşdürün.
+            @if($mode === 'edit')
+                Vəziyyəti seçin — həmin vəziyyətdəki dişlər sxemdə önə çıxır, qalanları solğunlaşır.
+                Sonra dişə klikləyin ki, o vəziyyət tətbiq olunsun; bir neçə dişi birdən seçmək üçün
+                siçanı basılı saxlayaraq sürüşdürün. Hamısını yenidən görmək üçün eyni düyməyə
+                ikinci dəfə klikləyin.
+            @else
+                Vəziyyətə klikləyin — yalnız həmin vəziyyətdəki dişlər qalır.
+                «Hamısı» filtri sıfırlayır.
+            @endif
         </div>
-        @endif
 
         {{-- chart --}}
         <div class="odo-scroll">
@@ -246,15 +282,6 @@
                 Hələ diş seçilməyib — yuxarıdakı sxemdən dişə klikləyin.
             </div>
         </div>
-        @else
-        {{-- read-only legend --}}
-        <div class="d-flex flex-wrap gap-2 mt-3">
-            @foreach($T::STATUSES as $key => $s)
-            <span class="odo-pill" style="--c:{{ $s['color'] }};cursor:default;">
-                <span class="dot"></span>{{ $s['label'] }}
-            </span>
-            @endforeach
-        </div>
         @endif
     </div>
 </div>
@@ -303,35 +330,120 @@
         const counter = document.querySelector('[data-odo-count="' + chart.id + '"]');
 
         // ── permanent / primary switch — available in both modes ───────────
+        // FDI puts the primary set in the 5x-8x range.
+        function setOf(el) { return Number(el.dataset.odoTooth) >= 51 ? 'primary' : 'permanent'; }
+        function otherSet(set) { return set === 'primary' ? 'permanent' : 'primary'; }
+
+        function showSet(set) {
+            wrap.querySelectorAll('[data-odo-set]').forEach(function (b) {
+                b.classList.toggle('active', b.dataset.odoSet === set);
+            });
+            chart.dataset.set = set;
+            chart.querySelectorAll('[data-odo-row]').forEach(function (row) {
+                row.hidden = row.dataset.odoRow !== set;
+            });
+        }
+
+        /** Marked teeth in one set, optionally only those carrying `status`. */
+        function markedIn(set, status) {
+            let n = 0;
+            allTeeth().forEach(function (el) {
+                if (setOf(el) !== set || !el.dataset.status) return;
+                if (status && el.dataset.status !== status) return;
+                n++;
+            });
+            return n;
+        }
+
+        /** Open on the set that actually holds marks, so nothing hides off-screen. */
+        function autoSelectSet(status) {
+            const current = chart.dataset.set;
+            const other   = otherSet(current);
+            if (!markedIn(current, status) && markedIn(other, status)) {
+                showSet(other);
+            }
+        }
+
         wrap.querySelectorAll('[data-odo-set]').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                const set = btn.dataset.odoSet;
-                wrap.querySelectorAll('[data-odo-set]').forEach(function (b) {
-                    b.classList.toggle('active', b === btn);
-                });
-                chart.dataset.set = set;
-                chart.querySelectorAll('[data-odo-row]').forEach(function (row) {
-                    row.hidden = row.dataset.odoRow !== set;
-                });
+            btn.addEventListener('click', function () { showSet(btn.dataset.odoSet); });
+        });
+
+        // ── status pills — filter in both modes, marking colour when editing ─
+        const palette = wrap.querySelector('[data-odo-palette]');
+        const pills   = palette ? palette.querySelectorAll('[data-odo-status]') : [];
+        let brush = DEFAULT_STATUS;
+        let filter = null;
+
+        function allTeeth() {
+            return chart.querySelectorAll('[data-odo-tooth]');
+        }
+
+        /** Leave only the teeth carrying the filtered status lit up. */
+        function applyFilter() {
+            chart.classList.toggle('odo-filtering', !!filter);
+            allTeeth().forEach(function (el) {
+                el.classList.toggle('odo-dim', !!filter && el.dataset.status !== filter);
+            });
+        }
+
+        /** How many teeth carry each status — shown on the pills and set buttons. */
+        function updateCounts() {
+            const tally = {};
+            allTeeth().forEach(function (el) {
+                if (el.dataset.status) {
+                    tally[el.dataset.status] = (tally[el.dataset.status] || 0) + 1;
+                }
+            });
+            pills.forEach(function (pill) {
+                const badge = pill.querySelector('[data-odo-pill-count]');
+                if (!badge) return;
+                const n = tally[pill.dataset.odoStatus] || 0;
+                badge.textContent = n;
+                badge.hidden = n === 0;
+            });
+            wrap.querySelectorAll('[data-odo-set]').forEach(function (btn) {
+                const badge = btn.querySelector('[data-odo-set-count]');
+                if (!badge) return;
+                const n = markedIn(btn.dataset.odoSet);
+                badge.textContent = n;
+                badge.hidden = n === 0;
+            });
+        }
+
+        function paintPills() {
+            pills.forEach(function (pill) {
+                const status = pill.dataset.odoStatus;
+                pill.classList.toggle('odo-filtering', !!filter && status === filter);
+                // editing: the highlighted pill is the colour about to be applied.
+                // read-only: it is simply the active filter ('' = Hamısı).
+                pill.classList.toggle('active', editing ? status === brush : status === (filter || ''));
+            });
+        }
+
+        pills.forEach(function (pill) {
+            pill.addEventListener('click', function () {
+                const status = pill.dataset.odoStatus;
+
+                if (status && editing) brush = status;
+                // clicking the pill that is already filtering clears the filter
+                filter = (!status || filter === status) ? null : status;
+
+                paintPills();
+                applyFilter();
+                // the matching teeth may all sit in the set that is not on screen
+                if (filter) autoSelectSet(filter);
             });
         });
+
+        updateCounts();
+        paintPills();
+        autoSelectSet();
 
         if (!editing) return;
 
         const list  = wrap.querySelector('[data-odo-list]');
         const empty = wrap.querySelector('[data-odo-empty]');
         const tpl   = document.querySelector('[data-odo-template]');
-        const palette = wrap.querySelector('[data-odo-palette]');
-        let brush = DEFAULT_STATUS;
-
-        palette && palette.querySelectorAll('[data-odo-status]').forEach(function (pill) {
-            pill.addEventListener('click', function () {
-                brush = pill.dataset.odoStatus;
-                palette.querySelectorAll('[data-odo-status]').forEach(function (p) {
-                    p.classList.toggle('active', p === pill);
-                });
-            });
-        });
 
         const marks = new Map();   // toothNumber -> { status, note }
 
@@ -374,6 +486,7 @@
                 marks.get(no).status = select.value;
                 tintChip(node, select.value);
                 paint(no);
+                refresh();
             });
 
             const note = node.querySelector('[data-odo-note]');
@@ -394,6 +507,8 @@
         function refresh() {
             if (counter) counter.textContent = marks.size;
             if (empty) empty.hidden = marks.size > 0;
+            updateCounts();
+            applyFilter();
         }
 
         function set(no, status) {
@@ -497,21 +612,16 @@
         // ── hydrate from the server ────────────────────────────────────────
         const seed = document.querySelector('[data-odo-initial="' + chart.id + '"]');
         if (seed) {
-            let hasPrimary = false;
             JSON.parse(seed.textContent || '[]').forEach(function (row) {
                 const no = Number(row.tooth_number);
                 if (!toothEl(no)) return;
                 marks.set(no, { status: row.status || DEFAULT_STATUS, note: row.note || '' });
                 addChip(no, marks.get(no));
                 paint(no);
-                if (no >= 51) hasPrimary = true;
             });
-            // a primary tooth in the record means the doctor was working on that set
-            if (hasPrimary) {
-                const primaryBtn = wrap.querySelector('[data-odo-set="primary"]');
-                if (primaryBtn) primaryBtn.click();
-            }
             refresh();
+            // marks only on primary teeth mean the doctor was working on that set
+            autoSelectSet();
         }
     }
 })();
