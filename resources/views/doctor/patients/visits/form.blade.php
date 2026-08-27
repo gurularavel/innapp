@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="row justify-content-center">
-    <div class="col-lg-8">
+    <div class="{{ ($dentalChart ?? false) ? 'col-xl-10' : 'col-lg-8' }}">
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
                 <h6 class="mb-0 fw-semibold">
@@ -72,6 +72,18 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+
+                        {{-- Dental chart — clinics that switched it on in Ayarlar --}}
+                        @if($dentalChart ?? false)
+                        <div class="col-12">
+                            @include('dental._odontogram', [
+                                'mode'      => 'edit',
+                                'selected'  => $visitTeeth ?? [],
+                                'history'   => $toothHistory ?? [],
+                                'inputName' => 'teeth',
+                            ])
+                        </div>
+                        @endif
 
                         {{-- Existing files (edit mode) --}}
                         @if(isset($visit) && $visit->files->isNotEmpty())

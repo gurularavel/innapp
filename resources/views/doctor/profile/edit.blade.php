@@ -94,6 +94,22 @@
                             <div class="form-text">Link saxlandıqdan sonra <code>{xerite}</code> üçün qısa URL yaradılacaq.</div>
                         @endif
                     </div>
+
+                    <div class="mb-4 p-3 rounded" style="background:#f8fafc;border:1px solid #e9edf2;">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch"
+                                   id="dental_chart_enabled" name="dental_chart_enabled" value="1"
+                                   {{ old('dental_chart_enabled', $clinic->dental_chart_enabled) ? 'checked' : '' }}>
+                            <label class="form-check-label fw-medium" for="dental_chart_enabled">
+                                <i class="bi bi-grid-3x3-gap me-1 text-primary"></i>Diş sxemi (odontoqram)
+                            </label>
+                        </div>
+                        <div class="form-text ms-4 ps-2 mb-0">
+                            Aktiv olduqda ziyarət formasında interaktiv diş sxemi açılır — mütəxəssis müalicə etdiyi
+                            dişləri sxem üzərində işarələyir, xəstənin səhifəsində isə «Diş kartı» bölməsi görünür.
+                            Yalnız stomatoloji müəssisələr üçün nəzərdə tutulub.
+                        </div>
+                    </div>
                     @elseif($clinic)
                     <div class="mb-3 p-3 bg-light rounded">
                         <div class="text-muted small">Müəssisə</div>

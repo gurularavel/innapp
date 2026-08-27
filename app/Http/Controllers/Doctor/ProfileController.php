@@ -169,11 +169,12 @@ class ProfileController extends Controller
         }
 
         $clinic->update([
-            'name'     => $data['clinic_name'],
-            'address'  => $data['clinic_address'] ?? null,
-            'phone'    => $data['clinic_phone'] ?? null,
-            'map_url'  => $mapUrl,
-            'map_code' => $mapCode,
+            'name'                 => $data['clinic_name'],
+            'address'              => $data['clinic_address'] ?? null,
+            'phone'                => $data['clinic_phone'] ?? null,
+            'map_url'              => $mapUrl,
+            'map_code'             => $mapCode,
+            'dental_chart_enabled' => $request->boolean('dental_chart_enabled'),
         ]);
     }
 

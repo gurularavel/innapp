@@ -39,4 +39,10 @@ class PatientVisit extends Model
     {
         return $this->hasMany(PatientVisitFile::class);
     }
+
+    /** Teeth marked on this visit (dental clinics only), ordered as FDI numbers read. */
+    public function teeth()
+    {
+        return $this->hasMany(PatientVisitTooth::class)->orderBy('tooth_number');
+    }
 }

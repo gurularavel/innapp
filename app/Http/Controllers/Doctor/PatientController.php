@@ -134,10 +134,18 @@ class PatientController extends Controller
     public function show(Patient $patient)
     {
         $this->authorizePatient($patient);
-        $patient->load(['appointments.treatmentType', 'visits.files']);
+        $patient->load(['appointments.treatmentType', 'visits.files', 'visits.teeth']);
         $customValues = $patient->fieldValues()->with('specialtyField')->get()->keyBy('specialty_field_id');
         $fields = $this->getSpecialtyFields($patient->doctor);
-        return view('doctor.patients.show', compact('patient', 'fields', 'customValues'));
+
+        $dentalChart = (bool) Auth::user()->clinic?->dental_chart_enabled;
+        [$toothLatest, $toothHistory] = $dentalChart
+            ? $this->buildToothChart($patient)
+            : [[], []];
+
+        return view('doctor.patients.show', compact(
+            'patient', 'fields', 'customValues', 'dentalChart', 'toothLatest', 'toothHistory'
+        ));
     }
 
     public function edit(Patient $patient)
@@ -207,6 +215,44 @@ class PatientController extends Controller
 
         return redirect()->route('panel.patients.index')
             ->with('success', 'Müştəri silindi.');
+    }
+
+    /**
+     * The patient's cumulative dental chart: each tooth's most recent mark plus
+     * the older ones behind it. Visits are already ordered newest first.
+     *
+     * @return array{0: array<int, array>, 1: array<int, array>}
+     */
+    private function buildToothChart(Patient $patient): array
+    {
+        $byTooth = [];
+
+        foreach ($patient->visits as $visit) {
+            foreach ($visit->teeth as $tooth) {
+                $byTooth[$tooth->tooth_number][] = [
+                    'date'   => $visit->visited_at->format('d.m.Y'),
+                    'status' => $tooth->status,
+                    'note'   => $tooth->note,
+                ];
+            }
+        }
+
+        $latest  = [];
+        $history = [];
+
+        foreach ($byTooth as $number => $entries) {
+            $latest[] = [
+                'tooth_number' => $number,
+                'status'       => $entries[0]['status'],
+                'note'         => $entries[0]['note'],
+            ];
+            $older = array_slice($entries, 1);
+            if ($older) {
+                $history[$number] = $older;
+            }
+        }
+
+        return [$latest, $history];
     }
 
     private function getSpecialtyFields($doctor): Collection

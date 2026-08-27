@@ -1,0 +1,520 @@
+{{--
+    Interactive FDI odontogram.
+
+    $mode      'edit' (clickable, posts inputs) | 'view' (read-only summary)
+    $selected  [['tooth_number' => 16, 'status' => 'caries', 'note' => '...'], ...]
+    $history   [16 => [['date' => '12.05.2026', 'status' => 'filling', 'note' => '...'], ...], ...]
+    $inputName name of the posted array (edit mode only)
+--}}
+@php
+    /** @var class-string<\App\Models\PatientVisitTooth> $T */
+    $T = \App\Models\PatientVisitTooth::class;
+
+    $mode      = $mode      ?? 'edit';
+    $selected  = collect($selected ?? [])->keyBy('tooth_number');
+    $history   = $history   ?? [];
+    $inputName = $inputName ?? 'teeth';
+    $chartId   = 'odo-' . uniqid();
+
+    $shapeNames = [
+        'incisor'  => 'kəsici diş',
+        'canine'   => 'köpək dişi',
+        'premolar' => 'kiçik azı',
+        'molar'    => 'böyük azı',
+    ];
+@endphp
+
+@once
+@push('styles')
+<style>
+/* ── Odontogram ─────────────────────────────────────────────────────────── */
+.odo-wrap{border:1px solid #e6e9ee;border-radius:.85rem;background:linear-gradient(180deg,#fbfcfe 0%,#f4f7fa 100%);}
+.odo-head{padding:.75rem .9rem;border-bottom:1px solid #e9edf2;}
+.odo-body{padding:.9rem;}
+
+/* status palette */
+.odo-palette{display:flex;flex-wrap:wrap;gap:.35rem;}
+.odo-pill{display:inline-flex;align-items:center;gap:.35rem;border:1px solid #dde3ea;background:#fff;
+    border-radius:999px;padding:.25rem .65rem;font-size:.78rem;line-height:1.2;cursor:pointer;
+    transition:box-shadow .15s,border-color .15s,transform .1s;}
+.odo-pill:hover{border-color:var(--c);transform:translateY(-1px);}
+.odo-pill .dot{width:.6rem;height:.6rem;border-radius:50%;background:var(--c);flex-shrink:0;}
+.odo-pill.active{border-color:var(--c);background:var(--c);color:#fff;box-shadow:0 2px 8px -2px var(--c);}
+.odo-pill.active .dot{background:#fff;}
+
+/* chart */
+/* `safe center` keeps the chart centred but never scrolls its left edge out of reach */
+.odo-scroll{overflow-x:auto;overflow-y:hidden;padding:.25rem 0 .1rem;display:flex;justify-content:safe center;}
+.odo-chart{width:max-content;flex:none;user-select:none;-webkit-user-select:none;}
+.odo-sides{display:flex;justify-content:space-between;font-size:.72rem;font-weight:600;
+    letter-spacing:.04em;text-transform:uppercase;color:#8b97a5;padding:0 .25rem;}
+.odo-jaw{text-align:center;font-size:.75rem;font-weight:600;color:#5a6673;}
+.odo-row{display:flex;align-items:flex-end;justify-content:center;gap:.15rem;}
+/* the arch offset moves the outer teeth outside the row box — reserve room for it */
+.odo-row.upper{padding-bottom:14px;}
+.odo-row.lower{align-items:flex-start;padding-top:14px;}
+.odo-mid{width:0;border-left:1px dashed #c8d1db;align-self:stretch;margin:0 .5rem;}
+.odo-occlusal{border-top:1px dashed #d5dde6;margin:.35rem 0;}
+
+/* one tooth */
+.odo-tooth{display:flex;flex-direction:column;align-items:center;gap:.1rem;
+    background:none;border:0;padding:.1rem .05rem;cursor:pointer;--c:#adb5bd;}
+.odo-tooth.lower{flex-direction:column-reverse;}
+.odo-tooth[disabled]{cursor:default;}
+.odo-num{font-size:.68rem;font-weight:600;color:#8b97a5;font-variant-numeric:tabular-nums;}
+.odo-svg{width:30px;height:44px;display:block;overflow:visible;}
+.odo-tooth.upper .odo-svg{transform:scaleY(-1);}
+.odo-path{fill:#fff;stroke:#c9d2dc;stroke-width:2.2;stroke-linejoin:round;transition:fill .15s,stroke .15s;}
+.odo-tooth:not([disabled]):hover .odo-path{stroke:#0d6efd;fill:#eef5ff;}
+.odo-tooth:not([disabled]):hover .odo-num{color:#0d6efd;}
+.odo-tooth:focus-visible{outline:2px solid #0d6efd;outline-offset:2px;border-radius:.35rem;}
+.odo-tooth.on .odo-path{fill:var(--c);fill-opacity:.32;stroke:var(--c);}
+.odo-tooth.on .odo-num{color:var(--c);}
+.odo-x{display:none;stroke:var(--c);stroke-width:3;stroke-linecap:round;}
+.odo-tooth.on[data-status="extraction"] .odo-x{display:block;}
+.odo-tooth.on[data-status="extraction"] .odo-path{fill-opacity:.12;}
+/* marks left by earlier visits */
+.odo-hist{display:flex;gap:2px;height:5px;align-items:center;justify-content:center;}
+.odo-hist i{width:5px;height:5px;border-radius:50%;display:block;}
+
+/* selected list */
+.odo-chip{display:grid;grid-template-columns:auto 1fr auto;gap:.5rem;align-items:center;
+    background:#fff;border:1px solid #e6e9ee;border-left:3px solid var(--c);
+    border-radius:.6rem;padding:.5rem .6rem;}
+.odo-chip-no{display:inline-flex;align-items:center;justify-content:center;min-width:2.1rem;height:2.1rem;
+    border-radius:.5rem;background:var(--c);color:#fff;font-weight:700;font-size:.85rem;}
+.odo-chip-meta{font-size:.72rem;color:#8b97a5;line-height:1.25;}
+.odo-chip-fields{grid-column:1/-1;display:grid;gap:.4rem;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));}
+.odo-empty{border:1px dashed #d5dde6;border-radius:.6rem;padding:.9rem;text-align:center;
+    color:#8b97a5;font-size:.82rem;background:#fff;}
+</style>
+@endpush
+
+{{-- tooth silhouettes, crown up / root down (the upper arch flips with CSS) --}}
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+        <path id="odo-shape-incisor"  d="M12 4H28c1 0 2 1 2 2v15c0 5-2 8-4.5 9L21.5 52c-.5 4-2.5 4-3 0L14.5 30C12 29 10 26 10 21V6c0-1 1-2 2-2Z"/>
+        <path id="odo-shape-canine"   d="M13 12c0-6 3-10 7-10s7 4 7 10v9c0 5-2 8-4 9l-2 23c-.3 4-1.7 4-2 0l-2-23c-2-1-4-4-4-9Z"/>
+        <path id="odo-shape-premolar" d="M10 6c0-3 2-4 5-4h10c3 0 5 1 5 4v15c0 5-2 8-4.5 9L21.5 52c-.5 4-2.5 4-3 0L14.5 30C12 29 10 26 10 21Z"/>
+        <path id="odo-shape-molar"    d="M7 5c0-2 2-3 5-3h16c3 0 5 1 5 3v17c0 5-2 8-5 9l-2 21c-.4 4-2.6 4-3 0l-1.5-18h-3L17 52c-.4 4-2.6 4-3 0l-2-21c-3-1-5-4-5-9Z"/>
+    </defs>
+</svg>
+@endonce
+
+<div class="odo-wrap" id="{{ $chartId }}-wrap">
+    <div class="odo-head d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <span class="fw-semibold" style="font-size:.92rem;">
+                <i class="bi bi-grid-3x3-gap me-1 text-primary"></i>Diş sxemi
+            </span>
+            <span class="badge rounded-pill text-bg-primary" data-odo-count="{{ $chartId }}">
+                {{ $selected->count() }}
+            </span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <div class="btn-group btn-group-sm" role="group" aria-label="Diş dəsti">
+                <button type="button" class="btn btn-outline-secondary active" data-odo-set="permanent">Daimi</button>
+                <button type="button" class="btn btn-outline-secondary" data-odo-set="primary">Süd dişləri</button>
+            </div>
+            @if($mode === 'edit')
+            <button type="button" class="btn btn-sm btn-outline-danger" data-odo-clear>
+                <i class="bi bi-eraser me-1"></i>Təmizlə
+            </button>
+            @endif
+        </div>
+    </div>
+
+    <div class="odo-body">
+        @if($mode === 'edit')
+        {{-- status brush --}}
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+            <span class="text-muted" style="font-size:.78rem;">Vəziyyət:</span>
+            <div class="odo-palette" data-odo-palette>
+                @foreach($T::STATUSES as $key => $s)
+                <button type="button"
+                        class="odo-pill {{ $key === $T::DEFAULT_STATUS ? 'active' : '' }}"
+                        style="--c:{{ $s['color'] }}"
+                        data-odo-status="{{ $key }}">
+                    <span class="dot"></span>{{ $s['label'] }}
+                </button>
+                @endforeach
+            </div>
+        </div>
+        <div class="text-muted mb-2" style="font-size:.75rem;">
+            <i class="bi bi-info-circle me-1"></i>
+            Əvvəlcə vəziyyəti seçin, sonra dişin üstünə klikləyin. Bir neçə dişi birdən seçmək üçün
+            siçanı (və ya barmağınızı) basılı saxlayaraq sürüşdürün.
+        </div>
+        @endif
+
+        {{-- chart --}}
+        <div class="odo-scroll">
+            <div class="odo-chart" id="{{ $chartId }}" data-odo-chart data-set="permanent" data-mode="{{ $mode }}">
+                <div class="odo-sides mb-1"><span>Sağ</span><span>Sol</span></div>
+
+                @foreach(['upper', 'lower'] as $jaw)
+                    @if($jaw === 'lower')
+                        <div class="odo-occlusal"></div>
+                    @else
+                        <div class="odo-jaw mb-1">Yuxarı çənə</div>
+                    @endif
+
+                    @foreach(['permanent', 'primary'] as $set)
+                    <div class="odo-row {{ $jaw }}" data-odo-row="{{ $set }}" @if($set === 'primary') hidden @endif>
+                        @foreach($T::LAYOUT[$set][$jaw] as $halfIndex => $half)
+                            @if($halfIndex === 1)<div class="odo-mid"></div>@endif
+                            @php
+                                $count  = count($half);
+                                $center = ($count * 2 - 1) / 2;   // both halves make up one arch
+                            @endphp
+                            @foreach($half as $i => $number)
+                                @php
+                                    $mark   = $selected->get($number);
+                                    $status = $mark['status'] ?? null;
+                                    $shape  = $T::shape($number);
+                                    // gentle arch: the further from the midline, the lower the tooth sits
+                                    $pos    = $halfIndex === 0 ? $i : ($count * 2 - 1 - $i);
+                                    $t      = ($pos - $center) / $center;
+                                    $arc    = round(12 * $t * $t, 1);
+                                    $past   = $history[$number] ?? [];
+                                    $title  = $number . ' — ' . $T::quadrantLabel($number)
+                                              . ' · ' . ($shapeNames[$shape] ?? '');
+                                    if ($mark) { $title .= "\n" . $T::statusLabel($status); }
+                                    foreach ($past as $h) {
+                                        $title .= "\n" . $h['date'] . ': ' . $T::statusLabel($h['status'] ?? null);
+                                    }
+                                @endphp
+                                <button type="button"
+                                        class="odo-tooth {{ $jaw }} {{ $mark ? 'on' : '' }}"
+                                        style="transform:translateY({{ $jaw === 'upper' ? $arc : -$arc }}px);--c:{{ $mark ? $T::statusColor($status) : '#adb5bd' }}"
+                                        data-odo-tooth="{{ $number }}"
+                                        data-jaw="{{ $jaw }}"
+                                        data-quadrant="{{ $T::quadrantLabel($number) }}"
+                                        data-shape-name="{{ $shapeNames[$shape] ?? '' }}"
+                                        @if($status) data-status="{{ $status }}" @endif
+                                        @if($mode !== 'edit') disabled @endif
+                                        title="{{ $title }}"
+                                        aria-label="{{ $number }} {{ $T::quadrantLabel($number) }}">
+                                    <span class="odo-num">{{ $number }}</span>
+                                    <svg class="odo-svg" viewBox="0 0 40 58">
+                                        <use class="odo-path" href="#odo-shape-{{ $shape }}"></use>
+                                        <g class="odo-x">
+                                            <line x1="8" y1="10" x2="32" y2="48"></line>
+                                            <line x1="32" y1="10" x2="8" y2="48"></line>
+                                        </g>
+                                    </svg>
+                                    <span class="odo-hist">
+                                        @foreach(array_slice($past, 0, 4) as $h)
+                                            <i style="background:{{ $T::statusColor($h['status'] ?? null) }}"></i>
+                                        @endforeach
+                                    </span>
+                                </button>
+                            @endforeach
+                        @endforeach
+                    </div>
+                    @endforeach
+
+                    @if($jaw === 'lower')
+                        <div class="odo-jaw mt-1">Aşağı çənə</div>
+                    @endif
+                @endforeach
+            </div>
+        </div>
+
+        @if($mode === 'edit')
+        {{-- quick add by number --}}
+        <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
+            <div class="input-group input-group-sm" style="max-width:240px;">
+                <span class="input-group-text">Diş №</span>
+                <input type="text" inputmode="numeric" class="form-control" placeholder="16, 24, 36…"
+                       data-odo-quick-input maxlength="20">
+                <button type="button" class="btn btn-primary" data-odo-quick-add title="Əlavə et">
+                    <i class="bi bi-plus-lg"></i>
+                </button>
+            </div>
+            <span class="text-muted" style="font-size:.72rem;">
+                Nömrəni yazıb <kbd>+</kbd> düyməsinə basın — vergüllə bir neçəsini də yazmaq olar.
+            </span>
+        </div>
+
+        {{-- selected teeth --}}
+        <div class="mt-3">
+            <div class="fw-semibold mb-2" style="font-size:.82rem;">Seçilmiş dişlər</div>
+            <div class="row g-2" data-odo-list></div>
+            <div class="odo-empty mt-1" data-odo-empty @if($selected->isNotEmpty()) hidden @endif>
+                Hələ diş seçilməyib — yuxarıdakı sxemdən dişə klikləyin.
+            </div>
+        </div>
+        @else
+        {{-- read-only legend --}}
+        <div class="d-flex flex-wrap gap-2 mt-3">
+            @foreach($T::STATUSES as $key => $s)
+            <span class="odo-pill" style="--c:{{ $s['color'] }};cursor:default;">
+                <span class="dot"></span>{{ $s['label'] }}
+            </span>
+            @endforeach
+        </div>
+        @endif
+    </div>
+</div>
+
+@if($mode === 'edit')
+<template data-odo-template>
+    <div class="col-md-6">
+        <div class="odo-chip">
+            <span class="odo-chip-no">__NO__</span>
+            <div>
+                <div class="odo-chip-title fw-semibold" style="font-size:.82rem;">__QUADRANT__</div>
+                <div class="odo-chip-meta">__SHAPE__</div>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-danger border-0" data-odo-remove
+                    title="Seçimdən çıxar"><i class="bi bi-x-lg"></i></button>
+            <div class="odo-chip-fields">
+                <select class="form-select form-select-sm" data-odo-status-select
+                        name="{{ $inputName }}[__NO__][status]">
+                    @foreach($T::STATUSES as $key => $s)
+                    <option value="{{ $key }}">{{ $s['label'] }}</option>
+                    @endforeach
+                </select>
+                <input type="text" class="form-control form-control-sm" maxlength="255"
+                       data-odo-note placeholder="Qeyd (ixtiyari) — məs. dərin karies"
+                       name="{{ $inputName }}[__NO__][note]">
+            </div>
+        </div>
+    </div>
+</template>
+
+<script type="application/json" data-odo-initial="{{ $chartId }}">@json($selected->values())</script>
+@endif
+
+@once
+@push('scripts')
+<script>
+(function () {
+    const STATUSES = @json(\App\Models\PatientVisitTooth::STATUSES);
+    const DEFAULT_STATUS = @json(\App\Models\PatientVisitTooth::DEFAULT_STATUS);
+
+    document.querySelectorAll('[data-odo-chart]').forEach(initChart);
+
+    function initChart(chart) {
+        const wrap    = chart.closest('.odo-wrap');
+        const editing = chart.dataset.mode === 'edit';
+        const counter = document.querySelector('[data-odo-count="' + chart.id + '"]');
+
+        // ── permanent / primary switch — available in both modes ───────────
+        wrap.querySelectorAll('[data-odo-set]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const set = btn.dataset.odoSet;
+                wrap.querySelectorAll('[data-odo-set]').forEach(function (b) {
+                    b.classList.toggle('active', b === btn);
+                });
+                chart.dataset.set = set;
+                chart.querySelectorAll('[data-odo-row]').forEach(function (row) {
+                    row.hidden = row.dataset.odoRow !== set;
+                });
+            });
+        });
+
+        if (!editing) return;
+
+        const list  = wrap.querySelector('[data-odo-list]');
+        const empty = wrap.querySelector('[data-odo-empty]');
+        const tpl   = document.querySelector('[data-odo-template]');
+        const palette = wrap.querySelector('[data-odo-palette]');
+        let brush = DEFAULT_STATUS;
+
+        palette && palette.querySelectorAll('[data-odo-status]').forEach(function (pill) {
+            pill.addEventListener('click', function () {
+                brush = pill.dataset.odoStatus;
+                palette.querySelectorAll('[data-odo-status]').forEach(function (p) {
+                    p.classList.toggle('active', p === pill);
+                });
+            });
+        });
+
+        const marks = new Map();   // toothNumber -> { status, note }
+
+        function toothEl(no) {
+            return chart.querySelector('[data-odo-tooth="' + no + '"]');
+        }
+
+        function chipFor(no) {
+            return list.querySelector('[data-odo-chip="' + no + '"]');
+        }
+
+        function paint(no) {
+            const el = toothEl(no);
+            if (!el) return;
+            const mark = marks.get(no);
+            el.classList.toggle('on', !!mark);
+            el.style.setProperty('--c', mark ? (STATUSES[mark.status] || {}).color || '#6c757d' : '#adb5bd');
+            if (mark) { el.dataset.status = mark.status; } else { delete el.dataset.status; }
+        }
+
+        function tintChip(node, status) {
+            const color = (STATUSES[status] || {}).color || '#6c757d';
+            node.querySelector('.odo-chip').style.setProperty('--c', color);
+            node.querySelector('.odo-chip-no').style.background = color;
+        }
+
+        function addChip(no, mark) {
+            const node = tpl.content.firstElementChild.cloneNode(true);
+            node.innerHTML = node.innerHTML.split('__NO__').join(no);
+            node.dataset.odoChip = no;
+
+            const el = toothEl(no);
+            node.querySelector('.odo-chip-no').textContent = no;
+            node.querySelector('.odo-chip-title').textContent = (el && el.dataset.quadrant) || '';
+            node.querySelector('.odo-chip-meta').textContent = (el && el.dataset.shapeName) || '';
+
+            const select = node.querySelector('[data-odo-status-select]');
+            select.value = mark.status;
+            select.addEventListener('change', function () {
+                marks.get(no).status = select.value;
+                tintChip(node, select.value);
+                paint(no);
+            });
+
+            const note = node.querySelector('[data-odo-note]');
+            note.value = mark.note || '';
+            note.addEventListener('input', function () { marks.get(no).note = note.value; });
+
+            node.querySelector('[data-odo-remove]').addEventListener('click', function () { unset(no); });
+
+            tintChip(node, mark.status);
+
+            // keep the list in the same order the chart reads
+            const after = Array.prototype.find.call(list.children, function (c) {
+                return Number(c.dataset.odoChip) > no;
+            });
+            list.insertBefore(node, after || null);
+        }
+
+        function refresh() {
+            if (counter) counter.textContent = marks.size;
+            if (empty) empty.hidden = marks.size > 0;
+        }
+
+        function set(no, status) {
+            if (marks.has(no)) {
+                marks.get(no).status = status;
+                const chip = chipFor(no);
+                if (chip) {
+                    const sel = chip.querySelector('[data-odo-status-select]');
+                    sel.value = status;
+                    tintChip(chip, status);
+                }
+            } else {
+                marks.set(no, { status: status, note: '' });
+                addChip(no, marks.get(no));
+            }
+            paint(no);
+            refresh();
+        }
+
+        function unset(no) {
+            marks.delete(no);
+            const chip = chipFor(no);
+            if (chip) chip.remove();
+            paint(no);
+            refresh();
+        }
+
+        function toggle(no) {
+            const mark = marks.get(no);
+            if (mark && mark.status === brush) { unset(no); return 'off'; }
+            set(no, brush);
+            return 'on';
+        }
+
+        // ── click to toggle, mouse-drag to paint a run of teeth ────────────
+        // Touch is left to the browser so the chart can still be swiped
+        // sideways; a tap arrives as a plain click.
+        let dragMode = null;
+        let handledByMouse = false;
+
+        chart.addEventListener('pointerdown', function (e) {
+            const el = e.target.closest('[data-odo-tooth]');
+            if (!el || e.pointerType !== 'mouse') return;
+            e.preventDefault();
+            handledByMouse = true;
+            dragMode = toggle(Number(el.dataset.odoTooth));
+        });
+
+        // covers taps and, since these are buttons, Enter / Space as well
+        chart.addEventListener('click', function (e) {
+            const el = e.target.closest('[data-odo-tooth]');
+            if (!el) return;
+            if (handledByMouse) { handledByMouse = false; return; }
+            toggle(Number(el.dataset.odoTooth));
+        });
+
+        chart.addEventListener('pointermove', function (e) {
+            if (!dragMode) return;
+            const under = document.elementFromPoint(e.clientX, e.clientY);
+            const el = under && under.closest('[data-odo-tooth]');
+            if (!el || el.closest('[data-odo-row]').hidden) return;
+            const no = Number(el.dataset.odoTooth);
+            const mark = marks.get(no);
+            if (dragMode === 'on') {
+                if (!mark || mark.status !== brush) set(no, brush);
+            } else if (mark) {
+                unset(no);
+            }
+        });
+
+        ['pointerup', 'pointercancel'].forEach(function (ev) {
+            document.addEventListener(ev, function () { dragMode = null; });
+        });
+
+        // ── quick add by number ────────────────────────────────────────────
+        const quickInput = wrap.querySelector('[data-odo-quick-input]');
+        function quickAdd() {
+            const numbers = (quickInput.value.match(/\d{2}/g) || []).map(Number);
+            const known = numbers.filter(function (n) { return !!toothEl(n); });
+            known.forEach(function (n) { set(n, brush); });
+            quickInput.classList.toggle('is-invalid', known.length !== numbers.length || !numbers.length);
+            if (known.length === numbers.length && numbers.length) quickInput.value = '';
+        }
+        const quickBtn = wrap.querySelector('[data-odo-quick-add]');
+        if (quickBtn) quickBtn.addEventListener('click', quickAdd);
+        if (quickInput) {
+            quickInput.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') { e.preventDefault(); quickAdd(); }
+            });
+        }
+
+        // ── clear ──────────────────────────────────────────────────────────
+        const clearBtn = wrap.querySelector('[data-odo-clear]');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function () {
+                if (marks.size && !confirm('Bütün seçilmiş dişlər silinsin?')) return;
+                Array.from(marks.keys()).forEach(unset);
+            });
+        }
+
+        // ── hydrate from the server ────────────────────────────────────────
+        const seed = document.querySelector('[data-odo-initial="' + chart.id + '"]');
+        if (seed) {
+            let hasPrimary = false;
+            JSON.parse(seed.textContent || '[]').forEach(function (row) {
+                const no = Number(row.tooth_number);
+                if (!toothEl(no)) return;
+                marks.set(no, { status: row.status || DEFAULT_STATUS, note: row.note || '' });
+                addChip(no, marks.get(no));
+                paint(no);
+                if (no >= 51) hasPrimary = true;
+            });
+            // a primary tooth in the record means the doctor was working on that set
+            if (hasPrimary) {
+                const primaryBtn = wrap.querySelector('[data-odo-set="primary"]');
+                if (primaryBtn) primaryBtn.click();
+            }
+            refresh();
+        }
+    }
+})();
+</script>
+@endpush
+@endonce

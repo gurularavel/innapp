@@ -26,6 +26,7 @@ class Clinic extends Model
         'sms_copy_to_self',
         'birthday_greetings_enabled',
         'holiday_greetings_enabled',
+        'dental_chart_enabled',
         'owner_id',
         'is_active',
     ];
@@ -35,6 +36,7 @@ class Clinic extends Model
         'is_active'                  => 'boolean',
         'birthday_greetings_enabled' => 'boolean',
         'holiday_greetings_enabled'  => 'boolean',
+        'dental_chart_enabled'       => 'boolean',
     ];
 
     // -------------------------------------------------------------------------

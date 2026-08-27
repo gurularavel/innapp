@@ -102,6 +102,14 @@
                     <span class="badge bg-secondary ms-1">{{ $patient->appointments->count() }}</span>
                 </button>
             </li>
+            @if($dentalChart ?? false)
+            <li class="nav-item">
+                <button class="nav-link fw-medium" id="tab-teeth" data-bs-toggle="tab" data-bs-target="#pane-teeth" type="button">
+                    <i class="bi bi-grid-3x3-gap me-1"></i>Diş kartı
+                    <span class="badge bg-primary ms-1">{{ count($toothLatest ?? []) }}</span>
+                </button>
+            </li>
+            @endif
         </ul>
 
         <div class="tab-content">
@@ -149,6 +157,11 @@
                                             <i class="bi bi-paperclip me-1"></i>{{ $visit->files->count() }}
                                         </span>
                                         @endif
+                                        @if(($dentalChart ?? false) && $visit->teeth->isNotEmpty())
+                                        <span class="badge bg-primary bg-opacity-10 text-primary border" style="font-size:.7rem;">
+                                            <i class="bi bi-grid-3x3-gap me-1"></i>{{ $visit->teeth->count() }} diş
+                                        </span>
+                                        @endif
                                     </div>
                                 </button>
                                 {{-- Action buttons always visible --}}
@@ -171,6 +184,20 @@
                             <div id="visit-body-{{ $visit->id }}" class="accordion-collapse collapse"
                                  data-bs-parent="">
                                 <div class="accordion-body pt-2 pb-3">
+                                    {{-- Teeth treated on this visit --}}
+                                    @if(($dentalChart ?? false) && $visit->teeth->isNotEmpty())
+                                    <div class="d-flex flex-wrap gap-1 mb-3">
+                                        @foreach($visit->teeth as $tooth)
+                                        <span class="badge rounded-pill fw-normal"
+                                              style="background:{{ $tooth->status_color }};font-size:.72rem;"
+                                              title="{{ $tooth->display_name }}">
+                                            <span class="fw-bold">{{ $tooth->tooth_number }}</span>
+                                            · {{ $tooth->status_label }}{{ $tooth->note ? ' — ' . $tooth->note : '' }}
+                                        </span>
+                                        @endforeach
+                                    </div>
+                                    @endif
+
                                     {{-- Notes --}}
                                     @if($visit->notes)
                                     <div class="small text-muted bg-light rounded p-2 mb-3">{{ $visit->notes }}</div>
@@ -202,7 +229,7 @@
                                         </div>
                                         @endforeach
                                     </div>
-                                    @elseif(!$visit->notes)
+                                    @elseif(!$visit->notes && $visit->teeth->isEmpty())
                                     <div class="text-muted small">Məlumat yoxdur.</div>
                                     @endif
                                 </div>
@@ -307,6 +334,63 @@
                     </div>
                 </div>
             </div>
+
+            {{-- ===== DENTAL CHART ===== --}}
+            @if($dentalChart ?? false)
+            <div class="tab-pane fade" id="pane-teeth">
+                <div class="card border-0 shadow-sm" style="border-top-left-radius:0;">
+                    <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                        <span class="fw-semibold">Diş kartı</span>
+                        <span class="text-muted" style="font-size:.75rem;">
+                            Hər dişdə ən son qeyd edilən vəziyyət göstərilir
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        @if(empty($toothLatest))
+                            <div class="text-center text-muted py-5">
+                                <i class="bi bi-grid-3x3-gap fs-1 d-block mb-2 opacity-25"></i>
+                                Bu xəstə üçün hələ diş qeydi yoxdur
+                                <div class="mt-2">
+                                    <a href="{{ route('panel.patients.visits.create', $patient) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-plus-lg me-1"></i>Ziyarət əlavə et
+                                    </a>
+                                </div>
+                            </div>
+                        @else
+                            @include('dental._odontogram', [
+                                'mode'     => 'view',
+                                'selected' => $toothLatest,
+                                'history'  => $toothHistory,
+                            ])
+
+                            <div class="table-responsive mt-3">
+                                <table class="table table-sm align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr><th style="width:70px;">Diş</th><th>Yer</th><th>Vəziyyət</th><th>Qeyd</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach(collect($toothLatest)->sortBy('tooth_number') as $tooth)
+                                        <tr>
+                                            <td class="fw-semibold">{{ $tooth['tooth_number'] }}</td>
+                                            <td class="text-muted small">
+                                                {{ \App\Models\PatientVisitTooth::quadrantLabel($tooth['tooth_number']) }}
+                                            </td>
+                                            <td>
+                                                <span class="badge" style="background:{{ \App\Models\PatientVisitTooth::statusColor($tooth['status']) }};">
+                                                    {{ \App\Models\PatientVisitTooth::statusLabel($tooth['status']) }}
+                                                </span>
+                                            </td>
+                                            <td class="text-muted small">{{ $tooth['note'] ?: '—' }}</td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            @endif
         </div>{{-- end tab-content --}}
     </div>
 </div>
