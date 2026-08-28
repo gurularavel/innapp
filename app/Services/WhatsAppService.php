@@ -14,23 +14,89 @@ use Illuminate\Support\Facades\Log;
 /**
  * Sends WhatsApp messages through the Meta WhatsApp Cloud API.
  *
- * Credentials and template names are configured by the admin from
- * Ayarlar » WhatsApp; the .env values act as a fallback.
+ * Credentials come from one of two places, in this order:
+ *   1. the clinic's own connection (Panel » WhatsApp bağlantısı),
+ *   2. the platform-wide one the admin configured (Ayarlar » WhatsApp),
+ * with the .env values acting as the last fallback for the admin connection.
+ *
+ * A connection is taken as a whole — number id, token, language and the
+ * approved template names always come from the same source, because a template
+ * only exists on the WhatsApp Business Account it was approved on.
  */
 class WhatsAppService
 {
     use NormalizesPhone;
 
+    /** Message types that can carry an approved template name. */
+    public const TEMPLATE_TYPES = ['appointment', 'reminder', 'birthday', 'holiday'];
+
     public function __construct(private MessageBuilder $builder) {}
 
     /**
-     * WhatsApp is usable only when the admin enabled it and the credentials are filled in.
+     * The connection that will actually be used for this clinic.
+     *
+     * `source` is `clinic` when the clinic connected its own number, `admin`
+     * otherwise — callers use it to tell the owner where the settings live.
+     *
+     * @return array{source: string, enabled: bool, phone_number_id: string, access_token: string, api_version: string, language_code: string}
+     */
+    public function configFor(?Clinic $clinic): array
+    {
+        if ($clinic?->hasOwnWhatsapp()) {
+            $token = $this->decryptToken($clinic->whatsapp_access_token, "clinic #{$clinic->id}");
+
+            // A token that cannot be read is treated as no connection at all, so
+            // the clinic falls back to the admin one instead of going quiet.
+            if ($token !== '') {
+                return [
+                    'source'          => 'clinic',
+                    'enabled'         => true,
+                    'phone_number_id' => trim((string) $clinic->whatsapp_phone_number_id),
+                    'access_token'    => $token,
+                    'api_version'     => $this->platformApiVersion(),
+                    'language_code'   => trim((string) $clinic->whatsapp_language_code) ?: $this->platformLanguageCode(),
+                ];
+            }
+        }
+
+        return [
+            'source'          => 'admin',
+            'enabled'         => Setting::get('whatsapp_enabled', '0') === '1',
+            'phone_number_id' => trim((string) Setting::get('whatsapp_phone_number_id', config('services.whatsapp.phone_number_id', ''))),
+            'access_token'    => $this->platformAccessToken(),
+            'api_version'     => $this->platformApiVersion(),
+            'language_code'   => $this->platformLanguageCode(),
+        ];
+    }
+
+    /**
+     * WhatsApp is usable for this clinic when either its own connection or the
+     * platform-wide one is switched on and complete.
+     */
+    public function isConfiguredFor(?Clinic $clinic): bool
+    {
+        return $this->isUsable($this->configFor($clinic));
+    }
+
+    /**
+     * The platform-wide connection only — what the admin screen and the test
+     * command report on.
      */
     public function isConfigured(): bool
     {
-        return Setting::get('whatsapp_enabled', '0') === '1'
-            && $this->phoneNumberId() !== ''
-            && $this->accessToken() !== '';
+        return $this->isConfiguredFor(null);
+    }
+
+    /** Approved template name for one message type, from the winning connection. */
+    public function templateFor(?Clinic $clinic, string $type): string
+    {
+        return trim($this->fromWinningSource($clinic, "whatsapp_{$type}_template"));
+    }
+
+    /** Placeholder order that fills the template body, from the winning connection. */
+    public function paramListFor(?Clinic $clinic, string $type): string
+    {
+        return trim($this->fromWinningSource($clinic, "whatsapp_{$type}_params"));
     }
 
     /**
@@ -38,23 +104,26 @@ class WhatsAppService
      * check or decrement here — only delivery and logging.
      */
     public function send(
-        string  $phone,
-        string  $message,
-        ?int    $doctorId = null,
-        string  $type = 'custom',
-        ?int    $appointmentId = null,
-        ?string $templateName = null,
-        array   $templateParams = [],
-        ?int    $clinicId = null,
-        array   $context = []
+        string          $phone,
+        string          $message,
+        ?int            $doctorId = null,
+        string          $type = 'custom',
+        ?int            $appointmentId = null,
+        ?string         $templateName = null,
+        array           $templateParams = [],
+        Clinic|int|null $clinic = null,
+        array           $context = []
     ): bool {
+        $clinic = $this->resolveClinic($clinic);
+        $config = $this->configFor($clinic);
+
         ['success' => $success, 'message_id' => $messageId, 'response_body' => $responseBody] =
-            $this->isConfigured()
-                ? $this->sendViaCloudApi($phone, $message, $templateName, $templateParams)
+            $this->isUsable($config)
+                ? $this->sendViaCloudApi($config, $phone, $message, $templateName, $templateParams)
                 : $this->sendViaLog($phone, $message, $templateName, $templateParams);
 
         $status = $success ? 'sent' : 'failed';
-        $this->logMessage($phone, $message, $type, $status, $doctorId, $appointmentId, $messageId, $responseBody, $clinicId, $context);
+        $this->logMessage($phone, $message, $type, $status, $doctorId, $appointmentId, $messageId, $responseBody, $clinic?->id, $context);
 
         return $success;
     }
@@ -76,7 +145,7 @@ class WhatsAppService
         string  $reference,
         array   $templateParams = []
     ): bool {
-        $templateName = trim((string) Setting::get("whatsapp_{$type}_template", ''));
+        $templateName = $this->templateFor($clinic, $type);
 
         return $this->send(
             $patient->phone,
@@ -86,7 +155,7 @@ class WhatsAppService
             null,
             $templateName ?: null,
             $templateName !== '' ? $templateParams : [],
-            $clinic->id,
+            $clinic,
             ['patient_id' => $patient->id, 'reference' => $reference]
         );
     }
@@ -107,11 +176,12 @@ class WhatsAppService
 
     private function sendForAppointment(Appointment $appointment, string $type): bool
     {
+        $clinic       = $appointment->clinic;
         $message      = $this->builder->build("sms_{$type}_template", $appointment);
-        $templateName = trim((string) Setting::get("whatsapp_{$type}_template", ''));
+        $templateName = $this->templateFor($clinic, $type);
 
         $params = $templateName !== ''
-            ? $this->builder->orderedParams((string) Setting::get("whatsapp_{$type}_params", ''), $appointment)
+            ? $this->builder->orderedParams($this->paramListFor($clinic, $type), $appointment)
             : [];
 
         return $this->send(
@@ -122,26 +192,54 @@ class WhatsAppService
             $appointment->id,
             $templateName ?: null,
             $params,
-            $appointment->clinic_id
+            $clinic ?? $appointment->clinic_id
         );
     }
 
+    /** A connection can send only when it is switched on and complete. */
+    private function isUsable(array $config): bool
+    {
+        return $config['enabled']
+            && $config['phone_number_id'] !== ''
+            && $config['access_token'] !== '';
+    }
+
     /**
+     * Template names and parameter order belong to the connection that sends the
+     * message, so both are read from whichever source won in `configFor()`.
+     */
+    private function fromWinningSource(?Clinic $clinic, string $key): string
+    {
+        return $this->configFor($clinic)['source'] === 'clinic'
+            ? (string) ($clinic->{$key} ?? '')
+            : (string) Setting::get($key, '');
+    }
+
+    private function resolveClinic(Clinic|int|null $clinic): ?Clinic
+    {
+        if ($clinic instanceof Clinic || $clinic === null) {
+            return $clinic;
+        }
+
+        return Clinic::find($clinic);
+    }
+
+    /**
+     * @param  array{source: string, phone_number_id: string, access_token: string, api_version: string, language_code: string}  $config
      * @return array{success: bool, message_id: string|null, response_body: array|null}
      */
-    private function sendViaCloudApi(string $phone, string $message, ?string $templateName, array $templateParams): array
+    private function sendViaCloudApi(array $config, string $phone, string $message, ?string $templateName, array $templateParams): array
     {
-        $phone   = $this->normalizePhone($phone);
-        $version = Setting::get('whatsapp_api_version', config('services.whatsapp.api_version', 'v21.0'));
-        $url     = "https://graph.facebook.com/{$version}/{$this->phoneNumberId()}/messages";
+        $phone = $this->normalizePhone($phone);
+        $url   = "https://graph.facebook.com/{$config['api_version']}/{$config['phone_number_id']}/messages";
 
         $payload = $templateName
-            ? $this->templatePayload($phone, $templateName, $templateParams)
+            ? $this->templatePayload($phone, $templateName, $templateParams, $config['language_code'])
             : $this->textPayload($phone, $message);
 
         try {
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $this->accessToken(),
+                'Authorization' => 'Bearer ' . $config['access_token'],
                 'Content-Type'  => 'application/json',
             ])->timeout(30)->post($url, $payload);
 
@@ -156,10 +254,11 @@ class WhatsAppService
             }
 
             Log::error('WhatsApp Cloud API error', [
-                'phone'   => $phone,
-                'status'  => $response->status(),
-                'error'   => $body['error']['message'] ?? null,
-                'code'    => $body['error']['code'] ?? null,
+                'phone'  => $phone,
+                'source' => $config['source'],
+                'status' => $response->status(),
+                'error'  => $body['error']['message'] ?? null,
+                'code'   => $body['error']['code'] ?? null,
             ]);
 
             return ['success' => false, 'message_id' => null, 'response_body' => $body];
@@ -191,7 +290,7 @@ class WhatsAppService
     /**
      * Approved template message — the only way to start a conversation.
      */
-    private function templatePayload(string $phone, string $templateName, array $params): array
+    private function templatePayload(string $phone, string $templateName, array $params, string $languageCode): array
     {
         $payload = [
             'messaging_product' => 'whatsapp',
@@ -200,9 +299,7 @@ class WhatsAppService
             'type'              => 'template',
             'template'          => [
                 'name'     => $templateName,
-                'language' => [
-                    'code' => Setting::get('whatsapp_language_code', config('services.whatsapp.language_code', 'az')),
-                ],
+                'language' => ['code' => $languageCode],
             ],
         ];
 
@@ -240,25 +337,37 @@ class WhatsAppService
         return ['success' => true, 'message_id' => null, 'response_body' => $body];
     }
 
-    private function phoneNumberId(): string
+    private function platformApiVersion(): string
     {
-        return trim((string) Setting::get('whatsapp_phone_number_id', config('services.whatsapp.phone_number_id', '')));
+        return (string) Setting::get('whatsapp_api_version', config('services.whatsapp.api_version', 'v21.0'));
     }
 
-    private function accessToken(): string
+    private function platformLanguageCode(): string
     {
-        $token = (string) Setting::get('whatsapp_access_token', '');
+        return (string) Setting::get('whatsapp_language_code', config('services.whatsapp.language_code', 'az'));
+    }
 
-        if ($token !== '') {
-            try {
-                return trim(decrypt($token));
-            } catch (\Exception $e) {
-                Log::error('WhatsApp access token could not be decrypted.');
-                return '';
-            }
+    private function platformAccessToken(): string
+    {
+        $token = $this->decryptToken((string) Setting::get('whatsapp_access_token', ''), 'the platform connection');
+
+        return $token !== '' ? $token : trim((string) config('services.whatsapp.access_token', ''));
+    }
+
+    /** Tokens are stored encrypted; one that cannot be read counts as "not set". */
+    private function decryptToken(?string $stored, string $owner): string
+    {
+        if (blank($stored)) {
+            return '';
         }
 
-        return trim((string) config('services.whatsapp.access_token', ''));
+        try {
+            return trim(decrypt($stored));
+        } catch (\Exception $e) {
+            Log::error("WhatsApp access token for {$owner} could not be decrypted.");
+
+            return '';
+        }
     }
 
     private function logMessage(

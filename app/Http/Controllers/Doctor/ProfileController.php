@@ -76,11 +76,14 @@ class ProfileController extends Controller
 
     public function smsTemplates(WhatsAppService $whatsapp)
     {
-        // WhatsApp can only be picked once the admin has configured it.
-        $whatsappAvailable = $whatsapp->isConfigured();
-        $clinic            = Auth::user()->clinic;
+        $clinic = Auth::user()->clinic;
 
-        return view('doctor.sms-templates.index', compact('whatsappAvailable', 'clinic'));
+        // WhatsApp is pickable once the clinic connected its own number, or the
+        // admin configured the platform-wide one.
+        $whatsappAvailable = $whatsapp->isConfiguredFor($clinic);
+        $whatsappOwn       = $whatsapp->configFor($clinic)['source'] === 'clinic';
+
+        return view('doctor.sms-templates.index', compact('whatsappAvailable', 'whatsappOwn', 'clinic'));
     }
 
     public function saveSmsTemplates(Request $request, WhatsAppService $whatsapp)
@@ -100,9 +103,9 @@ class ProfileController extends Controller
         $channel = $request->notify_channel;
 
         // Guard against a stale form: WhatsApp may have been turned off since the page loaded.
-        if ($channel !== 'sms' && !$whatsapp->isConfigured()) {
+        if ($channel !== 'sms' && !$whatsapp->isConfiguredFor($user->clinic)) {
             return back()->withInput()->withErrors([
-                'notify_channel' => 'WhatsApp hazırda aktiv deyil. Zəhmət olmasa administrator ilə əlaqə saxlayın.',
+                'notify_channel' => 'WhatsApp hazırda aktiv deyil. Öz WhatsApp bağlantınızı qurun və ya administrator ilə əlaqə saxlayın.',
             ]);
         }
 

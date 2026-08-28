@@ -20,6 +20,19 @@ class Clinic extends Model
         'map_url',
         'map_code',
         'notify_channel',
+        'whatsapp_enabled',
+        'whatsapp_number',
+        'whatsapp_phone_number_id',
+        'whatsapp_access_token',
+        'whatsapp_language_code',
+        'whatsapp_appointment_template',
+        'whatsapp_appointment_params',
+        'whatsapp_reminder_template',
+        'whatsapp_reminder_params',
+        'whatsapp_birthday_template',
+        'whatsapp_birthday_params',
+        'whatsapp_holiday_template',
+        'whatsapp_holiday_params',
         'sms_appointment_template',
         'sms_reminder_template',
         'sms_birthday_template',
@@ -37,6 +50,7 @@ class Clinic extends Model
         'birthday_greetings_enabled' => 'boolean',
         'holiday_greetings_enabled'  => 'boolean',
         'dental_chart_enabled'       => 'boolean',
+        'whatsapp_enabled'           => 'boolean',
     ];
 
     // -------------------------------------------------------------------------
@@ -160,6 +174,17 @@ class Clinic extends Model
         }
 
         return rtrim(config('app.url'), '/') . '/map/' . $this->map_code;
+    }
+
+    /**
+     * True when the clinic sends WhatsApp from its own Cloud API connection
+     * instead of the platform-wide one the admin configured.
+     */
+    public function hasOwnWhatsapp(): bool
+    {
+        return $this->whatsapp_enabled
+            && filled($this->whatsapp_phone_number_id)
+            && filled($this->whatsapp_access_token);
     }
 
     public static function generateMapCode(): string

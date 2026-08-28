@@ -29,6 +29,7 @@ class GreetingService
     public function __construct(
         private MessageBuilder $builder,
         private NotificationService $notifications,
+        private WhatsAppService $whatsapp,
     ) {}
 
     /** The hour of day greetings go out, platform-wide. */
@@ -217,7 +218,9 @@ class GreetingService
         array   &$stats
     ): void {
         $fallbackKey = "sms_{$type}_template";
-        $paramList   = (string) Setting::get("whatsapp_{$type}_params", '');
+        // The parameter order belongs to the connection that sends the message:
+        // the clinic's own WhatsApp template, or the admin's when it falls back.
+        $paramList   = $this->whatsapp->paramListFor($clinic, $type);
 
         $recipients->chunkById(self::CHUNK, function (Collection $patients) use (
             $clinic, $type, $template, $reference, $extra, $dryRun, $fallbackKey, $paramList, &$stats

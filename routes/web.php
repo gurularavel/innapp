@@ -136,6 +136,12 @@ Route::prefix('panel')->name('panel.')->middleware(['auth', 'role:owner,doctor,r
     Route::get('sms-templates', [Doctor\ProfileController::class, 'smsTemplates'])->name('sms-templates.index');
     Route::put('sms-templates', [Doctor\ProfileController::class, 'saveSmsTemplates'])->name('sms-templates.save');
 
+    // Klinikanın öz WhatsApp bağlantısı (yalnız sahib — kontrollerdə yoxlanılır)
+    Route::get('whatsapp', [Doctor\WhatsappController::class, 'edit'])->name('whatsapp.edit');
+    Route::put('whatsapp', [Doctor\WhatsappController::class, 'update'])->name('whatsapp.save');
+    Route::post('whatsapp/test', [Doctor\WhatsappController::class, 'test'])->name('whatsapp.test');
+    Route::delete('whatsapp', [Doctor\WhatsappController::class, 'disconnect'])->name('whatsapp.disconnect');
+
     // Ad günü və bayram təbrikləri
     Route::get('greetings', [Doctor\GreetingController::class, 'index'])->name('greetings.index');
     Route::put('greetings', [Doctor\GreetingController::class, 'save'])->name('greetings.save');

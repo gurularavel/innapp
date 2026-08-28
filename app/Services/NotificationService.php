@@ -11,9 +11,10 @@ use App\Models\User;
  * Decides which channel(s) an appointment message goes out on and dispatches it.
  *
  * The channel is a clinic-wide setting, so every member sends over the same
- * channel. When the admin has not enabled WhatsApp yet, WhatsApp is dropped from
- * the selection and SMS is used instead — a preference must never silence
- * notifications.
+ * channel. WhatsApp is available when the clinic connected its own number or
+ * when the admin configured the platform-wide one; with neither in place it is
+ * dropped from the selection and SMS is used instead — a preference must never
+ * silence notifications.
  */
 class NotificationService
 {
@@ -42,7 +43,7 @@ class NotificationService
             default    => ['sms'],
         };
 
-        if (!$this->whatsapp->isConfigured()) {
+        if (!$this->whatsapp->isConfiguredFor($clinic)) {
             $channels = array_values(array_diff($channels, ['whatsapp']));
         }
 

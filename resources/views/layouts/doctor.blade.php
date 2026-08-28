@@ -838,6 +838,13 @@
                         <i class="bi bi-chat-dots"></i><span>Bildirişlər</span>
                     </a>
                 </li>
+                @if(auth()->user()->canManageClinic())
+                <li class="nav-item">
+                    <a href="{{ route('panel.whatsapp.edit') }}" class="nav-link {{ request()->routeIs('panel.whatsapp*') ? 'active' : '' }}" title="WhatsApp">
+                        <i class="bi bi-whatsapp"></i><span>WhatsApp</span>
+                    </a>
+                </li>
+                @endif
                 <li class="nav-item">
                     <a href="{{ route('panel.greetings.index') }}" class="nav-link {{ request()->routeIs('panel.greetings*') ? 'active' : '' }}" title="Təbriklər">
                         <i class="bi bi-gift"></i><span>Təbriklər</span>

@@ -66,7 +66,13 @@ class SettingController extends Controller
             ->groupBy('notify_channel')
             ->pluck('total', 'notify_channel');
 
-        return view('admin.settings.whatsapp', compact('settings', 'hasToken', 'channelUsage'));
+        // Clinics sending from their own number do not depend on these settings.
+        $ownConnections = \App\Models\Clinic::where('whatsapp_enabled', true)
+            ->whereNotNull('whatsapp_phone_number_id')
+            ->whereNotNull('whatsapp_access_token')
+            ->count();
+
+        return view('admin.settings.whatsapp', compact('settings', 'hasToken', 'channelUsage', 'ownConnections'));
     }
 
     public function saveWhatsapp(Request $request)

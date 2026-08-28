@@ -39,9 +39,9 @@
                     </div>
                     <div class="text-muted small">
                         @if($isOn)
-                            Klinika sahibləri öz panelindən SMS, WhatsApp və ya hər ikisini seçə bilər.
+                            Bu, öz nömrəsini qoşmamış müəssisələr üçün ortaq bağlantıdır.
                         @else
-                            Deaktiv olduqda bütün bildirişlər yalnız SMS ilə göndərilir.
+                            Deaktiv olduqda öz bağlantısı olmayan müəssisələrin bildirişləri yalnız SMS ilə gedir.
                         @endif
                     </div>
                 </div>
@@ -57,6 +57,10 @@
                     <div>
                         <div class="fw-bold">{{ $channelUsage['both'] ?? 0 }}</div>
                         <div class="text-muted" style="font-size:.75rem;">Hər ikisi</div>
+                    </div>
+                    <div>
+                        <div class="fw-bold">{{ $ownConnections }}</div>
+                        <div class="text-muted" style="font-size:.75rem;">Öz nömrəsi</div>
                     </div>
                 </div>
             </div>
@@ -75,6 +79,8 @@
                     <p class="text-muted small mb-4">
                         Meta Business hesabınızdakı <strong>WhatsApp Cloud API</strong> məlumatlarını daxil edin.
                         Bu dəyərləri <code>developers.facebook.com</code> » Tətbiqiniz » WhatsApp » API Setup bölməsindən götürə bilərsiniz.
+                        Bu bağlantı yalnız öz nömrəsini qoşmamış müəssisələr üçün işlədilir — müəssisə sahibi
+                        panelindəki <strong>WhatsApp Bağlantısı</strong> səhifəsindən öz nömrəsini qoşarsa, mesajlar oradan gedir.
                     </p>
 
                     <div class="form-check form-switch mb-4">

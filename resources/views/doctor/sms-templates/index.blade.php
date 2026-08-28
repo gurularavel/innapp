@@ -46,7 +46,23 @@
                         @if(!$whatsappAvailable)
                             <div class="alert alert-secondary small py-2 px-3 mb-3">
                                 <i class="bi bi-info-circle me-1"></i>
-                                WhatsApp hazırda sistemdə aktiv deyil. Aktivləşdirilməsi üçün administrator ilə əlaqə saxlayın.
+                                WhatsApp hazırda aktiv deyil.
+                                @if($canEdit)
+                                    <a href="{{ route('panel.whatsapp.edit') }}" class="fw-semibold">Öz WhatsApp nömrənizi qoşun</a>
+                                    və ya administrator ilə əlaqə saxlayın.
+                                @else
+                                    Müəssisə sahibi öz WhatsApp nömrəsini qoşa bilər.
+                                @endif
+                            </div>
+                        @elseif($canEdit)
+                            <div class="alert alert-light border small py-2 px-3 mb-3">
+                                <i class="bi bi-whatsapp me-1 text-success"></i>
+                                @if($whatsappOwn)
+                                    Mesajlar öz WhatsApp nömrənizdən göndərilir.
+                                @else
+                                    Mesajlar platformanın ortaq WhatsApp nömrəsindən göndərilir.
+                                @endif
+                                <a href="{{ route('panel.whatsapp.edit') }}" class="fw-semibold">Bağlantı ayarları</a>
                             </div>
                         @endif
 
