@@ -15,8 +15,8 @@ class DashboardController extends Controller
     public function index()
     {
         $stats = [
-            'total_doctors' => User::where('role', 'doctor')->count(),
-            'active_doctors' => User::where('role', 'doctor')->where('is_active', true)->count(),
+            'total_doctors' => User::staff()->count(),
+            'active_doctors' => User::staff()->where('is_active', true)->count(),
             'total_patients' => Patient::count(),
             'total_appointments' => Appointment::count(),
             'today_appointments' => Appointment::whereDate('scheduled_at', today())->count(),
@@ -27,8 +27,8 @@ class DashboardController extends Controller
             'total_packages' => Package::where('is_active', true)->count(),
         ];
 
-        $recentDoctors = User::where('role', 'doctor')
-            ->with('specialty', 'activeSubscription.package')
+        $recentDoctors = User::staff()
+            ->with('clinic', 'activeSubscription.package', 'specialty')
             ->latest()
             ->take(5)
             ->get();

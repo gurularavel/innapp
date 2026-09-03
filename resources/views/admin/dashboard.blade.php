@@ -74,7 +74,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th>Ad Soyad</th>
-                                <th>İxtisas</th>
+                                <th>Müəssisə</th>
                                 <th>Abunəlik</th>
                                 <th>Status</th>
                             </tr>
@@ -88,7 +88,7 @@
                                     </a>
                                     <div class="text-muted small">{{ $doctor->email }}</div>
                                 </td>
-                                <td>{{ $doctor->specialty?->name ?? '—' }}</td>
+                                <td class="text-muted small">{{ $doctor->clinic?->name ?? '—' }}</td>
                                 <td>
                                     @if($doctor->activeSubscription)
                                         <span class="badge bg-success">{{ $doctor->activeSubscription->package->name }}</span>

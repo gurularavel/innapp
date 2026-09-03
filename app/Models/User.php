@@ -98,6 +98,16 @@ class User extends Authenticatable
         return $this->takes_appointments && $this->isClinicMember();
     }
 
+    /**
+     * Every account that belongs to a clinic — owner, specialist or
+     * receptionist. Registration creates owners, so an admin listing that
+     * filters on `doctor` alone would show nobody.
+     */
+    public function scopeStaff($query)
+    {
+        return $query->whereIn('role', self::CLINIC_ROLES);
+    }
+
     public function getRoleLabelAttribute(): string
     {
         return match ($this->role) {

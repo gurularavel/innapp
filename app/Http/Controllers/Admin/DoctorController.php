@@ -12,14 +12,60 @@ use Illuminate\Support\Str;
 
 class DoctorController extends Controller
 {
-    public function index()
+    /**
+     * Every registered clinic account, paying or not.
+     *
+     * Registration creates `owner`s, so filtering on `doctor` alone hid the
+     * whole customer base. Billing is per clinic, so the subscription filter
+     * asks the clinic, not the individual account.
+     */
+    public function index(Request $request)
     {
-        $doctors = User::where('role', 'doctor')
-            ->with('specialty', 'activeSubscription.package')
-            ->latest()
-            ->paginate(15);
+        $query = User::staff()->with('clinic.activeSubscription.package', 'specialty');
 
-        return view('admin.users.index', compact('doctors'));
+        if ($search = trim((string) $request->input('search'))) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('surname', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhereHas('clinic', fn ($c) => $c->where('name', 'like', "%{$search}%"));
+            });
+        }
+
+        if (in_array($request->input('role'), User::CLINIC_ROLES, true)) {
+            $query->where('role', $request->input('role'));
+        }
+
+        if ($request->input('subscription') === 'active') {
+            $query->whereHas('clinic.activeSubscription');
+        } elseif ($request->input('subscription') === 'none') {
+            $query->whereDoesntHave('clinic.activeSubscription');
+        }
+
+        if ($request->input('status') === 'active') {
+            $query->where('is_active', true);
+        } elseif ($request->input('status') === 'inactive') {
+            $query->where('is_active', false);
+        }
+
+        if ($request->input('demo') === 'hide') {
+            $query->where('is_demo', false);
+        } elseif ($request->input('demo') === 'only') {
+            $query->where('is_demo', true);
+        }
+
+        $doctors = $query->latest()->paginate(20)->withQueryString();
+
+        $base  = User::staff();
+        $stats = [
+            'total'      => (clone $base)->count(),
+            'subscribed' => (clone $base)->whereHas('clinic.activeSubscription')->count(),
+            'unpaid'     => (clone $base)->whereDoesntHave('clinic.activeSubscription')->count(),
+            'demo'       => (clone $base)->where('is_demo', true)->count(),
+        ];
+
+        return view('admin.users.index', compact('doctors', 'stats'));
     }
 
     public function create()
@@ -52,7 +98,7 @@ class DoctorController extends Controller
 
     public function show(User $doctor)
     {
-        $doctor->load('specialty', 'subscriptions.package');
+        $doctor->load('specialty', 'clinic.activeSubscription.package', 'subscriptions.package');
         $patientsCount     = $doctor->patients()->count();
         $appointmentsCount = $doctor->appointments()->count();
         return view('admin.users.show', compact('doctor', 'patientsCount', 'appointmentsCount'));

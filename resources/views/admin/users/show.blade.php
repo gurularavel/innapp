@@ -26,12 +26,29 @@
                     <i class="bi bi-person-badge fs-2 text-primary"></i>
                 </div>
                 <h5 class="fw-bold mb-1">{{ $doctor->full_name }}</h5>
-                <div class="text-muted">{{ $doctor->specialty?->name ?? 'İxtisas yoxdur' }}</div>
+                <div class="text-muted">{{ $doctor->clinic?->name ?? 'Müəssisə təyin edilməyib' }}</div>
+                <div class="text-muted small">{{ $doctor->specialty?->name ?? 'İxtisas yoxdur' }}</div>
                 <div class="mt-2">
+                    <span class="badge bg-light text-dark border">{{ $doctor->role_label }}</span>
                     @if($doctor->is_active)
                         <span class="badge bg-success">Aktiv</span>
                     @else
                         <span class="badge bg-danger">Deaktiv</span>
+                    @endif
+                    @if($doctor->is_demo)
+                        <span class="badge bg-warning text-dark">Demo</span>
+                    @endif
+                </div>
+                @php $activeSub = $doctor->clinic?->activeSubscription; @endphp
+                <div class="mt-3">
+                    @if($activeSub)
+                        <span class="badge bg-success">Ödənilib</span>
+                        <div class="text-muted small mt-1">
+                            {{ $activeSub->package?->name }} — {{ $activeSub->expires_at->format('d.m.Y') }}-a kimi,
+                            {{ $activeSub->seats }} yer
+                        </div>
+                    @else
+                        <span class="badge bg-danger">Aktiv abunəlik yoxdur</span>
                     @endif
                 </div>
             </div>
@@ -75,7 +92,7 @@
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
                 <h6 class="mb-0 fw-semibold">Abunəliklər</h6>
-                <a href="{{ route('admin.subscriptions.create') }}?doctor_id={{ $doctor->id }}"
+                <a href="{{ route('admin.subscriptions.create', ['doctor_id' => $doctor->id]) }}"
                    class="btn btn-sm btn-outline-success">
                     <i class="bi bi-plus-lg me-1"></i>Yeni Abunəlik
                 </a>

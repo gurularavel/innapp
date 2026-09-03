@@ -18,6 +18,7 @@
                     <tr>
                         <th>#</th>
                         <th>İstifadəçi</th>
+                        <th>Müəssisə</th>
                         <th>Paket</th>
                         <th>Başlanğıc</th>
                         <th>Bitmə</th>
@@ -37,6 +38,7 @@
                             </a>
                             <div class="text-muted small">{{ $subscription->doctor->email }}</div>
                         </td>
+                        <td class="text-muted small">{{ $subscription->clinic?->name ?? '—' }}</td>
                         <td class="fw-medium">{{ $subscription->package->name }}</td>
                         <td class="text-muted small">{{ $subscription->starts_at->format('d.m.Y') }}</td>
                         <td>
@@ -71,7 +73,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="9" class="text-center text-muted py-4">
+                        <td colspan="10" class="text-center text-muted py-4">
                             <i class="bi bi-credit-card fs-3 d-block mb-2"></i>
                             Abunəlik tapılmadı
                         </td>

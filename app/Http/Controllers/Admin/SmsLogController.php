@@ -30,7 +30,7 @@ class SmsLogController extends Controller
         }
 
         $smsLogs = $query->latest()->paginate(20);
-        $doctors = User::where('role', 'doctor')->get();
+        $doctors = User::staff()->orderBy('name')->get();
 
         return view('admin.sms-logs.index', compact('smsLogs', 'doctors'));
     }

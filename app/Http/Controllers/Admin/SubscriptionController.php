@@ -13,7 +13,7 @@ class SubscriptionController extends Controller
 {
     public function index()
     {
-        $subscriptions = DoctorSubscription::with('doctor', 'package')
+        $subscriptions = DoctorSubscription::with('doctor', 'clinic', 'package')
             ->latest()
             ->paginate(15);
 
@@ -22,35 +22,62 @@ class SubscriptionController extends Controller
 
     public function create()
     {
-        $doctors = User::where('role', 'doctor')->where('is_active', true)->get();
+        $doctors = User::staff()
+            ->where('is_active', true)
+            ->with('clinic')
+            ->orderBy('name')
+            ->get();
+
         $packages = Package::where('is_active', true)->get();
+
         return view('admin.subscriptions.create', compact('doctors', 'packages'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'doctor_id' => 'required|exists:users,id',
+            'doctor_id'  => 'required|exists:users,id',
             'package_id' => 'required|exists:packages,id',
-            'starts_at' => 'required|date',
+            'starts_at'  => 'required|date',
+            'seats'      => 'nullable|integer|min:1|max:500',
+            'months'     => 'nullable|integer|min:1|max:36',
         ]);
 
-        $package = Package::findOrFail($validated['package_id']);
-        $startsAt = \Carbon\Carbon::parse($validated['starts_at']);
+        $doctor = User::findOrFail($validated['doctor_id']);
 
-        // Deactivate existing active subscriptions
-        DoctorSubscription::where('doctor_id', $validated['doctor_id'])
+        if (! $doctor->isClinicMember() || ! $doctor->clinic_id) {
+            return back()->withInput()
+                ->with('error', 'Seçilmiş istifadəçi heç bir müəssisəyə bağlı deyil, ona abunəlik verilə bilməz.');
+        }
+
+        $package  = Package::findOrFail($validated['package_id']);
+        $startsAt = \Carbon\Carbon::parse($validated['starts_at']);
+        $months   = max(1, (int) ($validated['months'] ?? 1));
+
+        // Seats must at least cover the accounts the clinic already has,
+        // otherwise CheckSubscription would block the panel straight away.
+        $usedSeats = $doctor->clinic?->usedSeats() ?? 1;
+        $seats     = max((int) ($validated['seats'] ?? 0), $usedSeats, $package->min_seats, 1);
+
+        if ($package->max_seats !== null) {
+            $seats = min($seats, $package->max_seats);
+        }
+
+        // Billing is per clinic — retire whatever the clinic had before.
+        DoctorSubscription::where('clinic_id', $doctor->clinic_id)
             ->where('is_active', true)
             ->update(['is_active' => false]);
 
         DoctorSubscription::create([
-            'doctor_id' => $validated['doctor_id'],
-            'package_id' => $validated['package_id'],
-            'starts_at' => $startsAt->toDateString(),
-            'expires_at' => $startsAt->addDays($package->duration_days)->toDateString(),
-            'patients_used' => 0,
-            'seats' => max(1, (int) $request->input('seats', 1)),
-            'is_active' => true,
+            'clinic_id'      => $doctor->clinic_id,
+            'doctor_id'      => $doctor->id,
+            'package_id'     => $package->id,
+            'seats'          => $seats,
+            'price_per_seat' => $package->price_per_seat,
+            'starts_at'      => $startsAt->toDateString(),
+            'expires_at'     => (clone $startsAt)->addDays($package->duration_days * $months)->toDateString(),
+            'patients_used'  => 0,
+            'is_active'      => true,
         ]);
 
         return redirect()->route('admin.subscriptions.index')
@@ -93,7 +120,7 @@ class SubscriptionController extends Controller
             'count_failed' => SubscriptionPayment::where('status', 'failed')->count(),
         ];
 
-        $doctors = User::where('role', 'doctor')->orderBy('name')->get();
+        $doctors = User::staff()->orderBy('name')->get();
 
         return view('admin.payments.index', compact('payments', 'stats', 'doctors'));
     }

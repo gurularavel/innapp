@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="row justify-content-center">
-    <div class="col-lg-6">
+    <div class="col-lg-8">
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
                 <h6 class="mb-0 fw-semibold">Yeni Abunəlik Əlavə Et</h6>
@@ -25,7 +25,7 @@
                             @foreach($doctors as $doctor)
                                 <option value="{{ $doctor->id }}"
                                     {{ old('doctor_id', request('doctor_id')) == $doctor->id ? 'selected' : '' }}>
-                                    {{ $doctor->full_name }} ({{ $doctor->email }})
+                                    {{ $doctor->full_name }} — {{ $doctor->clinic?->name ?? 'Müəssisəsiz' }} ({{ $doctor->email }})
                                 </option>
                             @endforeach
                         </select>
@@ -51,14 +51,34 @@
                         @enderror
                     </div>
 
-                    <div class="mb-4">
-                        <label for="starts_at" class="form-label fw-medium">Başlanğıc Tarixi <span class="text-danger">*</span></label>
-                        <input type="date" class="form-control @error('starts_at') is-invalid @enderror"
-                               id="starts_at" name="starts_at"
-                               value="{{ old('starts_at', now()->format('Y-m-d')) }}" required>
-                        @error('starts_at')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label for="starts_at" class="form-label fw-medium">Başlanğıc Tarixi <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control @error('starts_at') is-invalid @enderror"
+                                   id="starts_at" name="starts_at"
+                                   value="{{ old('starts_at', now()->format('Y-m-d')) }}" required>
+                            @error('starts_at')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-4">
+                            <label for="seats" class="form-label fw-medium">Yer sayı</label>
+                            <input type="number" min="1" max="500" class="form-control @error('seats') is-invalid @enderror"
+                                   id="seats" name="seats" value="{{ old('seats') }}" placeholder="Avtomatik">
+                            <div class="form-text small">Boş buraxsanız müəssisədəki aktiv hesab sayı qədər olacaq.</div>
+                            @error('seats')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-4">
+                            <label for="months" class="form-label fw-medium">Müddət (dövr sayı)</label>
+                            <input type="number" min="1" max="36" class="form-control @error('months') is-invalid @enderror"
+                                   id="months" name="months" value="{{ old('months', 1) }}">
+                            <div class="form-text small">Paketin müddəti neçə dəfə təkrarlansın (məs. 12 = illik).</div>
+                            @error('months')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
                     </div>
 
                     <div class="d-flex gap-2">
