@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Şifrəni Unutdum — InnApp</title>
+    <title>Demo — InnApp</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -29,32 +29,6 @@
         }
         .brand-name { color: #fff; font-size: 1.5rem; font-weight: 800; letter-spacing: -.5px; }
         .brand-name span { color: var(--af-ice); }
-        .form-label { font-size: .875rem; font-weight: 600; color: var(--af-dark); margin-bottom: 6px; }
-        .form-control {
-            border-radius: 8px;
-            border: 1.5px solid #deeaf8;
-            padding: 10px 14px;
-            font-size: .9rem;
-            transition: border-color .2s, box-shadow .2s;
-            background: var(--af-ice-lt);
-        }
-        .form-control:focus {
-            border-color: var(--af-steel);
-            box-shadow: 0 0 0 3px rgba(74,111,165,.15);
-            background: #fff;
-        }
-        .input-group-text {
-            border-radius: 8px 0 0 8px;
-            border: 1.5px solid #deeaf8;
-            border-right: none;
-            background: var(--af-ice-lt);
-            color: var(--af-steel);
-        }
-        .input-group .form-control { border-radius: 0 8px 8px 0; border-left: none; }
-        .input-group:focus-within .input-group-text {
-            border-color: var(--af-steel);
-            background: #fff;
-        }
         .btn-auth {
             background: var(--af-steel);
             color: #fff;
@@ -73,13 +47,14 @@
         }
         .auth-link { color: var(--af-steel); font-weight: 600; text-decoration: none; }
         .auth-link:hover { color: var(--af-steel-dk); text-decoration: underline; }
-        .is-invalid { border-color: #dc3545 !important; }
+        .demo-perk { font-size: .875rem; color: #475569; }
+        .demo-perk i { color: var(--af-steel); }
     </style>
 </head>
 <body>
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-md-5 col-lg-4">
+        <div class="col-md-6 col-lg-5">
 
             <div class="text-center mb-4">
                 <a href="{{ route('home') }}" class="d-inline-flex align-items-center gap-2 text-decoration-none">
@@ -92,15 +67,11 @@
             <div class="auth-card">
                 <div class="card-body p-4 p-md-5">
                     <div class="mb-4">
-                        <h5 class="fw-bold mb-1" style="color:var(--af-dark)">Şifrəni sıfırla</h5>
-                        <p class="text-muted small mb-0">E-poçt ünvanınızı daxil edin, şifrə sıfırlama linki göndəriləcək.</p>
+                        <h5 class="fw-bold mb-1" style="color:var(--af-dark)">Demo hesab yarat</h5>
+                        <p class="text-muted small mb-0">
+                            Qeydiyyat tələb olunmur. Hazır məlumatlarla dolu test müəssisəsi yaradılacaq.
+                        </p>
                     </div>
-
-                    @if(session('status'))
-                    <div class="alert py-2 small mb-4" style="background:var(--af-ice-lt);border:1px solid var(--af-ice);color:var(--af-steel);border-radius:8px">
-                        <i class="bi bi-check-circle-fill me-2"></i>{{ session('status') }}
-                    </div>
-                    @endif
 
                     @if($errors->any())
                     <div class="alert alert-danger py-2 small mb-4">
@@ -110,42 +81,39 @@
                     </div>
                     @endif
 
-                    <form method="POST" action="{{ route('password.email') }}">
+                    <ul class="list-unstyled mb-4">
+                        <li class="demo-perk mb-2"><i class="bi bi-check-circle-fill me-2"></i>2 saat ərzində bütün funksiyalar açıqdır</li>
+                        <li class="demo-perk mb-2"><i class="bi bi-check-circle-fill me-2"></i>Nümunə müştəri, randevu və xidmətlərlə hazır gəlir</li>
+                        <li class="demo-perk"><i class="bi bi-check-circle-fill me-2"></i>Müddət bitəndə bütün məlumatlar avtomatik silinir</li>
+                    </ul>
+
+                    <form method="POST" action="{{ route('demo.create') }}">
                         @csrf
-                        <div class="mb-4">
-                            <label class="form-label" for="email">E-poçt</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                                <input type="email" id="email" name="email"
-                                    class="form-control @error('email') is-invalid @enderror"
-                                    value="{{ old('email') }}" placeholder="email@example.com"
-                                    autofocus required autocomplete="username">
-                            </div>
-                        </div>
-                        @include('auth._turnstile', ['form' => 'password'])
+
+                        @include('auth._turnstile', ['form' => 'demo'])
 
                         <button type="submit" class="btn btn-auth w-100">
-                            <i class="bi bi-send me-2"></i>Sıfırlama linki göndər
+                            <i class="bi bi-play-circle me-2"></i>Demoya başla
                         </button>
                     </form>
 
-                    <hr class="my-4" style="border-color:#e8f0fb">
+                    <hr class="my-4">
                     <p class="text-center mb-0 small text-muted">
-                        <a href="{{ route('login') }}" class="auth-link">
-                            <i class="bi bi-arrow-left me-1"></i>Girişə qayıt
-                        </a>
+                        Real hesab açmaq istəyirsiniz?
+                        <a href="{{ route('register') }}" class="auth-link">Qeydiyyatdan keçin</a>
                     </p>
                 </div>
             </div>
 
-            <p class="text-center mt-3">
-                <a href="{{ route('home') }}" style="color:rgba(255,255,255,.4);text-decoration:none;font-size:.77rem">
+            <p class="text-center mt-3" style="color:rgba(255,255,255,.3);font-size:.77rem">
+                <a href="{{ route('home') }}" style="color:rgba(255,255,255,.4);text-decoration:none">
                     <i class="bi bi-arrow-left me-1"></i>Ana səhifəyə qayıt
                 </a>
             </p>
         </div>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

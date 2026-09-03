@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Http\Controllers\Concerns\VerifiesCaptcha;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -10,6 +11,8 @@ use Illuminate\View\View;
 
 class PasswordResetLinkController extends Controller
 {
+    use VerifiesCaptcha;
+
     /**
      * Display the password reset link request view.
      */
@@ -26,8 +29,9 @@ class PasswordResetLinkController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
+            ...$this->captchaRules($request, 'password'),
             'email' => ['required', 'email'],
-        ]);
+        ], $this->captchaMessages());
 
         // We will send the password reset link to this user. Once we have attempted
         // to send the link, we will examine the response then see the message we

@@ -1,4 +1,8 @@
 *.log
+
+# Database dumps — they carry live customer data and every push deploys
+*.sql
+*.sql.gz
 .DS_Store
 .env
 .env.backup

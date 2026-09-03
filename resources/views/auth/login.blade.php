@@ -137,6 +137,8 @@
                             @endif
                         </div>
 
+                        @include('auth._turnstile', ['form' => 'login'])
+
                         <button type="submit" class="btn btn-auth w-100">
                             <i class="bi bi-box-arrow-in-right me-2"></i>Daxil ol
                         </button>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\VerifiesCaptcha;
 use App\Models\Appointment;
 use App\Models\Patient;
 use App\Models\PatientVisit;
@@ -9,6 +10,8 @@ use App\Models\PatientVisitFile;
 use App\Models\TreatmentType;
 use App\Models\User;
 use App\Models\DoctorWorkingHours;
+use App\Services\TurnstileService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -16,7 +19,33 @@ use Illuminate\Support\Str;
 
 class DemoController extends Controller
 {
-    public function start()
+    use VerifiesCaptcha;
+
+    /**
+     * A demo click builds a whole clinic with seed data, so it is the cheapest
+     * table to spam. When the bot check guards it, the link lands on a gate
+     * page instead of creating the account straight away.
+     */
+    public function start(TurnstileService $turnstile)
+    {
+        if ($turnstile->enabledFor('demo')) {
+            return view('demo.gate');
+        }
+
+        return $this->createDemo();
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate(
+            $this->captchaRules($request, 'demo'),
+            $this->captchaMessages()
+        );
+
+        return $this->createDemo();
+    }
+
+    private function createDemo()
     {
         // Clean up expired demos first
         $this->cleanupExpired();

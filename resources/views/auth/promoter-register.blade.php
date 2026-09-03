@@ -188,6 +188,8 @@
                             @error('terms')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                         </div>
 
+                        @include('auth._turnstile', ['form' => 'promoter'])
+
                         <button type="submit" class="btn btn-auth w-100">
                             <i class="bi bi-megaphone me-2"></i>Promotor ol
                         </button>

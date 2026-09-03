@@ -192,6 +192,8 @@
                             @error('terms')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                         </div>
 
+                        @include('auth._turnstile', ['form' => 'register'])
+
                         <button type="submit" class="btn btn-auth w-100">
                             <i class="bi bi-rocket-takeoff me-2"></i>Hesab yarat
                         </button>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Http\Controllers\Concerns\VerifiesCaptcha;
 use App\Http\Controllers\Controller;
 use App\Models\PromoCode;
 use App\Models\Setting;
@@ -18,6 +19,8 @@ use Illuminate\View\View;
 
 class PromoterRegistrationController extends Controller
 {
+    use VerifiesCaptcha;
+
     /**
      * Promotor qeydiyyat formu.
      */
@@ -40,6 +43,7 @@ class PromoterRegistrationController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
+            ...$this->captchaRules($request, 'promoter'),
             'name'     => ['required', 'string', 'max:255'],
             'surname'  => ['required', 'string', 'max:255'],
             'email'    => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
@@ -47,6 +51,7 @@ class PromoterRegistrationController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'terms'    => ['accepted'],
         ], [
+            ...$this->captchaMessages(),
             'terms.accepted' => 'Davam etmək üçün istifadə qaydalarını qəbul etməlisiniz.',
         ]);
 

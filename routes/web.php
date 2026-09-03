@@ -21,13 +21,15 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Demo
 Route::get('/demo', [DemoController::class, 'start'])->name('demo.start')->middleware('guest');
+Route::post('/demo', [DemoController::class, 'store'])->name('demo.create')
+    ->middleware(['guest', 'throttle:10,1']);
 Route::post('/demo/exit', [DemoController::class, 'exit'])->name('demo.exit')->middleware('auth');
 
 // Promotor qeydiyyatı (açıq qeydiyyat — kod avtomatik yaradılır)
 Route::get('/promoter/register', [\App\Http\Controllers\Auth\PromoterRegistrationController::class, 'create'])
     ->name('promoter.register')->middleware('guest');
 Route::post('/promoter/register', [\App\Http\Controllers\Auth\PromoterRegistrationController::class, 'store'])
-    ->middleware('guest');
+    ->middleware(['guest', 'throttle:10,1']);
 
 // Auth routes (Breeze)
 require __DIR__.'/auth.php';
@@ -80,6 +82,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin'])
 
     Route::get('settings/terms', [Admin\SettingController::class, 'terms'])->name('settings.terms');
     Route::put('settings/terms', [Admin\SettingController::class, 'saveTerms'])->name('settings.terms.save');
+
+    Route::get('settings/security', [Admin\SettingController::class, 'security'])->name('settings.security');
+    Route::put('settings/security', [Admin\SettingController::class, 'saveSecurity'])->name('settings.security.save');
 
     Route::get('settings/promo', [Admin\SettingController::class, 'promoSettings'])->name('settings.promo');
     Route::put('settings/promo', [Admin\SettingController::class, 'savePromoSettings'])->name('settings.promo.save');

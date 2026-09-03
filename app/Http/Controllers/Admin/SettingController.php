@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Clinic;
 use App\Models\Holiday;
 use App\Models\Setting;
+use App\Models\User;
+use App\Services\TurnstileService;
 use Illuminate\Http\Request;
 
 class SettingController extends Controller
@@ -270,5 +272,76 @@ class SettingController extends Controller
         }
 
         return back()->with('success', 'SMTP ayarları yadda saxlandı.');
+    }
+
+    /**
+     * Bot protection for the public sign-up forms (Cloudflare Turnstile).
+     */
+    public function security(TurnstileService $turnstile)
+    {
+        $settings = [
+            'turnstile_enabled'  => Setting::get('turnstile_enabled', '0'),
+            'turnstile_site_key' => Setting::get('turnstile_site_key', ''),
+            'has_secret'         => $turnstile->secretKey() !== '',
+            'is_live'            => $turnstile->enabled(),
+        ];
+
+        // Which public forms the check currently guards.
+        $forms = [];
+        foreach (TurnstileService::FORMS as $key => $form) {
+            $forms[$key] = $form + [
+                'on' => Setting::get(
+                    TurnstileService::settingKey($key),
+                    $form['default'] ? '1' : '0'
+                ) === '1',
+            ];
+        }
+
+        // How many accounts arrived recently — the number the admin watches to
+        // tell whether the spam actually stopped.
+        $signups = [
+            'today' => User::whereDate('created_at', today())->count(),
+            'week'  => User::where('created_at', '>=', now()->subWeek())->count(),
+            'month' => User::where('created_at', '>=', now()->subMonth())->count(),
+        ];
+
+        return view('admin.settings.security', compact('settings', 'forms', 'signups'));
+    }
+
+    public function saveSecurity(Request $request)
+    {
+        $request->validate([
+            'turnstile_site_key'   => ['nullable', 'string', 'max:255'],
+            'turnstile_secret_key' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $enabled   = $request->boolean('turnstile_enabled');
+        $hasSecret = $request->filled('turnstile_secret_key')
+            || (string) Setting::get('turnstile_secret_key', '') !== '';
+
+        // Switching it on without keys would lock every sign-up out, because
+        // the check is deliberately fail-closed.
+        if ($enabled && (! $request->filled('turnstile_site_key') || ! $hasSecret)) {
+            return back()->withInput()->withErrors([
+                'turnstile_enabled' => 'Turnstile-ı aktivləşdirmək üçün Site Key və Secret Key doldurulmalıdır.',
+            ]);
+        }
+
+        Setting::set('turnstile_enabled',  $enabled ? '1' : '0');
+        Setting::set('turnstile_site_key', $request->turnstile_site_key);
+
+        foreach (array_keys(TurnstileService::FORMS) as $form) {
+            Setting::set(
+                TurnstileService::settingKey($form),
+                $request->boolean('form_' . $form) ? '1' : '0'
+            );
+        }
+
+        // Only overwrite the secret when a new one is typed in.
+        if ($request->filled('turnstile_secret_key')) {
+            Setting::set('turnstile_secret_key', encrypt($request->turnstile_secret_key));
+        }
+
+        return back()->with('success', 'Təhlükəsizlik ayarları yadda saxlandı.');
     }
 }

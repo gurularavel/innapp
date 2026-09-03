@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Rules\Turnstile;
+use App\Services\TurnstileService;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -26,9 +28,26 @@ class LoginRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
+        ];
+
+        // Bot check, only while the admin has it switched on for this form.
+        if (app(TurnstileService::class)->enabledFor('login')) {
+            $rules[TurnstileService::FIELD] = ['required', new Turnstile($this->ip())];
+        }
+
+        return $rules;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            TurnstileService::FIELD . '.required' => 'Zəhmət olmasa robot olmadığınızı təsdiqləyin.',
         ];
     }
 

@@ -284,6 +284,37 @@
             font-weight: 500;
         }
 
+        /* Desktop sidebar collapse — remembered per browser */
+        .sidebar-toggle {
+            background: none;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem;
+            color: var(--text-mid);
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: background-color .18s, color .18s, border-color .18s;
+        }
+
+        .sidebar-toggle:hover {
+            background-color: var(--accent-primary-light);
+            color: var(--accent-primary);
+            border-color: rgba(79, 70, 229, 0.12);
+        }
+
+        html.sidebar-collapsed .sidebar {
+            transform: translateX(-100%);
+        }
+
+        html.sidebar-collapsed .main-content {
+            margin-left: 0;
+        }
+
         /* Mobile Hamburger & Controls */
         .mobile-menu-toggle {
             display: none;
@@ -580,6 +611,14 @@
                 display: block;
             }
 
+            .sidebar-toggle {
+                display: none;
+            }
+
+            html.sidebar-collapsed .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
             .topbar {
                 padding: 1rem 1.25rem;
             }
@@ -590,6 +629,14 @@
         }
     </style>
     @stack('styles')
+    <script>
+        // Applied before the first paint so a collapsed menu never flashes open.
+        try {
+            if (localStorage.getItem('admin_sidebar_collapsed') === '1') {
+                document.documentElement.classList.add('sidebar-collapsed');
+            }
+        } catch (e) {}
+    </script>
 </head>
 <body>
 <div class="app-wrapper">
@@ -697,6 +744,11 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="{{ route('admin.settings.security') }}" class="nav-link {{ request()->routeIs('admin.settings.security*') ? 'active' : '' }}">
+                        <i class="bi bi-shield-check"></i>Təhlükəsizlik
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="{{ route('admin.cron-log') }}" class="nav-link {{ request()->routeIs('admin.cron-log') ? 'active' : '' }}">
                         <i class="bi bi-terminal-fill"></i>Cron / SMS Test
                     </a>
@@ -726,6 +778,10 @@
             <div class="d-flex align-items-center gap-3">
                 <button class="mobile-menu-toggle" id="menu-toggle-btn" aria-label="Menu">
                     <i class="bi bi-list"></i>
+                </button>
+                <button class="sidebar-toggle" id="sidebar-collapse-btn" type="button"
+                        aria-label="Menyunu gizlət" title="Menyunu gizlət">
+                    <i class="bi bi-chevron-double-left"></i>
                 </button>
                 <span class="page-title">@yield('page-title', 'Dashboard')</span>
             </div>
@@ -781,6 +837,29 @@ document.addEventListener('DOMContentLoaded', function () {
                 sidebar.classList.remove('mobile-open');
             }
         });
+    }
+
+    // Desktop sidebar collapse — the state is restored in <head> to avoid a flash
+    const collapseBtn = document.getElementById('sidebar-collapse-btn');
+
+    if (collapseBtn) {
+        const paint = function () {
+            const off = document.documentElement.classList.contains('sidebar-collapsed');
+            collapseBtn.querySelector('i').className = off
+                ? 'bi bi-chevron-double-right'
+                : 'bi bi-chevron-double-left';
+            const label = off ? 'Menyunu göstər' : 'Menyunu gizlət';
+            collapseBtn.setAttribute('title', label);
+            collapseBtn.setAttribute('aria-label', label);
+        };
+
+        collapseBtn.addEventListener('click', function () {
+            const off = document.documentElement.classList.toggle('sidebar-collapsed');
+            try { localStorage.setItem('admin_sidebar_collapsed', off ? '1' : '0'); } catch (e) {}
+            paint();
+        });
+
+        paint();
     }
 
     document.querySelectorAll('input[name="phone"]').forEach(function (el) {

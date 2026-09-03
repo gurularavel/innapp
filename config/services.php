@@ -60,4 +60,14 @@ return [
         'language_code'   => env('WHATSAPP_LANGUAGE_CODE', 'az'),
     ],
 
+    /*
+     | Cloudflare Turnstile — fallback values. The admin panel
+     | (Ayarlar » Təhlükəsizlik) writes into the `settings` table and takes
+     | priority.
+     */
+    'turnstile' => [
+        'site_key'   => env('TURNSTILE_SITE_KEY'),
+        'secret_key' => env('TURNSTILE_SECRET_KEY'),
+    ],
+
 ];

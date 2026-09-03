@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Http\Controllers\Concerns\VerifiesCaptcha;
 use App\Http\Controllers\Controller;
 use App\Models\Clinic;
 use App\Models\PromoCode;
@@ -18,6 +19,8 @@ use Illuminate\View\View;
 
 class RegisteredUserController extends Controller
 {
+    use VerifiesCaptcha;
+
     /**
      * Display the registration view.
      */
@@ -44,6 +47,7 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
+            ...$this->captchaRules($request, 'register'),
             'name'    => ['required', 'string', 'max:255'],
             'surname' => ['required', 'string', 'max:255'],
             'email'   => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
@@ -54,6 +58,7 @@ class RegisteredUserController extends Controller
             'promo_code' => ['nullable', 'string', 'max:50'],
             'terms' => ['accepted'],
         ], [
+            ...$this->captchaMessages(),
             'terms.accepted' => 'Davam etmək üçün istifadə qaydalarını qəbul etməlisiniz.',
         ]);
 
