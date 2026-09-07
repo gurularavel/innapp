@@ -53,6 +53,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin'])
     Route::get('subscriptions', [Admin\SubscriptionController::class, 'index'])->name('subscriptions.index');
     Route::get('subscriptions/create', [Admin\SubscriptionController::class, 'create'])->name('subscriptions.create');
     Route::post('subscriptions', [Admin\SubscriptionController::class, 'store'])->name('subscriptions.store');
+    Route::get('subscriptions/{subscription}/edit', [Admin\SubscriptionController::class, 'edit'])->name('subscriptions.edit');
+    Route::put('subscriptions/{subscription}', [Admin\SubscriptionController::class, 'update'])->name('subscriptions.update');
+    Route::post('subscriptions/{subscription}/extend', [Admin\SubscriptionController::class, 'extend'])->name('subscriptions.extend');
     Route::delete('subscriptions/{subscription}', [Admin\SubscriptionController::class, 'destroy'])->name('subscriptions.destroy');
 
     Route::get('payments', [Admin\SubscriptionController::class, 'payments'])->name('payments.index');

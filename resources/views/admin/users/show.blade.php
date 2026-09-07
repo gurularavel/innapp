@@ -108,6 +108,7 @@
                                 <th>İstifadə (kvota)</th>
                                 <th>SMS</th>
                                 <th>Status</th>
+                                <th class="text-end">Əməliyyat</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -131,10 +132,16 @@
                                         <span class="badge bg-danger">Deaktiv</span>
                                     @endif
                                 </td>
+                                <td class="text-end">
+                                    <a href="{{ route('admin.subscriptions.edit', $sub) }}"
+                                       class="btn btn-sm btn-outline-primary" title="Redaktə et">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="6" class="text-center text-muted py-3">Abunəlik tapılmadı</td>
+                                <td colspan="7" class="text-center text-muted py-3">Abunəlik tapılmadı</td>
                             </tr>
                             @endforelse
                         </tbody>

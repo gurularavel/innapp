@@ -62,7 +62,28 @@
                             @endif
                         </td>
                         <td class="text-end">
-                            <form method="POST" action="{{ route('admin.subscriptions.destroy', $subscription) }}" class="d-inline">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ route('admin.subscriptions.edit', $subscription) }}"
+                                   class="btn btn-outline-primary" title="Redaktə et">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button type="button" class="btn btn-outline-secondary dropdown-toggle"
+                                        data-bs-toggle="dropdown" aria-expanded="false" title="Uzat">
+                                    <i class="bi bi-calendar-plus"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    @foreach(['+1 ay' => 30, '+3 ay' => 90, '+6 ay' => 180, '+1 il' => 365] as $label => $days)
+                                    <li>
+                                        <form method="POST" action="{{ route('admin.subscriptions.extend', $subscription) }}">
+                                            @csrf
+                                            <input type="hidden" name="days" value="{{ $days }}">
+                                            <button type="submit" class="dropdown-item">{{ $label }}</button>
+                                        </form>
+                                    </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                            <form method="POST" action="{{ route('admin.subscriptions.destroy', $subscription) }}" class="d-inline ms-1">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Silmək istədiyinizdən əminsiniz?')">
