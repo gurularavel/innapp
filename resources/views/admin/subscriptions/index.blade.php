@@ -33,10 +33,15 @@
                     <tr>
                         <td class="text-muted small">{{ $subscriptions->firstItem() + $loop->index }}</td>
                         <td>
-                            <a href="{{ route('admin.users.show', $subscription->doctor) }}" class="text-decoration-none fw-medium">
-                                {{ $subscription->doctor->full_name }}
-                            </a>
-                            <div class="text-muted small">{{ $subscription->doctor->email }}</div>
+                            @if($subscription->doctor)
+                                <a href="{{ route('admin.users.show', $subscription->doctor) }}" class="text-decoration-none fw-medium">
+                                    {{ $subscription->doctor->full_name }}
+                                </a>
+                                <div class="text-muted small">{{ $subscription->doctor->email }}</div>
+                            @else
+                                {{-- doctor_id is nullOnDelete: the staff member is gone, the clinic's record stays. --}}
+                                <span class="fw-medium text-muted">Silinmiş istifadəçi</span>
+                            @endif
                         </td>
                         <td class="text-muted small">{{ $subscription->clinic?->name ?? '—' }}</td>
                         <td class="fw-medium">{{ $subscription->package->name }}</td>

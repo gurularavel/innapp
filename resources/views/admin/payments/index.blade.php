@@ -134,10 +134,15 @@
                     <tr>
                         <td class="text-muted">{{ $payments->firstItem() + $loop->index }}</td>
                         <td>
-                            <a href="{{ route('admin.users.show', $payment->doctor) }}" class="text-decoration-none fw-medium">
-                                {{ $payment->doctor->full_name }}
-                            </a>
-                            <div class="text-muted">{{ $payment->doctor->email }}</div>
+                            @if($payment->doctor)
+                                <a href="{{ route('admin.users.show', $payment->doctor) }}" class="text-decoration-none fw-medium">
+                                    {{ $payment->doctor->full_name }}
+                                </a>
+                                <div class="text-muted">{{ $payment->doctor->email }}</div>
+                            @else
+                                {{-- doctor_id is nullOnDelete: the staff member is gone, the payment history stays. --}}
+                                <span class="fw-medium text-muted">Silinmiş istifadəçi</span>
+                            @endif
                         </td>
                         <td class="fw-medium">{{ $payment->package->name }}</td>
                         <td>
