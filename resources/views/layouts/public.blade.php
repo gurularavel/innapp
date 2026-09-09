@@ -5,6 +5,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    @include('layouts._analytics')
     <meta name="description" content="@yield('meta_description', 'InnApp randevu idarəetmə sistemi')">
     <title>@yield('title', 'InnApp | Randevu idarəetmə sistemi')</title>
 

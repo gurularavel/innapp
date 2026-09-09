@@ -61,6 +61,14 @@ return [
     ],
 
     /*
+     | Google Analytics 4 — measurement id for the gtag.js snippet rendered by
+     | resources/views/layouts/_analytics.blade.php. Leave empty to disable.
+     */
+    'google_analytics' => [
+        'measurement_id' => env('GOOGLE_ANALYTICS_ID', 'G-X8ZGYKVJ4V'),
+    ],
+
+    /*
      | Cloudflare Turnstile — fallback values. The admin panel
      | (Ayarlar » Təhlükəsizlik) writes into the `settings` table and takes
      | priority.
