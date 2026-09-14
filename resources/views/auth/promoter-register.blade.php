@@ -151,11 +151,12 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label" for="phone">Telefon <span class="text-muted fw-normal">(ixtiyari)</span></label>
+                            <label class="form-label" for="phone">Mobil nömrə</label>
                             <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-telephone"></i></span>
-                                <input type="text" id="phone" name="phone" class="form-control @error('phone') is-invalid @enderror"
-                                    value="{{ old('phone') }}" placeholder="+994 55 123 45 67" autocomplete="tel">
+                                <span class="input-group-text"><i class="bi bi-phone"></i></span>
+                                <input type="tel" id="phone" name="phone" class="form-control @error('phone') is-invalid @enderror"
+                                    value="{{ old('phone') }}" placeholder="+994 __ ___ __ __" inputmode="numeric"
+                                    required autocomplete="tel" data-phone-mask>
                             </div>
                         </div>
 
@@ -236,5 +237,32 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/imask@7.6.1/dist/imask.min.js"></script>
+<script>
+// Azerbaijani mobile mask: digits only, +994 fixed, 9 national digits.
+document.querySelectorAll('[data-phone-mask]').forEach(function (el) {
+    var digits = el.value.replace(/\D/g, '');
+    if (digits.startsWith('0') && digits.length === 10) digits = '994' + digits.slice(1);
+    else if (digits.length === 9) digits = '994' + digits;
+    el.value = digits ? '+' + digits : '';
+
+    var mask = IMask(el, { mask: '+{994} 00 000 00 00', lazy: false, placeholderChar: '_' });
+
+    // Native "required" cannot see through the placeholder chars, so the
+    // form checks the real digit count before it is allowed to submit.
+    el.form && el.form.addEventListener('submit', function (e) {
+        if (mask.unmaskedValue.length !== 12) {
+            e.preventDefault();
+            el.classList.add('is-invalid');
+            el.setCustomValidity('Mobil nömrəni tam daxil edin');
+            el.reportValidity();
+        }
+    });
+    el.addEventListener('input', function () {
+        el.setCustomValidity('');
+        el.classList.remove('is-invalid');
+    });
+});
+</script>
 </body>
 </html>

@@ -9,6 +9,7 @@ use App\Models\PromoCode;
 use App\Models\Setting;
 use App\Models\Specialty;
 use App\Models\User;
+use App\Rules\AzMobilePhone;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -51,6 +52,7 @@ class RegisteredUserController extends Controller
             'name'    => ['required', 'string', 'max:255'],
             'surname' => ['required', 'string', 'max:255'],
             'email'   => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'phone'   => ['required', 'string', 'max:20', new AzMobilePhone],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'specialty_id' => ['nullable', 'exists:specialties,id'],
             'account_type' => ['nullable', 'in:solo,clinic'],
@@ -59,6 +61,7 @@ class RegisteredUserController extends Controller
             'terms' => ['accepted'],
         ], [
             ...$this->captchaMessages(),
+            'phone.required' => 'Mobil nömrə vacibdir.',
             'terms.accepted' => 'Davam etmək üçün istifadə qaydalarını qəbul etməlisiniz.',
         ]);
 
@@ -91,6 +94,7 @@ class RegisteredUserController extends Controller
             'name'                 => $request->name,
             'surname'              => $request->surname,
             'email'                => $request->email,
+            'phone'                => AzMobilePhone::format($request->phone),
             'password'             => Hash::make($request->password),
             'role'                 => 'owner',
             'specialty_id'         => $request->specialty_id,

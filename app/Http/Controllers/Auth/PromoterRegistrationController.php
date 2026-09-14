@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PromoCode;
 use App\Models\Setting;
 use App\Models\User;
+use App\Rules\AzMobilePhone;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -47,11 +48,12 @@ class PromoterRegistrationController extends Controller
             'name'     => ['required', 'string', 'max:255'],
             'surname'  => ['required', 'string', 'max:255'],
             'email'    => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
-            'phone'    => ['nullable', 'string', 'max:20'],
+            'phone'    => ['required', 'string', 'max:20', new AzMobilePhone],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'terms'    => ['accepted'],
         ], [
             ...$this->captchaMessages(),
+            'phone.required' => 'Mobil nömrə vacibdir.',
             'terms.accepted' => 'Davam etmək üçün istifadə qaydalarını qəbul etməlisiniz.',
         ]);
 
@@ -60,7 +62,7 @@ class PromoterRegistrationController extends Controller
                 'name'      => $request->name,
                 'surname'   => $request->surname,
                 'email'     => $request->email,
-                'phone'     => $request->phone,
+                'phone'     => AzMobilePhone::format($request->phone),
                 'password'  => Hash::make($request->password),
                 'role'      => 'promoter',
                 'is_active' => true,
