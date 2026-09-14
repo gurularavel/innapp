@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\SmtpTestMail;
 use App\Models\Clinic;
 use App\Models\Holiday;
 use App\Models\Setting;
 use App\Models\User;
 use App\Services\TurnstileService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class SettingController extends Controller
 {
@@ -244,7 +247,16 @@ class SettingController extends Controller
             'smtp_from_name'    => Setting::get('smtp_from_name', ''),
         ];
 
-        return view('admin.settings.smtp', compact('settings'));
+        // What the app will actually send with right now (settings » .env)
+        $effective = [
+            'source' => Setting::get('smtp_host', '') ? 'settings' : 'env',
+            'mailer' => config('mail.default'),
+            'host'   => config('mail.mailers.smtp.host'),
+            'port'   => config('mail.mailers.smtp.port'),
+            'from'   => config('mail.from.address'),
+        ];
+
+        return view('admin.settings.smtp', compact('settings', 'effective'));
     }
 
     public function saveSmtpSettings(Request $request)
@@ -272,6 +284,35 @@ class SettingController extends Controller
         }
 
         return back()->with('success', 'SMTP ayarları yadda saxlandı.');
+    }
+
+    /**
+     * Send a plain test e-mail through whatever mailer is currently active,
+     * so the admin can verify the SMTP settings without triggering a real
+     * password reset. Transport errors are shown verbatim — that is the
+     * whole point of the button.
+     */
+    public function sendTestMail(Request $request)
+    {
+        $request->validate([
+            'to' => ['required', 'email', 'max:255'],
+        ]);
+
+        $to = $request->input('to');
+
+        try {
+            Mail::to($to)->send(new SmtpTestMail);
+        } catch (\Throwable $e) {
+            Log::warning('SMTP test mail failed', ['to' => $to, 'error' => $e->getMessage()]);
+
+            return back()->with('error', 'Göndərilmədi: ' . $e->getMessage())->withInput();
+        }
+
+        $note = config('mail.default') === 'log'
+            ? ' (mailer "log" rejimindədir — məktub göndərilməyib, storage/logs/laravel.log faylına yazılıb)'
+            : '';
+
+        return back()->with('success', "Test məktubu {$to} ünvanına göndərildi.{$note}");
     }
 
     /**

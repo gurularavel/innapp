@@ -86,6 +86,43 @@ class User extends Authenticatable
         return $this->isClinicMember();
     }
 
+    /** URL prefix of the panel this role lives in ("/admin", "/panel", "/promoter"). */
+    public function panelPrefix(): string
+    {
+        return match (true) {
+            $this->isAdmin()    => '/admin',
+            $this->isPromoter() => '/promoter',
+            default             => '/panel',
+        };
+    }
+
+    /** Landing page of the user's own panel. */
+    public function homeUrl(): string
+    {
+        return match (true) {
+            $this->isAdmin()    => route('admin.dashboard'),
+            $this->isPromoter() => route('promoter.dashboard'),
+            default             => route('panel.dashboard'),
+        };
+    }
+
+    /**
+     * Whether a URL belongs to this user's own panel. Used to decide if a
+     * remembered "intended" URL may be honoured after login — a URL left
+     * behind by a previous account of another role must not be.
+     */
+    public function ownsUrl(?string $url): bool
+    {
+        if (!$url) {
+            return false;
+        }
+
+        $path = '/' . ltrim((string) parse_url($url, PHP_URL_PATH), '/');
+        $prefix = $this->panelPrefix();
+
+        return $path === $prefix || str_starts_with($path, $prefix . '/');
+    }
+
     /** Only the owner manages staff, billing and clinic-wide settings. */
     public function canManageClinic(): bool
     {

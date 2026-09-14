@@ -82,6 +82,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin'])
 
     Route::get('settings/smtp', [Admin\SettingController::class, 'smtpSettings'])->name('settings.smtp');
     Route::put('settings/smtp', [Admin\SettingController::class, 'saveSmtpSettings'])->name('settings.smtp.save');
+    Route::post('settings/smtp/test', [Admin\SettingController::class, 'sendTestMail'])->name('settings.smtp.test');
 
     Route::get('settings/terms', [Admin\SettingController::class, 'terms'])->name('settings.terms');
     Route::put('settings/terms', [Admin\SettingController::class, 'saveTerms'])->name('settings.terms.save');

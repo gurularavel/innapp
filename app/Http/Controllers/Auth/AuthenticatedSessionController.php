@@ -30,13 +30,15 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $user = Auth::user();
-        $intended = match (true) {
-            $user->isAdmin()    => route('admin.dashboard'),
-            $user->isPromoter() => route('promoter.dashboard'),
-            default             => route('panel.dashboard'),
-        };
 
-        return redirect()->intended($intended);
+        // The "intended" URL is written by the auth middleware whenever a
+        // guest hits a protected page — including a stale /promoter/... or
+        // /admin/... link the browser re-opened after a *different* account
+        // logged out. Honour it only when it belongs to this user's own panel,
+        // otherwise the login would land on a 403.
+        $intended = $request->session()->pull('url.intended');
+
+        return redirect($user->ownsUrl($intended) ? $intended : $user->homeUrl());
     }
 
     /**

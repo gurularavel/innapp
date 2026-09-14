@@ -13,6 +13,12 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         @endif
+        @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-x-circle me-2"></i>{{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
 
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-header bg-white border-bottom">
@@ -135,6 +141,56 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-bottom">
+                <h6 class="mb-0 fw-semibold"><i class="bi bi-send-check me-2 text-primary"></i>Test məktubu göndər</h6>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">
+                    Hazırda aktiv mailer:
+                    <code>{{ $effective['mailer'] }}</code>
+                    @if($effective['mailer'] === 'smtp')
+                        — <code>{{ $effective['host'] }}:{{ $effective['port'] }}</code>
+                    @endif
+                    , göndərən <code>{{ $effective['from'] }}</code>
+                    <span class="badge {{ $effective['source'] === 'settings' ? 'bg-success' : 'bg-secondary' }} ms-1">
+                        {{ $effective['source'] === 'settings' ? 'bu səhifədəki ayarlar' : '.env (MAIL_*)' }}
+                    </span>
+                </p>
+                @if($effective['mailer'] === 'log')
+                    <div class="alert alert-warning small py-2">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        Mailer <code>log</code> rejimindədir: məktublar göndərilmir, yalnız <code>storage/logs/laravel.log</code> faylına yazılır.
+                        Real göndəriş üçün yuxarıdakı SMTP ayarlarını doldurub yadda saxlayın.
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('admin.settings.smtp.test') }}" class="row g-2 align-items-end">
+                    @csrf
+                    <div class="col-sm-8">
+                        <label for="test_to" class="form-label fw-medium">Alıcı e-poçt</label>
+                        <input type="email"
+                               id="test_to"
+                               name="to"
+                               class="form-control @error('to') is-invalid @enderror"
+                               value="{{ old('to', auth()->user()->email) }}"
+                               required>
+                        @error('to')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="col-sm-4">
+                        <button type="submit" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-send me-1"></i>Test göndər
+                        </button>
+                    </div>
+                </form>
+                <div class="form-text mt-2">
+                    Şifrə sıfırlama axınını tam yoxlamaq üçün: başqa brauzerdə <a href="{{ route('password.request') }}" target="_blank">Şifrəni unutdum</a> səhifəsini açın → e-poçtdakı linklə yeni şifrə təyin edin.
+                </div>
             </div>
         </div>
 

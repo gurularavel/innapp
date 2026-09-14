@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Models\Setting;
+use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
@@ -18,6 +20,30 @@ class AppServiceProvider extends ServiceProvider
     {
         Paginator::useBootstrapFive();
         $this->configureMailFromDb();
+        $this->localisePasswordResetMail();
+    }
+
+    /**
+     * Laravel's stock reset e-mail is English; render ours from an
+     * Azerbaijani template instead. The notification class itself is kept
+     * (it is what the password broker sends and what tests assert on).
+     */
+    private function localisePasswordResetMail(): void
+    {
+        ResetPassword::toMailUsing(function (object $notifiable, string $token) {
+            $url = url(route('password.reset', [
+                'token' => $token,
+                'email' => $notifiable->getEmailForPasswordReset(),
+            ], false));
+
+            return (new MailMessage)
+                ->subject('Şifrə sıfırlama — ' . config('app.name'))
+                ->view('emails.password-reset', [
+                    'user'   => $notifiable,
+                    'url'    => $url,
+                    'expire' => config('auth.passwords.' . config('auth.defaults.passwords') . '.expire', 60),
+                ]);
+        });
     }
 
     private function configureMailFromDb(): void
