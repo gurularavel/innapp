@@ -5,6 +5,8 @@ use App\Http\Controllers\Doctor;
 use App\Http\Controllers\Promoter;
 use App\Http\Controllers\DemoController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\InquiryController;
+use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 
 // Short map URL redirect (public, no auth)
@@ -18,6 +20,8 @@ Route::get('/map/{code}', function (string $code) {
 
 // Home / Landing page
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+Route::post('/inquiry', [InquiryController::class, 'store'])->name('inquiry.store')->middleware('throttle:5,1');
 
 // Demo
 Route::get('/demo', [DemoController::class, 'start'])->name('demo.start')->middleware('guest');
@@ -68,6 +72,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin'])
     Route::patch('payouts/{payout}/reject', [Admin\PayoutController::class, 'reject'])->name('payouts.reject');
 
     Route::get('sms-logs', [Admin\SmsLogController::class, 'index'])->name('sms-logs.index');
+    Route::get('inquiries', [Admin\InquiryController::class, 'index'])->name('inquiries.index');
+    Route::get('inquiries/{inquiry}', [Admin\InquiryController::class, 'show'])->name('inquiries.show');
+    Route::put('inquiries/{inquiry}', [Admin\InquiryController::class, 'update'])->name('inquiries.update');
+    Route::delete('inquiries/{inquiry}', [Admin\InquiryController::class, 'destroy'])->name('inquiries.destroy');
 
     Route::get('settings/sms-templates', [Admin\SettingController::class, 'smsTemplates'])->name('settings.sms-templates');
     Route::put('settings/sms-templates', [Admin\SettingController::class, 'saveSmsTemplates'])->name('settings.sms-templates.save');

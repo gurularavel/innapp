@@ -2,27 +2,48 @@
 <html lang="az">
 <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="robots" content="@yield('robots', 'index, follow')">
+    <meta name="theme-color" content="#0e86d4">
+
+    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
     @include('layouts._analytics')
-    <meta name="description" content="@yield('meta_description', 'InnApp randevu idarəetmə sistemi')">
-    <title>@yield('title', 'InnApp | Randevu idarəetmə sistemi')</title>
+    @php($pageTitle = trim($__env->yieldContent('title', 'InnApp | Randevu idarəetmə sistemi')))
+    @php($pageDescription = trim($__env->yieldContent('meta_description', 'InnApp randevu idarəetmə sistemi')))
+    <meta name="description" content="{{ $pageDescription }}">
+    <title>{{ $pageTitle }}</title>
+    <link rel="canonical" href="{{ url()->current() }}">
+
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="InnApp">
+    <meta property="og:locale" content="az_AZ">
+    <meta property="og:title" content="{{ $pageTitle }}">
+    <meta property="og:description" content="{{ $pageDescription }}">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:image" content="{{ asset('assets/img/og/innapp-1200x630.png') }}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="InnApp — randevu idarəetmə sistemi">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $pageTitle }}">
+    <meta name="twitter:description" content="{{ $pageDescription }}">
+    <meta name="twitter:image" content="{{ asset('assets/img/og/innapp-1200x630.png') }}">
+
+    @include('layouts._schema')
+    @stack('schema')
 
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon/favicon.svg') }}">
     <link rel="icon" type="image/png" sizes="96x96" href="{{ asset('favicon/favicon-96x96.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('favicon/apple-touch-icon.png') }}">
     <link rel="manifest" href="{{ asset('favicon/site.webmanifest') }}">
 
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <link href="{{ asset('assets/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/css/font-awesome.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('assets/css/elegant-icons.css') }}" rel="stylesheet">
-    <link href="{{ asset('assets/css/flaticon-set.css') }}" rel="stylesheet">
-    <link href="{{ asset('assets/css/magnific-popup.css') }}" rel="stylesheet">
-    <link href="{{ asset('assets/css/owl.carousel.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('assets/css/owl.theme.default.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('assets/css/animate.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/css/helper.css') }}" rel="stylesheet">
     <link href="{{ asset('style.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/css/responsive.css') }}" rel="stylesheet">
@@ -32,6 +53,104 @@
             --brand-primary: #0e86d4;
             --brand-secondary: #1bc8c8;
             --brand-dark: #0e1e35;
+        }
+
+        /* Section eyebrow labels (used to be h4/h5 for styling only) */
+        .eyebrow {
+            font-family: var(--font-heading);
+            font-size: 18px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--color-primary);
+            margin-bottom: 25px;
+        }
+        .about-area .about-items .about-content .eyebrow {
+            margin-bottom: 10px;
+        }
+
+        /* Lead forms: result notices + honeypot */
+        .form-notice {
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin: 0 0 18px;
+            font-size: 14px;
+            text-align: left;
+        }
+        .form-notice--success {
+            background: rgba(37, 211, 102, .14);
+            border: 1px solid rgba(37, 211, 102, .45);
+            color: #0f5132;
+        }
+        .form-notice--error {
+            background: rgba(220, 53, 69, .1);
+            border: 1px solid rgba(220, 53, 69, .4);
+            color: #842029;
+        }
+        .subscribe-area .form-notice {
+            max-width: 450px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .subscribe-area .form-notice--success { color: #d7ffe6; background: rgba(37, 211, 102, .22); }
+        .subscribe-area .form-notice--error { color: #ffd9dd; background: rgba(220, 53, 69, .3); }
+        .subscribe-area form .form-notice { margin-top: 14px; margin-bottom: 0; }
+        .subscribe-area .cf-turnstile { display: flex; justify-content: center; margin-top: 14px; }
+        .form-hp {
+            position: absolute !important;
+            left: -9999px !important;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+        }
+
+        /* Error pages (resources/views/errors) */
+        .error-area {
+            min-height: 60vh;
+            display: flex;
+            align-items: center;
+        }
+        .error-area .error-code {
+            font-family: var(--font-heading);
+            font-size: clamp(64px, 12vw, 120px);
+            font-weight: 800;
+            line-height: 1;
+            color: var(--brand-primary);
+            margin-bottom: 10px;
+        }
+        .error-area h1 {
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+        .error-area p {
+            max-width: 520px;
+            margin: 0 auto 25px;
+        }
+
+        /* Pricing card: plan name is an h3, the price is plain markup */
+        .pricing-header h3 {
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--white);
+            font-size: 18px;
+        }
+        .pricing-header .price {
+            font-family: var(--font-heading);
+            color: var(--white);
+            font-size: 40px;
+            font-weight: 700;
+            letter-spacing: -1px;
+            line-height: 1;
+            margin-bottom: 0;
+        }
+        .pricing-header .price sup {
+            font-size: 24px;
+            font-weight: 700;
+            margin-right: 5px;
+        }
+        .pricing-header .price sub {
+            font-size: 18px;
+            font-weight: 400;
+            margin-left: -5px;
         }
 
         .brand-link {
@@ -374,28 +493,6 @@
 </head>
 <body>
 
-    <div id="preloader">
-        <div id="softing-preloader" class="softing-preloader">
-            <div class="animation-preloader">
-                <div class="spinner"></div>
-                <div class="txt-loading">
-                    @foreach(str_split('INNAPP') as $letter)
-                        <span data-text-preloader="{{ $letter }}" class="letters-loading">{{ $letter }}</span>
-                    @endforeach
-                </div>
-            </div>
-            <div class="loader">
-                <div class="row">
-                    @for($i = 0; $i < 4; $i++)
-                        <div class="col-3 loader-section {{ $i < 2 ? 'section-left' : 'section-right' }}">
-                            <div class="bg"></div>
-                        </div>
-                    @endfor
-                </div>
-            </div>
-        </div>
-    </div>
-
     <header id="home" class="site-header">
         <div class="container">
             <div class="site-nav">
@@ -528,7 +625,7 @@
                                         </div>
                                         <div class="info">
                                             <h5>Veb sayt:</h5>
-                                            <span>www.innapp.az</span>
+                                            <a href="https://innapp.az">innapp.az</a>
                                         </div>
                                     </li>
                                     <li>
@@ -574,15 +671,7 @@
         </div>
     </footer>
 
-    <script src="{{ asset('assets/js/jquery-3.6.0.min.js') }}"></script>
-    <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ asset('assets/js/jquery.appear.js') }}"></script>
-    <script src="{{ asset('assets/js/jquery.easing.min.js') }}"></script>
-    <script src="{{ asset('assets/js/jquery.magnific-popup.min.js') }}"></script>
-    <script src="{{ asset('assets/js/owl.carousel.min.js') }}"></script>
-    <script src="{{ asset('assets/js/wow.min.js') }}"></script>
-    <script src="{{ asset('assets/js/count-to.js') }}"></script>
-    <script src="{{ asset('assets/js/main.js') }}"></script>
+    <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}" defer></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const header = document.querySelector('.site-header');

@@ -11,5 +11,7 @@
             <div class="text-danger small mt-1">{{ $message }}</div>
         @enderror
     </div>
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    @once
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    @endonce
 @endif

@@ -1,2 +1,19 @@
 User-agent: *
-Disallow:
+Disallow: /admin/
+Disallow: /panel/
+Disallow: /promoter/dashboard
+Disallow: /promoter/codes
+Disallow: /promoter/redemptions
+Disallow: /promoter/payouts
+Disallow: /login
+Disallow: /forgot-password
+Disallow: /reset-password/
+Disallow: /verify-email
+Disallow: /confirm-password
+Disallow: /demo
+Disallow: /map/
+Disallow: /up
+Allow: /assets/
+Allow: /favicon/
+
+Sitemap: https://innapp.az/sitemap.xml

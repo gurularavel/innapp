@@ -73,6 +73,13 @@ return [
         'whatsapp' => env('SUPPORT_WHATSAPP', '994557038008'),
     ],
 
+    // Public social profiles; the home page shows only the ones that are filled in.
+    'social' => [
+        'facebook' => env('SOCIAL_FACEBOOK'),
+        'instagram' => env('SOCIAL_INSTAGRAM'),
+        'linkedin' => env('SOCIAL_LINKEDIN'),
+    ],
+
     /*
      | Cloudflare Turnstile — fallback values. The admin panel
      | (Ayarlar » Təhlükəsizlik) writes into the `settings` table and takes

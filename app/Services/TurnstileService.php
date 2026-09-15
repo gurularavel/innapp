@@ -57,6 +57,11 @@ class TurnstileService
             'hint'    => '/login — real istifadəçiləri yavaşladır, ehtiyatla',
             'default' => false,
         ],
+        'inquiry' => [
+            'label'   => 'Saytdan müraciət formaları',
+            'hint'    => 'Ana səhifədəki təqdimat və demo sorğuları',
+            'default' => true,
+        ],
     ];
 
     /** True only when the admin switched it on and both keys are present. */

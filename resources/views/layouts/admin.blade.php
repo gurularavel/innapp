@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     @include('layouts._analytics')
@@ -703,6 +704,15 @@
                 <li class="nav-item">
                     <a href="{{ route('admin.payouts.index') }}" class="nav-link {{ request()->routeIs('admin.payouts*') ? 'active' : '' }}">
                         <i class="bi bi-cash-stack"></i>Çıxarışlar
+                    </a>
+                </li>
+                <li class="nav-item">
+                    @php($unreadInquiries = \App\Models\Inquiry::unread()->count())
+                    <a href="{{ route('admin.inquiries.index') }}" class="nav-link {{ request()->routeIs('admin.inquiries*') ? 'active' : '' }}">
+                        <i class="bi bi-inbox"></i>Müraciətlər
+                        @if($unreadInquiries)
+                            <span class="badge rounded-pill bg-danger ms-auto">{{ $unreadInquiries }}</span>
+                        @endif
                     </a>
                 </li>
                 <li class="nav-item">

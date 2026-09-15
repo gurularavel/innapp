@@ -7,6 +7,7 @@ use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -18,6 +19,17 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Canonical/OG URLs and JSON-LD @ids must not vary with the request host or scheme.
+        // The root URL is only pinned when APP_URL is a real https origin, so a stale
+        // localhost value in .env cannot break every generated link.
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+
+            if (str_starts_with((string) config('app.url'), 'https://')) {
+                URL::forceRootUrl(config('app.url'));
+            }
+        }
+
         Paginator::useBootstrapFive();
         $this->configureMailFromDb();
         $this->localisePasswordResetMail();

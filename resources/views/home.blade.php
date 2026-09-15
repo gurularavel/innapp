@@ -3,6 +3,104 @@
 @section('title', 'InnApp | Randevu idarəetmə sistemi')
 @section('meta_description', 'InnApp müxtəlif sahələr üçün randevu, müştəri bazası, SMS və hesabat idarəetməsi təqdim edir.')
 
+@php
+    // Shared by the accordions below and the FAQPage schema so the two never drift apart.
+    $setupFaqs = [
+        ['Quraşdırma nə qədər çəkir?', 'Əksər müəssisələr ilkin qurulmanı 10-20 dəqiqə ərzində tamamlayır.'],
+        ['Texniki bilik lazımdır?', 'Xeyr. İnterfeys komanda üçün sadə və istifadəyə yönəlik hazırlanıb.'],
+        ['Demo versiya var?', 'Bəli. Sistemə keçmədən əvvəl demo hesab ilə əsas axını yoxlaya bilərsiniz.'],
+    ];
+    $generalFaqs = [
+        ['Sistem buluddadır?', 'Bəli. InnApp bulud əsaslı işləyir və lokal server qurulumu tələb etmir.'],
+        ['Mobil cihazdan istifadə mümkündür?', 'Bəli. Sistem telefon və planşetdə də açılır və əsas əməliyyatlar rahat idarə olunur.'],
+        ['SMS paketə daxildir?', 'Paketdən asılı olaraq aylıq SMS limiti təqdim olunur, daha böyük planlarda limit daha yüksəkdir.'],
+        ['Məlumatlar təhlükəsiz saxlanılır?', 'İstifadəçi girişi, rol əsaslı icazələr və mərkəzləşdirilmiş idarəetmə ilə məlumat axını nəzarətdə saxlanılır.'],
+    ];
+@endphp
+
+@push('schema')
+@php
+    $siteUrl = rtrim(config('app.url'), '/');
+
+    $offers = $packages->map(fn ($package) => [
+        '@type' => 'Offer',
+        'name' => $package->name,
+        'price' => number_format($package->price_per_seat, 2, '.', ''),
+        'priceCurrency' => 'AZN',
+        'priceSpecification' => [
+            '@type' => 'UnitPriceSpecification',
+            'price' => number_format($package->price_per_seat, 2, '.', ''),
+            'priceCurrency' => 'AZN',
+            'unitText' => 'əməkdaş / ay',
+            'billingIncrement' => 1,
+            'referenceQuantity' => [
+                '@type' => 'QuantitativeValue',
+                'value' => 1,
+                'unitCode' => 'MON',
+            ],
+        ],
+        'availability' => 'https://schema.org/InStock',
+        'url' => route('register'),
+    ])->values()->all();
+
+    $homeSchema = [
+        '@context' => 'https://schema.org',
+        '@graph' => [
+            array_filter([
+                '@type' => 'SoftwareApplication',
+                '@id' => $siteUrl . '/#software',
+                'name' => 'InnApp',
+                'url' => $siteUrl . '/',
+                'description' => 'Xidmət sahəsində fəaliyyət göstərən müəssisələr üçün randevu, müştəri bazası, SMS/WhatsApp bildirişləri və hesabat idarəetmə sistemi.',
+                'applicationCategory' => 'BusinessApplication',
+                'applicationSubCategory' => 'Appointment scheduling',
+                'operatingSystem' => 'Web',
+                'inLanguage' => 'az',
+                'isAccessibleForFree' => false,
+                'featureList' => [
+                    'Randevu və təqvim idarəetməsi',
+                    'Müştəri bazası',
+                    'SMS və WhatsApp bildirişləri',
+                    'Vizit və gəlir hesabatları',
+                    'Çox əməkdaşlı müəssisə paneli',
+                ],
+                'publisher' => ['@id' => $siteUrl . '/#organization'],
+                'offers' => $offers ?: null,
+            ], fn ($value) => $value !== null),
+            [
+                '@type' => 'FAQPage',
+                '@id' => $siteUrl . '/#faq',
+                'mainEntity' => collect($setupFaqs)->merge($generalFaqs)->map(fn ($faq) => [
+                    '@type' => 'Question',
+                    'name' => $faq[0],
+                    'acceptedAnswer' => [
+                        '@type' => 'Answer',
+                        'text' => $faq[1],
+                    ],
+                ])->values()->all(),
+            ],
+            [
+                '@type' => 'WebPage',
+                '@id' => $siteUrl . '/#webpage',
+                'url' => $siteUrl . '/',
+                'name' => 'InnApp | Randevu idarəetmə sistemi',
+                'description' => 'InnApp müxtəlif sahələr üçün randevu, müştəri bazası, SMS və hesabat idarəetməsi təqdim edir.',
+                'inLanguage' => 'az',
+                'isPartOf' => ['@id' => $siteUrl . '/#website'],
+                'about' => ['@id' => $siteUrl . '/#software'],
+                'primaryImageOfPage' => [
+                    '@type' => 'ImageObject',
+                    'url' => asset('assets/img/og/innapp-1200x630.png'),
+                    'width' => 1200,
+                    'height' => 630,
+                ],
+            ],
+        ],
+    ];
+@endphp
+<script type="application/ld+json">@json($homeSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)</script>
+@endpush
+
 @section('content')
 <div class="banner-area content-double transparent-nav bg-gradient text-light small-text">
     <div class="box-table">
@@ -11,7 +109,7 @@
                 <div class="double-items">
                     <div class="row align-center">
                         <div class="col-lg-5 left-info simple-video">
-                            <div class="content" data-animation="animated fadeInUpBig">
+                            <div class="content">
                                 <h1>İşinizi bir paneldən idarə edin</h1>
                                 <p>
                                     InnApp müxtəlif sahələr üçün hazırlanmış modern randevu idarəetmə sistemidir.
@@ -21,13 +119,13 @@
                             </div>
                         </div>
                         <div class="col-lg-7 right-info width-max">
-                            <img src="{{ asset('assets/img/illustration/5.png') }}" alt="InnApp dashboard">
+                            <img src="{{ asset('assets/img/illustration/5.png') }}" alt="InnApp idarəetmə panelinin nümunə görünüşü" width="847" height="484" fetchpriority="high">
                         </div>
                     </div>
                 </div>
             </div>
             <div class="wavesshape">
-                <img src="{{ asset('assets/img/shape/2.png') }}" alt="Shape">
+                <img src="{{ asset('assets/img/shape/2.png') }}" alt="" aria-hidden="true" width="1900" height="1000">
             </div>
         </div>
     </div>
@@ -39,7 +137,7 @@
             <div class="about-items text-center">
                 <div class="col-lg-8 offset-lg-2">
                     <div class="about-content text-center">
-                        <h4>InnApp haqqında</h4>
+                        <p class="eyebrow">InnApp haqqında</p>
                         <h2>İşinizin gündəlik axınını sadələşdirən sistem</h2>
                         <p>
                             Mütəxəssislər və administratorlar üçün daha sürətli qeydiyyat, daha dəqiq planlama və daha rahat nəzarət.
@@ -52,21 +150,21 @@
                         <div class="row">
                             <div class="col-lg-4 col-md-6 single-item">
                                 <div class="item">
-                                    <img src="{{ asset('assets/img/icon/1.svg') }}" alt="Randevu">
+                                    <img src="{{ asset('assets/img/icon/1.svg') }}" alt="" width="80" height="80" loading="lazy">
                                     <h4>Canlı randevu axını</h4>
                                     <p>Boş saatları görün, üst-üstə düşmələri azaldın və qəbul planını saniyələr içində qurun.</p>
                                 </div>
                             </div>
                             <div class="col-lg-4 col-md-6 single-item">
                                 <div class="item">
-                                    <img src="{{ asset('assets/img/icon/2.svg') }}" alt="SMS">
+                                    <img src="{{ asset('assets/img/icon/2.svg') }}" alt="" width="80" height="80" loading="lazy">
                                     <h4>SMS workflow</h4>
                                     <p>Xatırlatma, təsdiq və məlumat mesajlarını şablonlarla avtomatlaşdırın.</p>
                                 </div>
                             </div>
                             <div class="col-lg-4 col-md-6 single-item">
                                 <div class="item">
-                                    <img src="{{ asset('assets/img/icon/3.svg') }}" alt="Müştəri bazası">
+                                    <img src="{{ asset('assets/img/icon/3.svg') }}" alt="" width="80" height="80" loading="lazy">
                                     <h4>Müştəri kartoteki</h4>
                                     <p>Xidmət qeydləri, kontaktlar və vizit tarixçəsi hər müştəri üçün tam şəkildə saxlanılır.</p>
                                 </div>
@@ -84,10 +182,10 @@
         <div class="choseus-items">
             <div class="row align-center">
                 <div class="col-lg-6 thumb pr-80 pr-md-15 pr-xs-15">
-                    <img src="{{ asset('assets/img/illustration/6.png') }}" alt="Üstünlüklər">
+                    <img src="{{ asset('assets/img/illustration/6.png') }}" alt="InnApp təqvim və randevu axını" width="800" height="614" loading="lazy">
                 </div>
                 <div class="col-lg-6 info">
-                    <h5>Niyə InnApp</h5>
+                    <p class="eyebrow">Niyə InnApp</p>
                     <h2>İşiniz üçün real əməliyyat üstünlüyü yaradın</h2>
                     <p>
                         Admin işinin yükünü azaldın, mütəxəssislərin qəbul ritmini qoruyun və rəhbərlik üçün ölçülə bilən nəticələr yaradın.
@@ -157,11 +255,7 @@
             <div class="col-lg-6">
                 <div class="faq-content">
                     <div class="accordion" id="setupAccordion">
-                        @foreach([
-                            ['Quraşdırma nə qədər çəkir?', 'Əksər müəssisələr ilkin qurulmanı 10-20 dəqiqə ərzində tamamlayır.'],
-                            ['Texniki bilik lazımdır?', 'Xeyr. İnterfeys komanda üçün sadə və istifadəyə yönəlik hazırlanıb.'],
-                            ['Demo versiya var?', 'Bəli. Sistemə keçmədən əvvəl demo hesab ilə əsas axını yoxlaya bilərsiniz.'],
-                        ] as $index => $item)
+                        @foreach($setupFaqs as $index => $item)
                             <div class="accordion-item card">
                                 <div class="accordion-header card-header" id="setupHeading{{ $index }}">
                                     <button class="accordion-button {{ $index ? 'collapsed' : '' }}" type="button" data-bs-toggle="collapse" data-bs-target="#setupCollapse{{ $index }}" aria-expanded="{{ $index ? 'false' : 'true' }}" aria-controls="setupCollapse{{ $index }}">
@@ -202,8 +296,8 @@
                         <div class="pricing-item">
                             <ul>
                                 <li class="pricing-header">
-                                    <h4>{{ $package->name }}</h4>
-                                    <h2><sup>₼</sup>{{ number_format($package->price_per_seat, 0) }} <sub>/ əməkdaş / ay</sub></h2>
+                                    <h3>{{ $package->name }}</h3>
+                                    <div class="price"><sup>₼</sup>{{ number_format($package->price_per_seat, 0) }} <sub>/ əməkdaş / ay</sub></div>
                                 </li>
                                 <li>{{ $package->description ?: 'Tək mütəxəssis üçün də, klinika üçün də.' }}</li>
                                 <li>{{ $package->patient_limit ? $package->patient_limit . ' müştəri limiti' : 'Limitsiz müştəri' }}</li>
@@ -227,8 +321,8 @@
                             <div class="pricing-item">
                                 <ul>
                                     <li class="pricing-header">
-                                        <h4>{{ $plan[0] }}</h4>
-                                        <h2><sup>₼</sup>{{ $plan[1] }} <sub>/ ay</sub></h2>
+                                        <h3>{{ $plan[0] }}</h3>
+                                        <div class="price"><sup>₼</sup>{{ $plan[1] }} <sub>/ ay</sub></div>
                                     </li>
                                     <li>{{ $plan[2] }}</li>
                                     <li>{{ $plan[3] }}</li>
@@ -276,13 +370,13 @@
                     </div>
                     <ol class="carousel-indicators">
                         <li data-bs-target="#testimonial-carousel" data-bs-slide-to="0" class="active" aria-current="true">
-                            <img src="{{ asset('assets/img/team/4.jpg') }}" alt="Nigar">
+                            <img src="{{ asset('assets/img/team/4.jpg') }}" alt="Nigar Məmmədova" width="60" height="60" loading="lazy">
                         </li>
                         <li data-bs-target="#testimonial-carousel" data-bs-slide-to="1">
-                            <img src="{{ asset('assets/img/team/2.jpg') }}" alt="Tural">
+                            <img src="{{ asset('assets/img/team/2.jpg') }}" alt="Tural Həsənov" width="60" height="60" loading="lazy">
                         </li>
                         <li data-bs-target="#testimonial-carousel" data-bs-slide-to="2">
-                            <img src="{{ asset('assets/img/team/9.jpg') }}" alt="Sevinc">
+                            <img src="{{ asset('assets/img/team/9.jpg') }}" alt="Sevinc Quliyeva" width="60" height="60" loading="lazy">
                         </li>
                     </ol>
                 </div>
@@ -295,7 +389,7 @@
     <div class="container">
         <div class="row align-center">
             <div class="col-lg-6 info">
-                <h5>Tərəfdaşlıq proqramı</h5>
+                <p class="eyebrow">Tərəfdaşlıq proqramı</p>
                 <h2>Promotor olun, hər satışdan qazanın</h2>
                 <p>
                     InnApp-i tanıdığınız müəssisələrə tövsiyə edin. Qeydiyyatdan keçən kimi şəxsi promo kodunuz
@@ -342,7 +436,7 @@
     </div>
 </div>
 
-<div class="subscribe-area bg-fixed shadow dark text-light default-padding text-center" style="background-image: url('{{ asset('assets/img/banner/4.jpg') }}');">
+<div id="demo" class="subscribe-area shadow dark text-light default-padding text-center" style="background-image: url('{{ asset('assets/img/banner/4.jpg') }}');">
     <div class="container">
         <div class="row">
             <div class="col-lg-6 offset-lg-3">
@@ -351,15 +445,27 @@
                     İşinizə uyğun təqdimat, demo keçid və ilkin qurulum istiqaməti üçün email ünvanınızı paylaşın.
                 </p>
                 <div class="subscribe">
-                    <form action="#" onsubmit="return false;">
+                    @if (session('inquiry_sent') === \App\Models\Inquiry::TYPE_DEMO)
+                        <div class="form-notice form-notice--success" role="status">
+                            <i class="fa fa-check-circle"></i> Təşəkkürlər! Sorğunuz qəbul edildi, tezliklə sizinlə əlaqə saxlayacağıq.
+                        </div>
+                    @endif
+                    <form action="{{ route('inquiry.store') }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="type" value="{{ \App\Models\Inquiry::TYPE_DEMO }}">
+                        <input type="text" name="website" value="" class="form-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
                         <div class="input-group stylish-input-group">
-                            <input type="email" placeholder="Email ünvanınızı yazın" class="form-control" name="email">
+                            <input type="email" placeholder="Email ünvanınızı yazın" class="form-control" name="email" value="{{ $errors->demo->any() ? old('email') : '' }}" required aria-label="E-poçt ünvanı">
                             <span class="input-group-addon">
-                                <button type="submit">
+                                <button type="submit" aria-label="Göndər">
                                     <i class="fa fa-paper-plane"></i>
                                 </button>
                             </span>
                         </div>
+                        @if ($errors->demo->any())
+                            <div class="form-notice form-notice--error" role="alert">{{ $errors->demo->first() }}</div>
+                        @endif
+                        @include('auth._turnstile', ['form' => 'inquiry'])
                     </form>
                 </div>
             </div>
@@ -397,45 +503,70 @@
                             <span>info@innapp.az</span>
                         </li>
                     </ul>
+                    @if ($socialLinks = array_filter(config('services.social', [])))
                     <div class="social-address">
                         <h4>Sosial şəbəkələr</h4>
                         <ul class="social">
-                            <li class="facebook"><a href="#"><i class="fab fa-facebook-f"></i></a></li>
-                            <li class="twitter"><a href="#"><i class="fab fa-linkedin-in"></i></a></li>
-                            <li class="instagram"><a href="#"><i class="fab fa-instagram"></i></a></li>
+                            @foreach ($socialLinks as $network => $url)
+                                <li class="{{ $network }}">
+                                    <a href="{{ $url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ ucfirst($network) }}">
+                                        <i class="fab fa-{{ ['facebook' => 'facebook-f', 'linkedin' => 'linkedin-in'][$network] ?? $network }}"></i>
+                                    </a>
+                                </li>
+                            @endforeach
                         </ul>
                     </div>
+                    @endif
                 </div>
             </div>
             <div class="col-lg-6 contact-form">
                 <h2>Müəssisəniz üçün təqdimat istəyin</h2>
-                <form action="#" class="contact-form" onsubmit="return false;">
+                @if (session('inquiry_sent') === \App\Models\Inquiry::TYPE_CONTACT)
+                    <div class="form-notice form-notice--success" role="status">
+                        <i class="fa fa-check-circle"></i> Təşəkkürlər! Sorğunuz qəbul edildi, tezliklə sizinlə əlaqə saxlayacağıq.
+                    </div>
+                @endif
+                @php($contactOld = fn ($field) => $errors->contact->any() ? old($field) : '')
+                <form action="{{ route('inquiry.store') }}" method="POST" class="contact-form">
+                    @csrf
+                    <input type="hidden" name="type" value="{{ \App\Models\Inquiry::TYPE_CONTACT }}">
+                    <input type="text" name="website" value="" class="form-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="form-group">
-                                <input class="form-control" placeholder="Ad və soyad" type="text">
+                                <input class="form-control" placeholder="Ad və soyad" type="text" name="name" value="{{ $contactOld('name') }}" required maxlength="120" aria-label="Ad və soyad">
                             </div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-lg-6">
                             <div class="form-group">
-                                <input class="form-control" placeholder="Email" type="email">
+                                <input class="form-control" placeholder="Email" type="email" name="email" value="{{ $contactOld('email') }}" maxlength="150" aria-label="E-poçt">
                             </div>
                         </div>
                         <div class="col-lg-6">
                             <div class="form-group">
-                                <input class="form-control" placeholder="Telefon" type="text">
+                                <input class="form-control" placeholder="Telefon (05X XXX XX XX)" type="tel" name="phone" value="{{ $contactOld('phone') }}" maxlength="20" aria-label="Telefon">
                             </div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="form-group comments">
-                                <textarea class="form-control" placeholder="Müəssisəniz haqqında qısa məlumat"></textarea>
+                                <textarea class="form-control" placeholder="Müəssisəniz haqqında qısa məlumat" name="message" maxlength="2000" aria-label="Mesaj">{{ $contactOld('message') }}</textarea>
                             </div>
                         </div>
                     </div>
+                    @if ($errors->contact->any())
+                        <div class="form-notice form-notice--error" role="alert">
+                            <ul class="mb-0 ps-3">
+                                @foreach ($errors->contact->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+                    @include('auth._turnstile', ['form' => 'inquiry'])
                     <div class="row">
                         <div class="col-lg-12">
                             <button type="submit">
@@ -465,12 +596,7 @@
             <div class="col-lg-6 faq-items default-padding-bottom order-lg-last">
                 <div class="faq-content">
                     <div class="accordion" id="accordionExample">
-                        @foreach([
-                            ['Sistem buluddadır?', 'Bəli. InnApp bulud əsaslı işləyir və lokal server qurulumu tələb etmir.'],
-                            ['Mobil cihazdan istifadə mümkündür?', 'Bəli. Sistem telefon və planşetdə də açılır və əsas əməliyyatlar rahat idarə olunur.'],
-                            ['SMS paketə daxildir?', 'Paketdən asılı olaraq aylıq SMS limiti təqdim olunur, daha böyük planlarda limit daha yüksəkdir.'],
-                            ['Məlumatlar təhlükəsiz saxlanılır?', 'İstifadəçi girişi, rol əsaslı icazələr və mərkəzləşdirilmiş idarəetmə ilə məlumat axını nəzarətdə saxlanılır.'],
-                        ] as $index => $faq)
+                        @foreach($generalFaqs as $index => $faq)
                             <div class="accordion-item card">
                                 <div class="accordion-header card-header" id="heading{{ $index }}">
                                     <button class="accordion-button {{ $index ? 'collapsed' : '' }}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ $index }}" aria-expanded="{{ $index ? 'false' : 'true' }}" aria-controls="collapse{{ $index }}">
@@ -488,7 +614,7 @@
                 </div>
             </div>
             <div class="col-lg-6 thumb">
-                <img src="{{ asset('assets/img/banner/contact.png') }}" alt="Əlaqə">
+                <img src="{{ asset('assets/img/banner/contact.png') }}" alt="Təqdimat sorğusu" width="450" height="576" loading="lazy">
             </div>
         </div>
     </div>
