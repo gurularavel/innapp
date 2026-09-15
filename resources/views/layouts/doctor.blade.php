@@ -1061,5 +1061,6 @@ document.addEventListener('DOMContentLoaded', function () {
 })();
 </script>
 @endif
+@include('layouts._whatsapp_float')
 </body>
 </html>

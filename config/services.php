@@ -68,6 +68,11 @@ return [
         'measurement_id' => env('GOOGLE_ANALYTICS_ID', 'G-X8ZGYKVJ4V'),
     ],
 
+    // Platform support contact shown by the floating WhatsApp button.
+    'support' => [
+        'whatsapp' => env('SUPPORT_WHATSAPP', '994557038008'),
+    ],
+
     /*
      | Cloudflare Turnstile — fallback values. The admin panel
      | (Ayarlar » Təhlükəsizlik) writes into the `settings` table and takes

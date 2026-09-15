@@ -277,5 +277,6 @@ document.querySelectorAll('[data-phone-mask]').forEach(function (el) {
     });
 });
 </script>
+@include('layouts._whatsapp_float')
 </body>
 </html>
