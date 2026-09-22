@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Clinic;
 use App\Models\Specialty;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password;
 
 class DoctorController extends Controller
 {
@@ -81,16 +83,30 @@ class DoctorController extends Controller
             'surname' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'phone' => 'nullable|string|max:20',
-            'password' => 'required|min:8|confirmed',
+            'password' => ['required', 'confirmed', Password::defaults()],
             'specialty_id' => 'nullable|exists:specialties,id',
             'is_active' => 'boolean',
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
-        $validated['role'] = 'doctor';
         $validated['is_active'] = $request->boolean('is_active', true);
 
-        User::create($validated);
+        // Every account lives in a clinic (see registration): an admin-created
+        // one becomes the owner of a fresh single-member clinic.
+        DB::transaction(function () use ($validated) {
+            $clinic = Clinic::create([
+                'name'      => trim($validated['name'] . ' ' . $validated['surname']),
+                'is_active' => true,
+            ]);
+
+            $user = User::create($validated + [
+                'clinic_id'          => $clinic->id,
+                'role'               => 'owner',
+                'takes_appointments' => true,
+            ]);
+
+            $clinic->update(['owner_id' => $user->id]);
+        });
 
         return redirect()->route('admin.users.index')
             ->with('success', 'İstifadəçi uğurla yaradıldı.');
@@ -98,6 +114,8 @@ class DoctorController extends Controller
 
     public function show(User $doctor)
     {
+        $this->onlyClinicAccounts($doctor);
+
         $doctor->load('specialty', 'clinic.activeSubscription.package', 'subscriptions.package');
         $patientsCount     = $doctor->patients()->count();
         $appointmentsCount = $doctor->appointments()->count();
@@ -106,18 +124,22 @@ class DoctorController extends Controller
 
     public function edit(User $doctor)
     {
+        $this->onlyClinicAccounts($doctor);
+
         $specialties = Specialty::where('is_active', true)->get();
         return view('admin.users.edit', compact('doctor', 'specialties'));
     }
 
     public function update(Request $request, User $doctor)
     {
+        $this->onlyClinicAccounts($doctor);
+
         $validated = $request->validate([
             'name'         => 'required|string|max:255',
             'surname'      => 'required|string|max:255',
             'email'        => 'required|email|unique:users,email,' . $doctor->id,
             'phone'        => 'nullable|string|max:20',
-            'password'     => 'nullable|min:8|confirmed',
+            'password'     => ['nullable', 'confirmed', Password::defaults()],
             'specialty_id' => 'nullable|exists:specialties,id',
             'is_active'    => 'boolean',
         ]);
@@ -133,12 +155,12 @@ class DoctorController extends Controller
         $validated['is_active'] = $request->boolean('is_active', false);
 
         // If email changed, invalidate all active sessions and remember token
-        if ($emailChanged) {
-            $validated['remember_token'] = Str::random(60);
-            DB::table('sessions')->where('user_id', $doctor->id)->delete();
-        }
-
         $doctor->update($validated);
+
+        // New e-mail, new password or a deactivation: every existing session ends.
+        if (($doctor->wasChanged('password') || $emailChanged || ! $doctor->is_active) && $doctor->id !== Auth::id()) {
+            $doctor->revokeSessions();
+        }
 
         $message = 'İstifadəçi məlumatları yeniləndi.';
         if ($emailChanged) {
@@ -150,14 +172,32 @@ class DoctorController extends Controller
 
     public function destroy(User $doctor)
     {
+        $this->onlyClinicAccounts($doctor);
+
         $doctor->delete();
         return redirect()->route('admin.users.index')
             ->with('success', 'İstifadəçi silindi.');
     }
 
+    /**
+     * This screen manages clinic accounts. Admins and promoters have their own
+     * screens with their own guards (e.g. "the last admin cannot be deleted"),
+     * which this resource must not be a way around.
+     */
+    private function onlyClinicAccounts(User $doctor): void
+    {
+        abort_unless($doctor->isClinicMember(), 404);
+    }
+
     public function toggleStatus(User $doctor)
     {
+        $this->onlyClinicAccounts($doctor);
+
         $doctor->update(['is_active' => !$doctor->is_active]);
+
+        if (! $doctor->is_active) {
+            $doctor->revokeSessions();
+        }
         $status = $doctor->is_active ? 'aktiv edildi' : 'deaktiv edildi';
         return back()->with('success', "İstifadəçi {$status}.");
     }

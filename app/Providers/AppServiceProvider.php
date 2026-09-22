@@ -9,6 +9,7 @@ use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -29,6 +30,9 @@ class AppServiceProvider extends ServiceProvider
                 URL::forceRootUrl(config('app.url'));
             }
         }
+
+        // One password policy for every form: registration, staff, admins, resets.
+        Password::defaults(fn () => Password::min(8)->letters()->numbers());
 
         Paginator::useBootstrapFive();
         $this->configureMailFromDb();

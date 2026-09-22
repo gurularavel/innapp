@@ -8,6 +8,7 @@ use App\Models\Clinic;
 use App\Models\Holiday;
 use App\Models\Setting;
 use App\Models\User;
+use App\Rules\AzMobilePhone;
 use App\Services\TurnstileService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -21,12 +22,14 @@ class SettingController extends Controller
         $reminderTemplate     = Setting::get('sms_reminder_template', '');
         $defaultMuessise      = Setting::get('default_muessise_adi', '');
         $reminderMinutesBefore = (int) Setting::get('reminder_minutes_before', 120);
+        $adminNotifyPhone      = Setting::get('admin_notify_phone', '');
 
         return view('admin.settings.sms-templates', compact(
             'appointmentTemplate',
             'reminderTemplate',
             'defaultMuessise',
-            'reminderMinutesBefore'
+            'reminderMinutesBefore',
+            'adminNotifyPhone'
         ));
     }
 
@@ -37,12 +40,16 @@ class SettingController extends Controller
             'sms_reminder_template'    => ['required', 'string', 'max:160'],
             'default_muessise_adi'     => ['required', 'string', 'max:100'],
             'reminder_minutes_before'  => ['required', 'integer', 'min:5', 'max:2880'],
+            'admin_notify_phone'       => ['nullable', 'string', 'max:20', new AzMobilePhone],
         ]);
 
         Setting::set('sms_appointment_template', $request->sms_appointment_template);
         Setting::set('sms_reminder_template',    $request->sms_reminder_template);
         Setting::set('default_muessise_adi',     $request->default_muessise_adi);
         Setting::set('reminder_minutes_before',  $request->reminder_minutes_before);
+        Setting::set('admin_notify_phone',       $request->filled('admin_notify_phone')
+            ? AzMobilePhone::format($request->admin_notify_phone)
+            : null);
 
         return back()->with('success', 'SMS şablonları yadda saxlandı.');
     }

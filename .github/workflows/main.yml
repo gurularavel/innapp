@@ -1,4 +1,7 @@
-on: push
+on:
+  push:
+    branches:
+      - main
 name: 🚀 Deploy website on push
 jobs:
   web-deploy:
@@ -7,10 +10,26 @@ jobs:
     steps:
     - name: 🚚 Get latest code
       uses: actions/checkout@v4
-    
+
     - name: 📂 Sync files
       uses: SamKirkland/FTP-Deploy-Action@v4.3.6
       with:
         server: 69.72.244.44
         username: main@innapp.az
         password: ${{ secrets.ftp_password }}
+        # Switch to "ftps" once the host confirms TLS on the FTP port — plain
+        # FTP carries the password and the code in the clear.
+        protocol: ftp
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          .github/**
+          tests/**
+          template/**
+          memory/**
+          *.pdf
+          phpunit.xml
+          .env.example
+          README.md
+          CLAUDE.md

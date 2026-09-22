@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password;
 
 class PromoterController extends Controller
 {
@@ -33,7 +33,7 @@ class PromoterController extends Controller
             'surname'  => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email',
             'phone'    => 'nullable|string|max:20',
-            'password' => 'required|min:8|confirmed',
+            'password' => ['required', 'confirmed', Password::defaults()],
             'is_active' => 'boolean',
         ]);
 
@@ -78,7 +78,7 @@ class PromoterController extends Controller
             'surname'   => 'required|string|max:255',
             'email'     => 'required|email|unique:users,email,' . $promoter->id,
             'phone'     => 'nullable|string|max:20',
-            'password'  => 'nullable|min:8|confirmed',
+            'password'  => ['nullable', 'confirmed', Password::defaults()],
             'is_active' => 'boolean',
         ]);
 
@@ -92,12 +92,12 @@ class PromoterController extends Controller
 
         $validated['is_active'] = $request->boolean('is_active', false);
 
-        if ($emailChanged) {
-            $validated['remember_token'] = Str::random(60);
-            DB::table('sessions')->where('user_id', $promoter->id)->delete();
-        }
-
         $promoter->update($validated);
+
+        // New e-mail, new password or a deactivation: every existing session ends.
+        if (($promoter->wasChanged('password') || $emailChanged || ! $promoter->is_active) && $promoter->id !== Auth::id()) {
+            $promoter->revokeSessions();
+        }
 
         return redirect()->route('admin.promoters.index')
             ->with('success', 'Promotor məlumatları yeniləndi.');

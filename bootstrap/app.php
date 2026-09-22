@@ -16,6 +16,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'subscription' => \App\Http\Middleware\CheckSubscription::class,
         ]);
         $middleware->appendToGroup('web', \App\Http\Middleware\CheckDemoExpiry::class);
+        // A password change (or reset) logs every other device out.
+        $middleware->appendToGroup('web', \Illuminate\Session\Middleware\AuthenticateSession::class);
+        // Deactivated accounts and closed clinics are locked out on the next request.
+        $middleware->appendToGroup('web', \App\Http\Middleware\EnsureAccountActive::class);
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Sessiya müddəti bitdikdə (419) xəta səhifəsi əvəzinə ana səhifəyə yönləndir

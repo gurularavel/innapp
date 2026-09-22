@@ -123,10 +123,12 @@ return [
             'handler' => NullHandler::class,
         ],
 
+        // Carries phone numbers and message bodies: rotated, not kept forever.
         'sms' => [
-            'driver' => 'single',
+            'driver' => 'daily',
             'path'   => storage_path('logs/sms.log'),
             'level'  => 'debug',
+            'days'   => 30,
         ],
 
         'cron' => [

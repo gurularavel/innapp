@@ -967,6 +967,15 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 <script>
+// Escape a value before it goes into innerHTML — patient names, phones and
+// anything else that came from a form must never be rendered as markup.
+window.escHtml = function (value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+};
+</script>
+<script>
 // Global flatpickr config – Monday as first day
 flatpickr.localize({ firstDayOfWeek: 1 });
 document.addEventListener('DOMContentLoaded', function () {

@@ -162,6 +162,15 @@ class Clinic extends Model
         return $this->usedSeats() <= 1;
     }
 
+    /**
+     * A throwaway clinic created by /demo. Its seed data carries realistic
+     * phone numbers, so nothing it does may ever reach a real SMS/WhatsApp gateway.
+     */
+    public function isDemo(): bool
+    {
+        return $this->members()->where('is_demo', true)->exists();
+    }
+
     // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------

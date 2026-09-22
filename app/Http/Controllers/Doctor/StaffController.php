@@ -131,7 +131,14 @@ class StaffController extends Controller implements HasMiddleware
             $data['password'] = Hash::make($validated['password']);
         }
 
+        $credentialsChanged = isset($data['password']) || $staff->email !== $data['email'];
+
         $staff->update($data);
+
+        // Someone else changed the login details — whoever holds the old ones is out.
+        if ($credentialsChanged && $staff->id !== Auth::id()) {
+            $staff->revokeSessions();
+        }
 
         return redirect()->route('panel.staff.index')
             ->with('success', 'Əməkdaş məlumatları yeniləndi.');
@@ -151,6 +158,10 @@ class StaffController extends Controller implements HasMiddleware
         }
 
         $staff->update(['is_active' => ! $staff->is_active]);
+
+        if (! $staff->is_active) {
+            $staff->revokeSessions();
+        }
 
         return back()->with('success', $staff->is_active ? 'Əməkdaş aktivləşdirildi.' : 'Əməkdaş deaktiv edildi.');
     }
@@ -187,8 +198,8 @@ class StaffController extends Controller implements HasMiddleware
             'job_title'          => ['nullable', 'string', 'max:100'],
             'takes_appointments' => ['boolean'],
             'password'           => $staff
-                ? ['nullable', 'confirmed', Password::min(8)]
-                : ['required', 'confirmed', Password::min(8)],
+                ? ['nullable', 'confirmed', Password::defaults()]
+                : ['required', 'confirmed', Password::defaults()],
         ];
     }
 

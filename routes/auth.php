@@ -21,7 +21,10 @@ Route::middleware('guest')->group(function () {
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
 
-    Route::post('login', [AuthenticatedSessionController::class, 'store']);
+    // LoginRequest already locks one e-mail after 5 tries; this caps one IP
+    // across every e-mail, so credential stuffing cannot walk a whole list.
+    Route::post('login', [AuthenticatedSessionController::class, 'store'])
+        ->middleware('throttle:30,1');
 
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');
@@ -34,7 +37,8 @@ Route::middleware('guest')->group(function () {
         ->name('password.reset');
 
     Route::post('reset-password', [NewPasswordController::class, 'store'])
-        ->name('password.store');
+        ->name('password.store')
+        ->middleware('throttle:10,1');
 });
 
 Route::middleware('auth')->group(function () {

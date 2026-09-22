@@ -381,11 +381,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     qaDropdown.innerHTML = patients.map(p => {
                         const bd = p.birth_date ? p.birth_date.split('T')[0] : null;
                         const age = bd ? new Date().getFullYear() - new Date(bd).getFullYear() : null;
+                        const name = escHtml(p.name + ' ' + p.surname);
                         return `<div class="qa-patient-item"
-                                     data-id="${p.id}" data-name="${p.name} ${p.surname}"
-                                     data-phone="${p.phone ?? ''}" data-birth="${bd ?? ''}">
-                                    <span class="fw-medium">${p.name} ${p.surname}</span>
-                                    <small class="text-muted ms-2">${[p.phone, age ? age + ' yaş' : null].filter(Boolean).join(' · ')}</small>
+                                     data-id="${escHtml(p.id)}" data-name="${name}"
+                                     data-phone="${escHtml(p.phone ?? '')}" data-birth="${escHtml(bd ?? '')}">
+                                    <span class="fw-medium">${name}</span>
+                                    <small class="text-muted ms-2">${escHtml([p.phone, age ? age + ' yaş' : null].filter(Boolean).join(' · '))}</small>
                                 </div>`;
                     }).join('');
                     qaDropdown.classList.remove('d-none');
@@ -490,7 +491,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const wrap = document.createElement('div');
         wrap.style.cssText = 'position:fixed;top:1rem;right:1rem;z-index:9999;';
         wrap.innerHTML = `<div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0 show" role="alert">
-            <div class="d-flex"><div class="toast-body">${msg}</div>
+            <div class="d-flex"><div class="toast-body">${escHtml(msg)}</div>
             <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
             </div></div>`;
         document.body.appendChild(wrap);

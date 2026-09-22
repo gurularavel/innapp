@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Doctor;
 
 use App\Http\Controllers\Controller;
 use App\Models\Clinic;
+use App\Rules\AzMobilePhone;
 use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -122,8 +123,13 @@ class WhatsappController extends Controller
         $clinic = $this->authorizedClinic();
 
         $request->validate([
-            'test_phone' => ['required', 'string', 'max:20'],
+            'test_phone' => ['required', 'string', 'max:20', new AzMobilePhone],
         ]);
+
+        // A demo owner has nothing to test against — the service logs instead of sending.
+        if (Auth::user()->is_demo || $clinic->isDemo()) {
+            return back()->with('warning', 'Demo rejimdə test mesajı göndərilmir.');
+        }
 
         if (! $this->whatsapp->isConfiguredFor($clinic)) {
             return back()->with('error', 'WhatsApp hazırda aktiv deyil — nə sizin bağlantınız, nə də sistem bağlantısı qurulub.');

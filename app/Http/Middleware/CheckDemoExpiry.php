@@ -13,7 +13,7 @@ class CheckDemoExpiry
     {
         $user = $request->user();
 
-        if ($user && $user->is_demo && $user->demo_expires_at->isPast()) {
+        if ($user && $user->is_demo && ($user->demo_expires_at === null || $user->demo_expires_at->isPast())) {
             $userId = $user->id;
             auth()->logout();
             $request->session()->invalidate();

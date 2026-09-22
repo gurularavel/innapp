@@ -34,6 +34,8 @@ class SendAppointmentReminders extends Command
 
         $appointments = Appointment::with('patient', 'doctor')
             ->where('reminder_sent', false)
+            // Demo clinics are seeded with realistic numbers; never remind them.
+            ->whereDoesntHave('clinic.members', fn ($q) => $q->where('is_demo', true))
             ->whereIn('status', ['pending', 'confirmed'])
             ->whereBetween('scheduled_at', [$windowStart, $windowEnd])
             ->get();

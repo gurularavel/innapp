@@ -10,7 +10,7 @@ use App\Models\PatientVisitFile;
 use App\Models\TreatmentType;
 use App\Models\User;
 use App\Models\DoctorWorkingHours;
-use App\Services\TurnstileService;
+use App\Support\PatientFiles;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -23,16 +23,14 @@ class DemoController extends Controller
 
     /**
      * A demo click builds a whole clinic with seed data, so it is the cheapest
-     * table to spam. When the bot check guards it, the link lands on a gate
-     * page instead of creating the account straight away.
+     * table to spam. The link only shows a gate page; the account is created by
+     * the (throttled, CSRF-protected) POST behind its button — a GET must never
+     * create anything, or an <img src="/demo"> on any site would do it, and log
+     * the visitor into a demo account on top.
      */
-    public function start(TurnstileService $turnstile)
+    public function start()
     {
-        if ($turnstile->enabledFor('demo')) {
-            return view('demo.gate');
-        }
-
-        return $this->createDemo();
+        return view('demo.gate');
     }
 
     public function store(Request $request)
@@ -190,8 +188,8 @@ class DemoController extends Controller
             'patients/visits/demo/xray5.jpg',
         ];
 
-        // Check which demo files actually exist
-        $xrays = array_values(array_filter($xrays, fn($p) => Storage::disk('public')->exists($p)));
+        // Check which demo files actually exist (the samples may sit on either disk)
+        $xrays = array_values(array_filter($xrays, fn($p) => PatientFiles::exists($p)));
 
         if (empty($xrays)) {
             return;
@@ -311,8 +309,11 @@ class DemoController extends Controller
                 $ext     = pathinfo($srcPath, PATHINFO_EXTENSION) ?: 'jpg';
                 $newName = 'patients/visits/' . Str::random(32) . '.' . $ext;
 
-                // Copy the demo file to a unique path so deletion works correctly
-                Storage::disk('public')->copy($srcPath, $newName);
+                // Copy the sample to a unique path on the private disk so deletion works correctly
+                Storage::disk(PatientFiles::DISK)->writeStream(
+                    $newName,
+                    Storage::disk(PatientFiles::diskOf($srcPath))->readStream($srcPath)
+                );
 
                 PatientVisitFile::create([
                     'patient_visit_id' => $visit->id,
@@ -341,7 +342,7 @@ class DemoController extends Controller
         foreach ($user->patients as $patient) {
             foreach ($patient->visits as $visit) {
                 foreach ($visit->files as $file) {
-                    Storage::disk('public')->delete($file->file_path);
+                    PatientFiles::delete($file->file_path);
                 }
             }
         }

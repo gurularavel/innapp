@@ -9,11 +9,13 @@ use App\Http\Controllers\InquiryController;
 use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 
-// Short map URL redirect (public, no auth)
+// Short map URL redirect (public, no auth). Only a map host is ever redirected
+// to — the link is printed in SMS under our domain, so it must not become an
+// open redirector for whatever a clinic owner typed in.
 Route::get('/map/{code}', function (string $code) {
     $clinic = \App\Models\Clinic::where('map_code', $code)->first();
-    if ($clinic && $clinic->map_url) {
-        return redirect($clinic->map_url);
+    if ($clinic && \App\Rules\MapUrl::allowed($clinic->map_url)) {
+        return redirect()->away($clinic->map_url);
     }
     abort(404);
 })->name('map.redirect');
@@ -119,6 +121,11 @@ Route::prefix('panel')->name('panel.')->middleware(['auth', 'role:owner,doctor,r
     Route::get('patients/search', [Doctor\PatientController::class, 'search'])->name('patients.search');
     Route::resource('patients', Doctor\PatientController::class)->middleware('subscription');
 
+    // Patient uploads are private: streamed here after the clinic check, never from public/storage.
+    Route::get('files/patients/{patient}/photo', [Doctor\PatientFileController::class, 'photo'])->name('files.photo');
+    Route::get('files/patients/{patient}/fields/{field}', [Doctor\PatientFileController::class, 'customFile'])->name('files.custom');
+    Route::get('files/visits/{file}', [Doctor\PatientFileController::class, 'visitFile'])->name('files.visit');
+
     Route::prefix('patients/{patient}/visits')->name('patients.visits.')->group(function () {
         Route::get('create', [Doctor\PatientVisitController::class, 'create'])->name('create');
         Route::post('/', [Doctor\PatientVisitController::class, 'store'])->name('store');
@@ -156,7 +163,8 @@ Route::prefix('panel')->name('panel.')->middleware(['auth', 'role:owner,doctor,r
     // Klinikanın öz WhatsApp bağlantısı (yalnız sahib — kontrollerdə yoxlanılır)
     Route::get('whatsapp', [Doctor\WhatsappController::class, 'edit'])->name('whatsapp.edit');
     Route::put('whatsapp', [Doctor\WhatsappController::class, 'update'])->name('whatsapp.save');
-    Route::post('whatsapp/test', [Doctor\WhatsappController::class, 'test'])->name('whatsapp.test');
+    Route::post('whatsapp/test', [Doctor\WhatsappController::class, 'test'])->name('whatsapp.test')
+        ->middleware('throttle:5,10'); // a test button, not a bulk sender
     Route::delete('whatsapp', [Doctor\WhatsappController::class, 'disconnect'])->name('whatsapp.disconnect');
 
     // Ad günü və bayram təbrikləri

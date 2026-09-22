@@ -11,7 +11,7 @@ use App\Models\TreatmentType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
+use App\Support\PatientFiles;
 use Illuminate\Validation\Rule;
 
 class PatientVisitController extends Controller
@@ -37,7 +37,7 @@ class PatientVisitController extends Controller
             'visited_at' => 'required|date',
             'title'      => 'nullable|string|max:255',
             'notes'      => 'nullable|string',
-            'files.*'    => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,pdf|max:5120',
+            'files.*'    => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,pdf|extensions:jpg,jpeg,png,gif,webp,pdf|max:5120',
             'teeth'          => 'nullable|array',
             'teeth.*.status' => ['required', Rule::in(array_keys(PatientVisitTooth::STATUSES))],
             'teeth.*.note'   => 'nullable|string|max:255',
@@ -58,7 +58,7 @@ class PatientVisitController extends Controller
 
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
-                $path = $file->store('patients/visits', 'public');
+                $path = PatientFiles::store($file, PatientFiles::VISITS);
                 PatientVisitFile::create([
                     'patient_visit_id' => $visit->id,
                     'file_path'        => $path,
@@ -100,7 +100,7 @@ class PatientVisitController extends Controller
             'visited_at' => 'required|date',
             'title'      => 'nullable|string|max:255',
             'notes'      => 'nullable|string',
-            'files.*'    => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,pdf|max:5120',
+            'files.*'    => 'nullable|file|mimes:jpg,jpeg,png,gif,webp,pdf|extensions:jpg,jpeg,png,gif,webp,pdf|max:5120',
             'teeth'          => 'nullable|array',
             'teeth.*.status' => ['required', Rule::in(array_keys(PatientVisitTooth::STATUSES))],
             'teeth.*.note'   => 'nullable|string|max:255',
@@ -118,7 +118,7 @@ class PatientVisitController extends Controller
 
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
-                $path = $file->store('patients/visits', 'public');
+                $path = PatientFiles::store($file, PatientFiles::VISITS);
                 PatientVisitFile::create([
                     'patient_visit_id' => $visit->id,
                     'file_path'        => $path,
@@ -138,7 +138,7 @@ class PatientVisitController extends Controller
         $this->authorizeVisit($patient, $visit);
 
         foreach ($visit->files as $file) {
-            Storage::disk('public')->delete($file->file_path);
+            PatientFiles::delete($file->file_path);
         }
         $visit->delete();
 
@@ -154,7 +154,7 @@ class PatientVisitController extends Controller
             abort(403);
         }
 
-        Storage::disk('public')->delete($file->file_path);
+        PatientFiles::delete($file->file_path);
         $file->delete();
 
         return response()->json(['ok' => true]);

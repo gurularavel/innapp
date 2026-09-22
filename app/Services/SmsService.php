@@ -38,7 +38,10 @@ class SmsService
         ?int   $clinicId = null,
         array  $context = []
     ): bool {
-        ['success' => $success, 'receiver_id' => $receiverId, 'response_body' => $responseBody] = match ($this->driver) {
+        // Demo clinics never reach the gateway — their data looks real but is not.
+        $driver = $this->isDemoClinic($clinicId) ? 'log' : $this->driver;
+
+        ['success' => $success, 'receiver_id' => $receiverId, 'response_body' => $responseBody] = match ($driver) {
             'poctgoyercini' => $this->sendViaPostaGuvercini($phone, $message),
             default          => $this->sendViaLog($phone, $message),
         };
@@ -188,6 +191,11 @@ class SmsService
     // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
+
+    private function isDemoClinic(?int $clinicId): bool
+    {
+        return $clinicId !== null && (bool) Clinic::find($clinicId)?->isDemo();
+    }
 
     private function logSms(
         string  $phone,

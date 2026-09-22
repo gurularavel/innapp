@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Clinic;
 use App\Models\DoctorBreak;
 use App\Models\DoctorWorkingHours;
+use App\Rules\MapUrl;
 use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -63,7 +64,7 @@ class ProfileController extends Controller
     {
         $validated = $request->validate([
             'current_password' => 'required|current_password',
-            'password' => ['required', 'confirmed', Password::min(8)],
+            'password' => ['required', 'confirmed', Password::defaults()],
         ]);
 
         Auth::user()->update([
@@ -151,7 +152,7 @@ class ProfileController extends Controller
             'clinic_name'    => 'required|string|max:100',
             'clinic_address' => 'nullable|string|max:255',
             'clinic_phone'   => 'nullable|string|max:20',
-            'clinic_map_url' => 'nullable|url|max:2000',
+            'clinic_map_url' => ['nullable', 'url', 'max:2000', new MapUrl],
         ]);
 
         $clinic = $user->clinic;
@@ -187,11 +188,20 @@ class ProfileController extends Controller
             'working_hours'                    => 'required|array',
             'working_hours.*.start_time'       => 'required_if:working_hours.*.is_working,1|nullable|date_format:H:i',
             'working_hours.*.end_time'         => 'required_if:working_hours.*.is_working,1|nullable|date_format:H:i',
+            'breaks'                           => 'nullable|array|max:50',
+            'breaks.*.day_of_week'             => 'nullable|integer|min:1|max:7',
+            'breaks.*.start_time'              => 'nullable|date_format:H:i',
+            'breaks.*.end_time'                => 'nullable|date_format:H:i',
+            'breaks.*.label'                   => 'nullable|string|max:100',
         ]);
 
         $doctorId = Auth::id();
 
         foreach ($request->working_hours as $day => $hours) {
+            if (! is_array($hours) || (int) $day < 1 || (int) $day > 7) {
+                continue;
+            }
+
             $isWorking = isset($hours['is_working']) && $hours['is_working'];
 
             DoctorWorkingHours::updateOrCreate(

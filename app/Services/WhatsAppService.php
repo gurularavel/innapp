@@ -117,8 +117,11 @@ class WhatsAppService
         $clinic = $this->resolveClinic($clinic);
         $config = $this->configFor($clinic);
 
+        // Demo clinics never reach the gateway — their data looks real but is not.
+        $live = $this->isUsable($config) && ! $clinic?->isDemo();
+
         ['success' => $success, 'message_id' => $messageId, 'response_body' => $responseBody] =
-            $this->isUsable($config)
+            $live
                 ? $this->sendViaCloudApi($config, $phone, $message, $templateName, $templateParams)
                 : $this->sendViaLog($phone, $message, $templateName, $templateParams);
 

@@ -145,7 +145,7 @@
             $icon  = $isImg ? 'bi-image' : (in_array($ext, ['pdf']) ? 'bi-file-pdf' : 'bi-file-earmark');
         @endphp
         <i class="bi {{ $icon }} text-secondary fs-5"></i>
-        <a href="{{ asset('storage/' . $currentVal) }}" target="_blank"
+        <a href="{{ route('panel.files.custom', [$patient, $field->id]) }}" target="_blank"
            class="text-decoration-none small flex-grow-1 text-truncate">
             {{ basename($currentVal) }}
         </a>

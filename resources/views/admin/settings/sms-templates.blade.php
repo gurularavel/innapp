@@ -31,6 +31,21 @@
                         @enderror
                     </div>
 
+                    <div class="mb-3">
+                        <label for="admin_notify_phone" class="form-label fw-medium">Ödəniş bildirişi nömrəsi</label>
+                        <input type="text"
+                               id="admin_notify_phone"
+                               name="admin_notify_phone"
+                               class="form-control @error('admin_notify_phone') is-invalid @enderror"
+                               value="{{ old('admin_notify_phone', $adminNotifyPhone) }}"
+                               placeholder="+994 55 123 45 67"
+                               maxlength="20">
+                        @error('admin_notify_phone')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <div class="text-muted small mt-1">Hər uğurlu abunə ödənişində bu nömrəyə SMS gedir. Boş qalsa dəstək nömrəsi ({{ config('services.support.whatsapp') }}) istifadə olunur.</div>
+                    </div>
+
                     {{-- Appointment template --}}
                     <hr class="my-4">
                     <h6 class="fw-semibold mb-1"><i class="bi bi-calendar-check me-1 text-primary"></i>Randevu Təsdiq SMS</h6>

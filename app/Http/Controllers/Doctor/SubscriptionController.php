@@ -6,12 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\DoctorSubscription;
 use App\Models\Package;
 use App\Models\PromoRedemption;
+use App\Models\Setting;
 use App\Models\SubscriptionPayment;
 use App\Services\KapitalBankService;
 use App\Services\SmsService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class SubscriptionController extends Controller
@@ -150,19 +152,42 @@ class SubscriptionController extends Controller
                 ->with('error', 'Ödəniş uğursuz oldu (status: ' . $status . '). Yenidən cəhd edin.');
         }
 
-        $payment->update(['status' => 'paid']);
+        // The bank may call back more than once and the user can reload the
+        // page: the row is locked and re-read so exactly one request activates
+        // the subscription and credits the promoter.
+        $activated = DB::transaction(function () use ($payment) {
+            $locked = SubscriptionPayment::whereKey($payment->id)->lockForUpdate()->first();
 
-        // Activate subscription
-        [$startsAt, $expiresAt] = $this->activateSubscription($payment);
+            if (! $locked || $locked->status !== 'pending') {
+                return null;
+            }
 
-        // Promotor komissiyasını yaz (müştərinin HƏR uğurlu ödənişində)
-        $this->recordPromoCommission($payment);
+            $locked->update(['status' => 'paid']);
+            $locked->setRelation('package', $payment->package);
+
+            $period = $this->activateSubscription($locked);
+
+            // Promotor komissiyasını yaz (müştərinin HƏR uğurlu ödənişində)
+            $this->recordPromoCommission($locked);
+
+            return $period;
+        });
+
+        if ($activated === null) {
+            return redirect()->route('panel.subscription.index')
+                ->with('success', 'Bu ödəniş artıq qeydə alınıb.');
+        }
+
+        [$startsAt, $expiresAt] = $activated;
 
         // Notify admin
         try {
             $doctor  = $payment->doctor;
             $message = "{$doctor->name} {$doctor->surname} - {$payment->package->name} paketi aldı. Məbləğ: {$payment->amount} AZN. Ödəniş qəbul olundu.";
-            app(SmsService::class)->send('+994557038008', $message);
+            $adminPhone = Setting::get('admin_notify_phone') ?: config('services.support.whatsapp');
+            if ($adminPhone) {
+                app(SmsService::class)->send($adminPhone, $message);
+            }
         } catch (\Exception $e) {
             Log::warning('Admin SMS notification failed: ' . $e->getMessage());
         }

@@ -194,11 +194,12 @@
                     dropdown.innerHTML = patients.map(p => {
                         const bd   = p.birth_date ? p.birth_date.split('T')[0] : null;
                         const age  = bd ? (new Date().getFullYear() - new Date(bd).getFullYear()) : null;
-                        const info = [p.phone, age ? age + ' yaş' : null].filter(Boolean).join(' | ');
+                        const info = escHtml([p.phone, age ? age + ' yaş' : null].filter(Boolean).join(' | '));
+                        const name = escHtml(p.name + ' ' + p.surname);
                         return `<button type="button" class="list-group-item list-group-item-action py-2 px-3 patient-item"
-                                    data-id="${p.id}" data-name="${p.name} ${p.surname}"
-                                    data-phone="${p.phone ?? ''}" data-birth="${bd ?? ''}">
-                                    <span class="fw-medium">${p.name} ${p.surname}</span>
+                                    data-id="${escHtml(p.id)}" data-name="${name}"
+                                    data-phone="${escHtml(p.phone ?? '')}" data-birth="${escHtml(bd ?? '')}">
+                                    <span class="fw-medium">${name}</span>
                                     <small class="text-muted ms-2">${info}</small>
                                 </button>`;
                     }).join('');

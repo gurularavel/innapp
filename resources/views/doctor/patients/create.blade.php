@@ -171,9 +171,9 @@ function previewPhoto(input) {
         patients.forEach(p => {
             const item = document.createElement('div');
             item.className = 'suggestion-item';
-            const dob = p.birth_date ? `<span class="patient-dob ms-1">(${p.birth_date})</span>` : '';
-            item.innerHTML = `<span class="patient-name">${p.name} ${p.surname}</span>`
-                           + `<span class="patient-phone"><i class="bi bi-telephone me-1"></i>${p.phone || '—'}</span>${dob}`;
+            const dob = p.birth_date ? `<span class="patient-dob ms-1">(${escHtml(p.birth_date)})</span>` : '';
+            item.innerHTML = `<span class="patient-name">${escHtml(p.name + ' ' + p.surname)}</span>`
+                           + `<span class="patient-phone"><i class="bi bi-telephone me-1"></i>${escHtml(p.phone || '—')}</span>${dob}`;
             item.addEventListener('mousedown', e => { e.preventDefault(); showDuplicateModal(p); });
             dropdownEl.appendChild(item);
         });

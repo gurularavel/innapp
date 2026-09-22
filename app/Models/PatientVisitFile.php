@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
+use App\Support\PatientFiles;
 
 class PatientVisitFile extends Model
 {
@@ -19,9 +19,10 @@ class PatientVisitFile extends Model
         return $this->belongsTo(PatientVisit::class, 'patient_visit_id');
     }
 
+    /** Authenticated link — the file itself is on the private disk. */
     public function getUrlAttribute(): string
     {
-        return asset('storage/' . $this->file_path);
+        return route('panel.files.visit', $this);
     }
 
     public function getIsImageAttribute(): bool
@@ -32,7 +33,7 @@ class PatientVisitFile extends Model
     protected static function booted(): void
     {
         static::deleting(function (self $file) {
-            Storage::disk('public')->delete($file->file_path);
+            PatientFiles::delete($file->file_path);
         });
     }
 }

@@ -267,6 +267,22 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * End every session this account has, including "remember me" cookies.
+     * Called when the account is deactivated or its credentials are changed
+     * by someone else (owner or admin).
+     */
+    public function revokeSessions(): void
+    {
+        if (config('session.driver') === 'database') {
+            \Illuminate\Support\Facades\DB::table(config('session.table', 'sessions'))
+                ->where('user_id', $this->id)
+                ->delete();
+        }
+
+        $this->forceFill(['remember_token' => \Illuminate\Support\Str::random(60)])->saveQuietly();
+    }
+
     public function getFullNameAttribute(): string
     {
         return trim($this->name . ' ' . $this->surname);

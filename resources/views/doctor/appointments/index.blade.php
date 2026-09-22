@@ -216,11 +216,12 @@
                 .then(patients => {
                     if (!patients.length) { dropdown.style.display = 'none'; return; }
                     dropdown.innerHTML = patients.map(p => {
-                        const info = p.phone ? `<small class="text-muted ms-2">${p.phone}</small>` : '';
+                        const info = p.phone ? `<small class="text-muted ms-2">${escHtml(p.phone)}</small>` : '';
+                        const name = escHtml(p.name + ' ' + p.surname);
                         return `<button type="button"
                                     class="list-group-item list-group-item-action py-2 px-3 filter-patient-item"
-                                    data-id="${p.id}" data-name="${p.name} ${p.surname}">
-                                    <span class="fw-medium">${p.name} ${p.surname}</span>${info}
+                                    data-id="${escHtml(p.id)}" data-name="${name}">
+                                    <span class="fw-medium">${name}</span>${info}
                                 </button>`;
                     }).join('');
                     dropdown.style.display = 'block';

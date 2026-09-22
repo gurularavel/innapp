@@ -13,6 +13,7 @@ use App\Services\NotificationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class AppointmentController extends Controller
 {
@@ -60,7 +61,8 @@ class AppointmentController extends Controller
         $validated = $request->validate([
             'patient_id' => 'required|exists:patients,id',
             'staff_id' => 'nullable|exists:users,id',
-            'treatment_type_id' => 'nullable|exists:treatment_types,id',
+            // Must be one of this clinic's services, not merely any existing row.
+            'treatment_type_id' => ['nullable', Rule::exists('treatment_types', 'id')->where('clinic_id', Auth::user()->clinic_id)],
             'scheduled_at' => 'required|date|after:now',
             'duration_minutes' => 'required|integer|min:5|max:480',
             'status' => 'required|in:pending,confirmed,completed,cancelled',
@@ -132,7 +134,8 @@ class AppointmentController extends Controller
         $validated = $request->validate([
             'patient_id' => 'required|exists:patients,id',
             'staff_id' => 'nullable|exists:users,id',
-            'treatment_type_id' => 'nullable|exists:treatment_types,id',
+            // Must be one of this clinic's services, not merely any existing row.
+            'treatment_type_id' => ['nullable', Rule::exists('treatment_types', 'id')->where('clinic_id', Auth::user()->clinic_id)],
             'scheduled_at' => 'required|date',
             'duration_minutes' => 'required|integer|min:5|max:480',
             'status' => 'required|in:pending,confirmed,completed,cancelled',

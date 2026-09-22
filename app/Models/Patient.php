@@ -52,10 +52,11 @@ class Patient extends Model
         return $this->hasMany(PatientFieldValue::class);
     }
 
+    /** Authenticated link to the photo — the file itself is on the private disk. */
     public function getPhotoUrlAttribute(): string
     {
-        if ($this->photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($this->photo)) {
-            return asset('storage/' . $this->photo);
+        if ($this->photo && \App\Support\PatientFiles::exists($this->photo)) {
+            return route('panel.files.photo', $this);
         }
         return '';
     }

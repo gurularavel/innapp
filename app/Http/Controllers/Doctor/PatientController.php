@@ -9,10 +9,21 @@ use App\Models\SpecialtyField;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
+use App\Support\PatientFiles;
 
 class PatientController extends Controller
 {
+    /**
+     * Custom-field uploads are documents and scans only. Both the sniffed type
+     * and the extension are checked, so a script renamed to .pdf or a real
+     * .html file is rejected — the private disk is the second line of defence.
+     */
+    public const CUSTOM_FILE_RULES = [
+        'nullable', 'file', 'max:10240',
+        'mimes:jpg,jpeg,png,webp,pdf,doc,docx,xls,xlsx',
+        'extensions:jpg,jpeg,png,webp,pdf,doc,docx,xls,xlsx',
+    ];
+
     public function search(Request $request)
     {
         $q = $request->get('q', '');
@@ -93,7 +104,7 @@ class PatientController extends Controller
 
         foreach ($fields->where('is_core', false)->where('is_active', true)->where('type', 'file') as $cf) {
             if ($cf->id) {
-                $rules["custom_file_{$cf->id}"] = 'nullable|file|max:10240';
+                $rules["custom_file_{$cf->id}"] = self::CUSTOM_FILE_RULES;
             }
         }
 
@@ -116,7 +127,7 @@ class PatientController extends Controller
         }
 
         if ($request->hasFile('photo')) {
-            $validated['photo'] = $request->file('photo')->store('patients/photos', 'public');
+            $validated['photo'] = PatientFiles::store($request->file('photo'), PatientFiles::PHOTOS);
         }
 
         $patient = Patient::create($validated);
@@ -181,19 +192,17 @@ class PatientController extends Controller
 
         foreach ($fields->where('is_core', false)->where('is_active', true)->where('type', 'file') as $cf) {
             if ($cf->id) {
-                $rules["custom_file_{$cf->id}"] = 'nullable|file|max:10240';
+                $rules["custom_file_{$cf->id}"] = self::CUSTOM_FILE_RULES;
             }
         }
 
         $validated = $request->validate($rules);
 
         if ($request->hasFile('photo')) {
-            if ($patient->photo) {
-                Storage::disk('public')->delete($patient->photo);
-            }
-            $validated['photo'] = $request->file('photo')->store('patients/photos', 'public');
+            PatientFiles::delete($patient->photo);
+            $validated['photo'] = PatientFiles::store($request->file('photo'), PatientFiles::PHOTOS);
         } elseif ($request->boolean('remove_photo') && $patient->photo) {
-            Storage::disk('public')->delete($patient->photo);
+            PatientFiles::delete($patient->photo);
             $validated['photo'] = null;
         }
 
@@ -208,6 +217,20 @@ class PatientController extends Controller
     public function destroy(Patient $patient)
     {
         $this->authorizePatient($patient);
+
+        // The rows cascade in the database; the files on disk do not.
+        PatientFiles::delete($patient->photo);
+        foreach ($patient->fieldValues()->whereNotNull('value')->get() as $value) {
+            if ($value->specialtyField?->type === 'file') {
+                PatientFiles::delete($value->value);
+            }
+        }
+        foreach ($patient->visits()->with('files')->get() as $visit) {
+            foreach ($visit->files as $file) {
+                PatientFiles::delete($file->file_path);
+            }
+        }
+
         $patient->delete();
 
         // Qeyd: patients_used QƏSDƏN azaldılmır. Limit "dövr ərzində cəmi əlavə"
@@ -298,9 +321,7 @@ class PatientController extends Controller
                 // Handle remove checkbox
                 if (!empty($removeFiles[$sfId])) {
                     $existing = PatientFieldValue::where(['patient_id' => $patient->id, 'specialty_field_id' => $sfId])->first();
-                    if ($existing?->value) {
-                        Storage::disk('public')->delete($existing->value);
-                    }
+                    PatientFiles::delete($existing?->value);
                     PatientFieldValue::updateOrCreate(
                         ['patient_id' => $patient->id, 'specialty_field_id' => $sfId],
                         ['value' => null]
@@ -311,11 +332,9 @@ class PatientController extends Controller
                 if ($request->hasFile($fileKey)) {
                     // Delete old file if replacing
                     $existing = PatientFieldValue::where(['patient_id' => $patient->id, 'specialty_field_id' => $sfId])->first();
-                    if ($existing?->value) {
-                        Storage::disk('public')->delete($existing->value);
-                    }
+                    PatientFiles::delete($existing?->value);
 
-                    $path = $request->file($fileKey)->store('patients/custom_files', 'public');
+                    $path = PatientFiles::store($request->file($fileKey), PatientFiles::CUSTOM);
                     PatientFieldValue::updateOrCreate(
                         ['patient_id' => $patient->id, 'specialty_field_id' => $sfId],
                         ['value' => $path]
@@ -323,6 +342,7 @@ class PatientController extends Controller
                 }
             } else {
                 $value = $textInput[$sfId] ?? null;
+                $value = is_scalar($value) ? mb_substr((string) $value, 0, 2000) : null;
                 PatientFieldValue::updateOrCreate(
                     ['patient_id' => $patient->id, 'specialty_field_id' => $sfId],
                     ['value' => ($value !== '' && $value !== null) ? $value : null]
