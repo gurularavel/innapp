@@ -20,6 +20,11 @@ Route::get('/map/{code}', function (string $code) {
     abort(404);
 })->name('map.redirect');
 
+// Browser-sent CSP violation reports (no auth, no CSRF — see bootstrap/app.php).
+Route::post(\App\Support\Csp::REPORT_PATH, \App\Http\Controllers\CspReportController::class)
+    ->middleware('throttle:60,1')
+    ->name('csp.report');
+
 // Home / Landing page
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
@@ -99,6 +104,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:super_admin'])
 
     Route::get('settings/security', [Admin\SettingController::class, 'security'])->name('settings.security');
     Route::put('settings/security', [Admin\SettingController::class, 'saveSecurity'])->name('settings.security.save');
+    Route::put('settings/csp', [Admin\SettingController::class, 'saveCsp'])->name('settings.csp.save');
 
     Route::get('settings/promo', [Admin\SettingController::class, 'promoSettings'])->name('settings.promo');
     Route::put('settings/promo', [Admin\SettingController::class, 'savePromoSettings'])->name('settings.promo.save');

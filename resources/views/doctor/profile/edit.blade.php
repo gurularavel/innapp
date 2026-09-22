@@ -361,7 +361,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script @cspNonce>
 // Working hours / breaks logic
 (function () {
     function applyTimeMask(inp) {

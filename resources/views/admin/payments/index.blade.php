@@ -168,7 +168,7 @@
                         <td>
                             @if($payment->kapitalbank_order_password)
                                 <span class="font-monospace password-text" style="filter:blur(4px);cursor:pointer"
-                                      onclick="this.style.filter='none'"
+                                      data-reveal
                                       title="Görmək üçün klikləyin">{{ $payment->kapitalbank_order_password }}</span>
                                 <button class="btn btn-link btn-sm p-0 ms-1 text-muted copy-btn"
                                         data-value="{{ $payment->kapitalbank_order_password }}"
@@ -216,7 +216,12 @@
 </div>
 
 @push('scripts')
-<script>
+<script @cspNonce>
+// The order password is blurred until it is clicked.
+document.querySelectorAll('[data-reveal]').forEach(el => {
+    el.addEventListener('click', () => { el.style.filter = 'none'; });
+});
+
 document.querySelectorAll('.copy-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         navigator.clipboard.writeText(btn.dataset.value);

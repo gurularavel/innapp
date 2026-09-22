@@ -121,7 +121,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script @cspNonce>
 document.querySelectorAll('.js-extend').forEach(function (btn) {
     btn.addEventListener('click', function () {
         var input = document.getElementById('expires_at');

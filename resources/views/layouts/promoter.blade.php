@@ -184,8 +184,8 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script>
+<script @cspNonce src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script @cspNonce>
 document.addEventListener('DOMContentLoaded', function () {
     const toggleBtn = document.getElementById('menu-toggle-btn');
     const sidebar = document.getElementById('app-sidebar');
@@ -199,6 +199,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 </script>
+@include('layouts._scripts')
 @stack('scripts')
 @include('layouts._whatsapp_float')
 </body>

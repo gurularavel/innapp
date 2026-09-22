@@ -46,7 +46,7 @@
                 <form method="POST" action="{{ route('panel.treatment-types.destroy', $type) }}" class="d-inline">
                     @csrf @method('DELETE')
                     <button type="submit" class="btn btn-sm btn-danger"
-                            onclick="return confirm('Silmək istədiyinizdən əminsiniz?')">
+                            data-confirm="Silmək istədiyinizdən əminsiniz?">
                         <i class="bi bi-trash"></i>
                     </button>
                 </form>
@@ -93,7 +93,7 @@
                                 <form method="POST" action="{{ route('panel.treatment-types.destroy', $type) }}" class="d-inline">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger"
-                                            onclick="return confirm('Silmək istədiyinizdən əminsiniz?')">
+                                            data-confirm="Silmək istədiyinizdən əminsiniz?">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
@@ -116,7 +116,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script @cspNonce>
 document.getElementById('treatment-search').addEventListener('input', function () {
     const q = this.value.toLowerCase().trim();
 

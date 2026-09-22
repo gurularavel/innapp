@@ -147,7 +147,7 @@
                                     </form>
 
                                     <form method="POST" action="{{ route('panel.staff.destroy', $member) }}" class="d-inline"
-                                          onsubmit="return confirm('{{ $member->full_name }} silinsin? Bu əməliyyat geri qaytarılmır.')">
+                                          data-confirm="{{ $member->full_name }} silinsin? Bu əməliyyat geri qaytarılmır.">
                                         @csrf @method('DELETE')
                                         <button class="btn btn-outline-danger" title="Sil">
                                             <i class="bi bi-trash"></i>

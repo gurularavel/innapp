@@ -48,7 +48,7 @@
                                 <form method="POST" action="{{ route('admin.specialties.destroy', $specialty) }}" class="d-inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Silmək istədiyinizdən əminsiniz?')">
+                                    <button type="submit" class="btn btn-sm btn-danger" data-confirm="Silmək istədiyinizdən əminsiniz?">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>

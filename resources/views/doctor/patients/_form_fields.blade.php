@@ -48,9 +48,9 @@
         </div>
         <div>
             <input type="file" id="photo" name="photo" accept="image/*" class="d-none"
-                   onchange="previewPhoto(this)">
+                   data-photo-input>
             <button type="button" class="btn btn-sm btn-outline-secondary"
-                    onclick="document.getElementById('photo').click()">
+                    data-click-target="#photo">
                 <i class="bi bi-camera me-1"></i>Şəkil Seç
             </button>
             @if($isEdit && $patient->photo)

@@ -45,4 +45,4 @@
         ],
     ];
 @endphp
-<script type="application/ld+json">@json($siteSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)</script>
+<script @cspNonce type="application/ld+json">@json($siteSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)</script>

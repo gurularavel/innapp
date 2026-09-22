@@ -123,6 +123,14 @@ return [
             'handler' => NullHandler::class,
         ],
 
+        // Browser-reported CSP violations; noisy while a policy is being tuned.
+        'csp' => [
+            'driver' => 'daily',
+            'path'   => storage_path('logs/csp.log'),
+            'level'  => 'debug',
+            'days'   => 14,
+        ],
+
         // Carries phone numbers and message bodies: rotated, not kept forever.
         'sms' => [
             'driver' => 'daily',

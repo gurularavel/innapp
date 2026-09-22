@@ -173,7 +173,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script @cspNonce>
 (function () {
     document.querySelectorAll('[data-counter-for]').forEach(function (counter) {
         const area = document.getElementById(counter.dataset.counterFor);

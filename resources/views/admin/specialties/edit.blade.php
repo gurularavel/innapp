@@ -122,7 +122,7 @@
                         <form method="POST"
                               action="{{ route('admin.specialties.fields.remove', [$specialty, $cf]) }}"
                               class="d-inline"
-                              onsubmit="return confirm('Bu sahəni silmək istəyirsiniz?')">
+                              data-confirm="Bu sahəni silmək istəyirsiniz?">
                             @csrf @method('DELETE')
                             <button class="btn btn-sm btn-link p-0 text-danger" title="Sil">
                                 <i class="bi bi-trash"></i>
@@ -166,7 +166,7 @@
 
                     <div class="mb-3">
                         <label class="form-label fw-medium">Tip <span class="text-danger">*</span></label>
-                        <select name="type" class="form-select" id="addFieldType" onchange="toggleOptionsAdd(this)">
+                        <select name="type" class="form-select" id="addFieldType" data-toggle-options="addOptionsSection">
                             <option value="text">Mətn</option>
                             <option value="number">Nömrə</option>
                             <option value="date">Tarix</option>
@@ -216,7 +216,7 @@
                         <label class="form-label fw-medium">Tip</label>
                         <select name="type" class="form-select"
                                 id="editFieldType{{ $cf->id }}"
-                                onchange="toggleOptionsEdit(this, {{ $cf->id }})">
+                                data-toggle-options="editOptionsSection{{ $cf->id }}">
                             @foreach(['text' => 'Mətn', 'number' => 'Nömrə', 'date' => 'Tarix', 'select' => 'Seçim (açılan siyahı)', 'textarea' => 'Uzun mətn', 'file' => 'Fayl / Şəkil yükləmə'] as $val => $lbl)
                                 <option value="{{ $val }}" {{ $cf->type === $val ? 'selected' : '' }}>{{ $lbl }}</option>
                             @endforeach
@@ -249,13 +249,18 @@
 @endsection
 
 @push('scripts')
-<script>
-function toggleOptionsAdd(sel) {
-    document.getElementById('addOptionsSection').classList.toggle('d-none', sel.value !== 'select');
-}
-function toggleOptionsEdit(sel, id) {
-    document.getElementById('editOptionsSection' + id).classList.toggle('d-none', sel.value !== 'select');
-}
+<script @cspNonce>
+// A "select" field type is the only one that needs its options list shown.
+document.addEventListener('change', function (e) {
+    const sel = e.target.closest('[data-toggle-options]');
+
+    if (!sel) {
+        return;
+    }
+
+    document.getElementById(sel.dataset.toggleOptions)
+        ?.classList.toggle('d-none', sel.value !== 'select');
+});
 // Re-open modal if validation errors returned with modal data
 @if($errors->any() && old('label'))
 document.addEventListener('DOMContentLoaded', () => {

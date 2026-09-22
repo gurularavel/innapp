@@ -262,7 +262,7 @@
                         </div>
                     </div>
                     <form method="POST" action="{{ route('panel.whatsapp.disconnect') }}"
-                          onsubmit="return confirm('WhatsApp bağlantısı silinsin?');">
+                          data-confirm="WhatsApp bağlantısı silinsin?">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-outline-danger btn-sm">

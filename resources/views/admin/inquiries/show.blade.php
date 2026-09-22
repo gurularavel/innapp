@@ -104,7 +104,7 @@
                 <form method="POST" action="{{ route('admin.inquiries.destroy', $inquiry) }}">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Silmək istədiyinizdən əminsiniz?')">
+                    <button type="submit" class="btn btn-sm btn-outline-danger" data-confirm="Silmək istədiyinizdən əminsiniz?">
                         <i class="bi bi-trash me-1"></i>Sil
                     </button>
                 </form>

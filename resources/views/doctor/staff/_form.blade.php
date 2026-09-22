@@ -114,7 +114,7 @@
 </div>
 
 @push('scripts')
-<script>
+<script @cspNonce>
 // A receptionist never has their own calendar.
 (function () {
     const role = document.getElementById('role');

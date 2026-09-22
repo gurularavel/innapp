@@ -3,9 +3,11 @@
 namespace App\Providers;
 
 use App\Models\Setting;
+use App\Support\Csp;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -15,7 +17,9 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        // One nonce per request: the middleware writes it into the header and
+        // `@cspNonce` writes the same one into every script tag.
+        $this->app->scoped(Csp::class);
     }
 
     public function boot(): void
@@ -33,6 +37,10 @@ class AppServiceProvider extends ServiceProvider
 
         // One password policy for every form: registration, staff, admins, resets.
         Password::defaults(fn () => Password::min(8)->letters()->numbers());
+
+        // `<script @cspNonce>` — required on every script tag, inline or CDN,
+        // or the browser refuses to run it once the policy is enforced.
+        Blade::directive('cspNonce', fn () => "<?php echo app(\\App\\Support\\Csp::class)->attribute(); ?>");
 
         Paginator::useBootstrapFive();
         $this->configureMailFromDb();

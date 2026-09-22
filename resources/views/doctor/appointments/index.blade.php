@@ -97,7 +97,7 @@
                 <form method="POST" action="{{ route('panel.appointments.destroy', $apt) }}" class="d-inline">
                     @csrf @method('DELETE')
                     <button type="submit" class="btn btn-sm btn-danger"
-                            onclick="return confirm('Silmək istədiyinizdən əminsiniz?')">
+                            data-confirm="Silmək istədiyinizdən əminsiniz?">
                         <i class="bi bi-trash"></i>
                     </button>
                 </form>
@@ -166,7 +166,7 @@
                                 <form method="POST" action="{{ route('panel.appointments.destroy', $apt) }}" class="d-inline">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger"
-                                            onclick="return confirm('Silmək istədiyinizdən əminsiniz?')">
+                                            data-confirm="Silmək istədiyinizdən əminsiniz?">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
@@ -197,7 +197,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script @cspNonce>
 (function () {
     const searchInput = document.getElementById('filter_patient_search');
     const hiddenInput = document.getElementById('filter_patient_id');

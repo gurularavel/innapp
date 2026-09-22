@@ -172,7 +172,7 @@
                                     </a>
                                     <form method="POST"
                                           action="{{ route('panel.patients.visits.destroy', [$patient, $visit]) }}"
-                                          onsubmit="return confirm('Bu ziyarəti silmək istəyirsiniz?')">
+                                          data-confirm="Bu ziyarəti silmək istəyirsiniz?">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-outline-danger">
                                             <i class="bi bi-trash"></i>
@@ -494,7 +494,7 @@
 @endpush
 
 @push('scripts')
-<script>
+<script @cspNonce>
 (function () {
     /* ── collect galleries ── */
     const galleries = {};   // { 'visit-123': [{src,name}, ...] }

@@ -84,7 +84,7 @@
                 <div class="d-flex align-items-center gap-2">
                     {{-- Year picker (shown only in monthly tab) --}}
                     <form method="GET" action="{{ route('panel.reports.revenue') }}" id="year-form" class="d-none">
-                        <select name="year" class="form-select form-select-sm" onchange="this.form.submit()" style="width:90px">
+                        <select name="year" class="form-select form-select-sm" data-auto-submit style="width:90px">
                             @foreach($availableYears as $yr)
                                 <option value="{{ $yr }}" {{ $yr == $monthlyYear ? 'selected' : '' }}>{{ $yr }}</option>
                             @endforeach
@@ -261,8 +261,8 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-<script>
+<script @cspNonce src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<script @cspNonce>
 (function () {
     // ── Data from server ────────────────────────────────────────────────
     const weekly  = { labels: @json($weeklyLabels),  revenues: @json($weeklyRevenues),  counts: @json($weeklyCounts) };

@@ -632,7 +632,7 @@
         }
     </style>
     @stack('styles')
-    <script>
+    <script @cspNonce>
         // Applied before the first paint so a collapsed menu never flashes open.
         try {
             if (localStorage.getItem('admin_sidebar_collapsed') === '1') {
@@ -830,9 +830,9 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/imask@7.6.1/dist/imask.min.js"></script>
-<script>
+<script @cspNonce src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script @cspNonce src="https://cdn.jsdelivr.net/npm/imask@7.6.1/dist/imask.min.js"></script>
+<script @cspNonce>
 document.addEventListener('DOMContentLoaded', function () {
     // Mobile menu toggle functionality
     const toggleBtn = document.getElementById('menu-toggle-btn');
@@ -889,6 +889,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+@include('layouts._scripts')
 @stack('scripts')
 </body>
 </html>

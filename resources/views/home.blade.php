@@ -98,7 +98,7 @@
         ],
     ];
 @endphp
-<script type="application/ld+json">@json($homeSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)</script>
+<script @cspNonce type="application/ld+json">@json($homeSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)</script>
 @endpush
 
 @section('content')

@@ -167,6 +167,49 @@
         </div>
 
         <div class="card border-0 shadow-sm mt-4">
+            <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-semibold"><i class="bi bi-shield-lock me-2"></i>Content Security Policy (CSP)</h6>
+                @if($csp['violations'] > 0)
+                    <span class="badge bg-warning text-dark">Bu gün {{ $csp['violations'] }} pozuntu</span>
+                @endif
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">
+                    Brauzerə yalnız bizim işarələdiyimiz skriptləri icra etməyə icazə verir. Məlumat bazasına
+                    yeridilmiş (XSS) skript bu işarəni daşımadığı üçün işləmir. Nə isə sınsa, dərhal
+                    <strong>yalnız hesabat</strong> rejiminə keçirin — pozuntular
+                    <code>storage/logs/csp-*.log</code> faylına yazılır.
+                </p>
+
+                <form method="POST" action="{{ route('admin.settings.csp.save') }}">
+                    @csrf
+                    @method('PUT')
+
+                    <div class="row g-2 align-items-end">
+                        <div class="col-12 col-md-5">
+                            <label for="csp_mode" class="form-label fw-medium">Rejim</label>
+                            <select id="csp_mode" name="csp_mode" class="form-select @error('csp_mode') is-invalid @enderror">
+                                @foreach($csp['modes'] as $value => $label)
+                                    <option value="{{ $value }}" {{ old('csp_mode', $csp['mode']) === $value ? 'selected' : '' }}>
+                                        {{ $label }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('csp_mode')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-12 col-md-auto">
+                            <button type="submit" class="btn btn-outline-primary">
+                                <i class="bi bi-check-lg me-1"></i>Rejimi yadda saxla
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mt-4">
             <div class="card-header bg-white border-bottom">
                 <h6 class="mb-0 fw-semibold"><i class="bi bi-speedometer2 me-2"></i>Əlavə qorunma</h6>
             </div>

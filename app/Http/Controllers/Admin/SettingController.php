@@ -10,9 +10,11 @@ use App\Models\Setting;
 use App\Models\User;
 use App\Rules\AzMobilePhone;
 use App\Services\TurnstileService;
+use App\Support\Csp;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
 
 class SettingController extends Controller
 {
@@ -353,7 +355,42 @@ class SettingController extends Controller
             'month' => User::where('created_at', '>=', now()->subMonth())->count(),
         ];
 
-        return view('admin.settings.security', compact('settings', 'forms', 'signups'));
+        // Content Security Policy: which mode is live, and what the browsers
+        // have complained about lately — the number to watch before enforcing.
+        $csp = [
+            'mode'       => app(Csp::class)->mode(),
+            'modes'      => Csp::MODES,
+            'violations' => $this->cspViolationCount(),
+        ];
+
+        return view('admin.settings.security', compact('settings', 'forms', 'signups', 'csp'));
+    }
+
+    /**
+     * The Content Security Policy mode. Its own endpoint so that relaxing the
+     * policy in a hurry cannot disturb the Turnstile settings beside it.
+     */
+    public function saveCsp(Request $request)
+    {
+        $request->validate([
+            'csp_mode' => ['required', Rule::in(array_keys(Csp::MODES))],
+        ]);
+
+        Setting::set('csp_mode', $request->csp_mode);
+
+        return back()->with('success', 'CSP rejimi yeniləndi: ' . Csp::MODES[$request->csp_mode] . '.');
+    }
+
+    /** Violations reported in the last 24 hours, from today's CSP log. */
+    private function cspViolationCount(): int
+    {
+        $log = storage_path('logs/csp-' . now()->format('Y-m-d') . '.log');
+
+        if (! is_file($log) || filesize($log) > 5_000_000) {
+            return 0;
+        }
+
+        return substr_count((string) file_get_contents($log), 'CSP violation');
     }
 
     public function saveSecurity(Request $request)

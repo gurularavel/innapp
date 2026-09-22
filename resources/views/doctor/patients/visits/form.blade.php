@@ -96,7 +96,7 @@
                                         @if($file->is_image)
                                             <img src="{{ $file->url }}" alt="{{ $file->original_name }}"
                                                  class="img-fluid rounded" style="max-height:80px;object-fit:cover;width:100%;cursor:pointer;"
-                                                 onclick="window.open('{{ $file->url }}','_blank')">
+                                                 data-open-blank="{{ $file->url }}">
                                         @else
                                             <div class="py-2">
                                                 <i class="bi bi-file-earmark-pdf fs-3 text-danger"></i>
@@ -106,7 +106,8 @@
                                         <button type="button"
                                                 class="btn btn-danger btn-sm position-absolute top-0 end-0 p-0"
                                                 style="width:20px;height:20px;font-size:.65rem;line-height:1;"
-                                                onclick="deleteFile({{ $file->id }}, {{ $patient->id }})">
+                                                data-delete-file="{{ $file->id }}"
+                                                data-patient="{{ $patient->id }}">
                                             <i class="bi bi-x"></i>
                                         </button>
                                     </div>
@@ -196,7 +197,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script @cspNonce>
 // ── Tom Select: Xidmət növü ───────────────────────────────────────────────────
 const titleTS = new TomSelect('#title-select', {
     create: false,
@@ -361,7 +362,15 @@ document.getElementById('modal-save-btn').addEventListener('click', function () 
     }
 
     // Delete existing file via AJAX
-    window.deleteFile = function (fileId, patientId) {
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('[data-delete-file]');
+
+        if (btn) {
+            deleteFile(btn.dataset.deleteFile, btn.dataset.patient);
+        }
+    });
+
+    function deleteFile(fileId, patientId) {
         if (!confirm('Bu faylı silmək istəyirsiniz?')) return;
         fetch(`/panel/patients/${patientId}/visits/files/${fileId}`, {
             method: 'DELETE',
@@ -374,7 +383,7 @@ document.getElementById('modal-save-btn').addEventListener('click', function () 
                 document.getElementById('file-' + fileId)?.remove();
             }
         });
-    };
+    }
 })();
 </script>
 @endpush

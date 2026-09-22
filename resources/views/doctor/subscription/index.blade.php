@@ -311,7 +311,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script @cspNonce>
 // Seat count drives every price on this page; the server recalculates and
 // clamps it again at checkout, so this is presentation only.
 (function () {

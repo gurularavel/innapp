@@ -198,7 +198,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script @cspNonce>
 document.addEventListener('DOMContentLoaded', function () {
     function updateCount(textarea, countEl) {
         countEl.textContent = textarea.value.length;

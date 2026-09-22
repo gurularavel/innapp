@@ -671,8 +671,8 @@
         </div>
     </footer>
 
-    <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}" defer></script>
-    <script>
+    <script @cspNonce src="{{ asset('assets/js/bootstrap.bundle.min.js') }}" defer></script>
+    <script @cspNonce>
         document.addEventListener('DOMContentLoaded', function () {
             const header = document.querySelector('.site-header');
             const toggle = document.querySelector('.site-menu-toggle');
@@ -765,7 +765,8 @@
         });
     </script>
 
-    @stack('scripts')
+    @include('layouts._scripts')
+@stack('scripts')
 @include('layouts._whatsapp_float')
 </body>
 </html>

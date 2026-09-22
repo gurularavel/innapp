@@ -112,7 +112,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script @cspNonce>
 document.querySelectorAll('.copy-link').forEach(function (btn) {
     btn.addEventListener('click', function () {
         navigator.clipboard.writeText(btn.dataset.link).then(function () {

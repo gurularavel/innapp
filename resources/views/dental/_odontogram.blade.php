@@ -312,12 +312,12 @@
     </div>
 </template>
 
-<script type="application/json" data-odo-initial="{{ $chartId }}">@json($selected->values())</script>
+<script @cspNonce type="application/json" data-odo-initial="{{ $chartId }}">@json($selected->values())</script>
 @endif
 
 @once
 @push('scripts')
-<script>
+<script @cspNonce>
 (function () {
     const STATUSES = @json(\App\Models\PatientVisitTooth::STATUSES);
     const DEFAULT_STATUS = @json(\App\Models\PatientVisitTooth::DEFAULT_STATUS);

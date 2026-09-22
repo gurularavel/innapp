@@ -68,7 +68,7 @@
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-sm btn-danger"
-                                        onclick="return confirm('{{ $holiday->name }} silinsin? Bütün klinikalarda bu bayram üzrə ayarlar da silinəcək.')">
+                                        data-confirm="{{ $holiday->name }} silinsin? Bütün klinikalarda bu bayram üzrə ayarlar da silinəcək.">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </form>

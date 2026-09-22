@@ -46,14 +46,14 @@
                                 <form method="POST" action="{{ route('admin.payouts.paid', $payout) }}" class="d-inline">
                                     @csrf @method('PATCH')
                                     <button type="submit" class="btn btn-sm btn-success"
-                                            onclick="return confirm('{{ number_format($payout->amount, 2) }} ₼ ödənildi olaraq işarələnsin?')">
+                                            data-confirm="{{ number_format($payout->amount, 2) }} ₼ ödənildi olaraq işarələnsin?">
                                         <i class="bi bi-check-lg me-1"></i>Ödədim
                                     </button>
                                 </form>
                                 <form method="POST" action="{{ route('admin.payouts.reject', $payout) }}" class="d-inline">
                                     @csrf @method('PATCH')
                                     <button type="submit" class="btn btn-sm btn-danger"
-                                            onclick="return confirm('Tələb rədd edilsin?')">
+                                            data-confirm="Tələb rədd edilsin?">
                                         <i class="bi bi-x-lg"></i>
                                     </button>
                                 </form>

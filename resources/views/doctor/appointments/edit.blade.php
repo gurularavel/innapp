@@ -171,7 +171,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script @cspNonce>
 // ── Müştəri Autocomplete ─────────────────────────────────────────────────────
 (function () {
     const searchInput  = document.getElementById('patient_search');

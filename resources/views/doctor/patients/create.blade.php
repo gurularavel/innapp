@@ -137,9 +137,11 @@
 @endpush
 
 @push('scripts')
-<script>
-function previewPhoto(input) {
-    if (input.files && input.files[0]) {
+<script @cspNonce>
+document.addEventListener('change', function (e) {
+    const input = e.target.closest('[data-photo-input]');
+
+    if (input && input.files && input.files[0]) {
         const reader = new FileReader();
         reader.onload = e => {
             document.getElementById('photo-preview').src = e.target.result;
@@ -148,7 +150,7 @@ function previewPhoto(input) {
         };
         reader.readAsDataURL(input.files[0]);
     }
-}
+});
 
 (function () {
     const searchUrl      = '{{ route('panel.patients.search') }}';

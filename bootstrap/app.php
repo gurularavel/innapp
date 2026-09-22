@@ -21,6 +21,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // Deactivated accounts and closed clinics are locked out on the next request.
         $middleware->appendToGroup('web', \App\Http\Middleware\EnsureAccountActive::class);
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+        $middleware->append(\App\Http\Middleware\ContentSecurityPolicy::class);
+
+        // The browser posts violation reports itself; there is no session behind them.
+        $middleware->validateCsrfTokens(except: [\App\Support\Csp::REPORT_PATH]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Sessiya müddəti bitdikdə (419) xəta səhifəsi əvəzinə ana səhifəyə yönləndir

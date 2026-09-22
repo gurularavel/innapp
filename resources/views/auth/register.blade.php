@@ -253,9 +253,9 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/imask@7.6.1/dist/imask.min.js"></script>
-<script>
+<script @cspNonce src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script @cspNonce src="https://cdn.jsdelivr.net/npm/imask@7.6.1/dist/imask.min.js"></script>
+<script @cspNonce>
 // Azerbaijani mobile mask: digits only, +994 fixed, 9 national digits.
 document.querySelectorAll('[data-phone-mask]').forEach(function (el) {
     var digits = el.value.replace(/\D/g, '');

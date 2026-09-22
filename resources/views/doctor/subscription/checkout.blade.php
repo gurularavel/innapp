@@ -213,7 +213,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script @cspNonce>
 (function () {
     const pricing = {
         monthly: {
